@@ -2,267 +2,999 @@
   --bg-color: #0b0e14;
   --panel-bg: #161b22;
   --panel-border: #30363d;
+
   --text-main: #f0f6fc;
   --text-sub: #8b949e;
+
   --accent-red: #da3633;
   --accent-green: #238636;
   --accent-blue: #1f6feb;
   --accent-yellow: #f1e05a;
-  --pixel-font: 'Press Start 2P', monospace;
+
+  --pixel-font: "Press Start 2P", monospace;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-body {
-  /* Set woodFrame.png as the full-screen background */
-  background: url('woodFrame.png') center/cover no-repeat;
-  background-color: var(--bg-color); /* Fallback color while loading */
-  
-  color: var(--text-main);
-  font-family: var(--pixel-font);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 16px;
-  
-  /* Keeps pixel art crisp instead of blurry when scaled up */
-  image-rendering: pixelated; 
-  image-rendering: crisp-edges;
+html,
+body{
+    width:100%;
+    min-height:100%;
 }
 
-.game-container {
-  background: var(--panel-bg);
-  border: 4px solid var(--panel-border);
-  /* Optional: slightly darken the container border for higher contrast against wood */
-  box-shadow: 0 0 0 4px var(--bg-color), 0 10px 30px rgba(0, 0, 0, 0.9);
-  border-radius: 4px;
-  width: 100%;
-  max-width: 440px;
-  padding: 20px;
+body{
+
+    background:url("woodFrame.png") center center / cover no-repeat;
+    background-color:var(--bg-color);
+
+    color:var(--text-main);
+
+    font-family:var(--pixel-font);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:20px;
+
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
 }
 
-/* TOP HUD */
-.player-hud {
-  display: flex;
-  justify-content: space-between;
-  background: #0d1117;
-  border: 2px solid var(--panel-border);
-  padding: 10px;
-  margin-bottom: 20px;
-  font-size: 0.6rem;
+/*========================
+GAME CONTAINER
+=========================*/
+
+.game-container{
+
+    width:100%;
+    max-width:470px;
+
+    background:var(--panel-bg);
+
+    border:4px solid var(--panel-border);
+
+    box-shadow:
+        0 0 0 4px #000,
+        0 18px 30px rgba(0,0,0,.8);
+
+    padding:20px;
+
+    border-radius:4px;
 }
 
-.hud-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/*========================
+HUD
+=========================*/
+
+.player-hud{
+
+    display:flex;
+    justify-content:space-between;
+
+    gap:12px;
+
+    padding:12px;
+
+    background:#0d1117;
+
+    border:2px solid var(--panel-border);
+
+    margin-bottom:22px;
 }
 
-.hud-stat .label { color: var(--text-sub); }
-.hud-stat .val { color: var(--accent-yellow); }
+.hud-stat{
 
-.screen { display: none; }
-.screen.active { display: block; }
+    display:flex;
+    flex-direction:column;
 
-.pixel-badge {
-  display: inline-block;
-  font-size: 0.5rem;
-  background: var(--accent-blue);
-  color: #fff;
-  padding: 6px 8px;
-  margin-bottom: 12px;
+    gap:6px;
 }
 
-.pixel-badge.success { background: var(--accent-green); }
+.label{
 
-.game-title {
-  font-size: 1.1rem;
-  color: var(--accent-yellow);
-  margin-bottom: 12px;
-  line-height: 1.4;
+    color:var(--text-sub);
+
+    font-size:.48rem;
 }
 
-.subtitle {
-  font-size: 0.55rem;
-  color: var(--text-sub);
-  line-height: 1.6;
-  margin-bottom: 20px;
+.val{
+
+    color:var(--accent-yellow);
+
+    font-size:.60rem;
 }
 
-/* FORM ELEMENTS */
-.input-group {
-  margin-bottom: 16px;
-  text-align: left;
+/*========================
+SCREENS
+=========================*/
+
+.screen{
+
+    display:none;
 }
 
-.input-group label {
-  display: block;
-  font-size: 0.5rem;
-  color: var(--text-sub);
-  margin-bottom: 8px;
+.screen.active{
+
+    display:block;
 }
 
-input {
-  width: 100%;
-  padding: 12px;
-  background: #0d1117;
-  border: 2px solid var(--panel-border);
-  color: var(--text-main);
-  font-family: var(--pixel-font);
-  font-size: 0.65rem;
-  outline: none;
+/*========================
+BADGES
+=========================*/
+
+.pixel-badge{
+
+    display:inline-block;
+
+    padding:8px 10px;
+
+    margin-bottom:18px;
+
+    background:var(--accent-blue);
+
+    color:white;
+
+    font-size:.50rem;
+
+    border:2px solid black;
 }
 
-input:focus { border-color: var(--accent-blue); }
+.pixel-badge.success{
 
-/* BUTTONS */
-.btn {
-  width: 100%;
-  padding: 14px;
-  border: 2px solid var(--panel-border);
-  font-family: var(--pixel-font);
-  font-size: 0.6rem;
-  cursor: pointer;
-  margin-top: 8px;
-  color: #fff;
+    background:var(--accent-green);
 }
 
-.btn-primary { background: var(--accent-blue); }
-.btn-primary:hover { background: #388bfd; }
+/*========================
+TEXT
+=========================*/
 
-.btn-secondary { background: transparent; color: var(--text-sub); }
+.game-title{
 
-.action-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 12px;
+    color:var(--accent-yellow);
+
+    font-size:1rem;
+
+    line-height:1.5;
+
+    margin-bottom:16px;
 }
 
-.btn-action {
-  background: #21262d;
-  font-size: 0.5rem;
-  padding: 10px;
-  line-height: 1.4;
-  text-align: left;
+.subtitle{
+
+    color:var(--text-sub);
+
+    font-size:.55rem;
+
+    line-height:1.8;
+
+    margin-bottom:22px;
 }
 
-.btn-action:hover { border-color: var(--accent-yellow); }
-.btn-flee { grid-column: span 2; background: #271010; border-color: var(--accent-red); }
+/*========================
+INPUTS
+=========================*/
 
-/* BATTLE STAGE */
-.battle-stage {
-  background: #0d1117;
-  border: 2px solid var(--panel-border);
-  padding: 16px;
-  margin-bottom: 12px;
+.input-group{
+
+    margin-bottom:18px;
 }
 
-.enemy-area {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
+.input-group label{
+
+    display:block;
+
+    margin-bottom:8px;
+
+    color:var(--text-sub);
+
+    font-size:.50rem;
 }
 
-.pixel-sprite {
-  font-size: 2.5rem;
-  /* Placeholder image slot for custom art */
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+input{
+
+    width:100%;
+
+    background:#0d1117;
+
+    color:white;
+
+    border:2px solid var(--panel-border);
+
+    padding:12px;
+
+    outline:none;
+
+    font-family:var(--pixel-font);
+
+    font-size:.60rem;
 }
 
-.enemy-details { flex-grow: 1; }
+input:focus{
 
-.enemy-name {
-  font-size: 0.55rem;
-  color: var(--accent-red);
-  display: block;
-  margin-bottom: 6px;
+    border-color:var(--accent-blue);
 }
 
-.hp-bar {
-  width: 100%;
-  height: 10px;
-  background: #21262d;
-  border: 1px solid var(--panel-border);
+/*========================
+BUTTONS
+=========================*/
+
+.btn{
+
+    width:100%;
+
+    padding:14px;
+
+    margin-top:10px;
+
+    border:2px solid var(--panel-border);
+
+    cursor:pointer;
+
+    font-family:var(--pixel-font);
+
+    font-size:.58rem;
+
+    transition:.18s;
+
+    color:white;
 }
 
-.hp-fill {
-  width: 100%;
-  height: 100%;
-  background: var(--accent-red);
-  transition: width 0.3s ease;
+.btn:hover{
+
+    transform:translateY(-2px);
 }
 
-.metric-card {
-  font-size: 0.5rem;
-  line-height: 1.6;
-  color: var(--accent-yellow);
-  border-top: 1px dashed var(--panel-border);
-  padding-top: 10px;
+.btn-primary{
+
+    background:var(--accent-blue);
 }
 
-.dialog-box {
-  background: #000;
-  border: 2px solid var(--panel-border);
-  padding: 12px;
-  font-size: 0.55rem;
-  line-height: 1.6;
-  min-height: 50px;
+.btn-primary:hover{
+
+    background:#388bfd;
 }
 
-/* QUIZ STAGE */
-.hidden { display: none !important; }
+.btn-secondary{
 
-.quiz-container {
-  margin-top: 12px;
+    background:#222;
+
+    color:var(--text-sub);
 }
 
-.quiz-q {
-  font-size: 0.55rem;
-  line-height: 1.5;
-  margin-bottom: 10px;
-  color: var(--accent-yellow);
+.btn-secondary:hover{
+
+    border-color:var(--accent-yellow);
+}
+/*========================
+BATTLE SCREEN
+=========================*/
+
+.battle-stage{
+
+    background:#0d1117;
+
+    border:2px solid var(--panel-border);
+
+    padding:18px;
+
+    margin-bottom:16px;
 }
 
-.quiz-opts button {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 6px;
-  background: #21262d;
-  border: 1px solid var(--panel-border);
-  color: #fff;
-  font-family: var(--pixel-font);
-  font-size: 0.5rem;
-  text-align: left;
-  cursor: pointer;
+.enemy-area{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:16px;
+
+    margin-bottom:16px;
 }
 
-/* TIMER STAGE */
-.timer-box {
-  background: #0d1117;
-  border: 2px solid var(--panel-border);
-  padding: 20px;
-  margin: 16px 0;
-  text-align: center;
+.enemy-details{
+
+    flex:1;
 }
 
-.timer-display {
-  font-size: 1.2rem;
-  color: var(--accent-green);
-  margin-bottom: 8px;
+/*========================
+TODO PIXEL ART
+Replace:
+assets/sprites/enemies/
+=========================*/
+
+.pixel-sprite{
+
+    width:64px;
+    height:64px;
+
+    flex-shrink:0;
+
+    border:2px solid var(--panel-border);
+
+    background:#20262f;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    image-rendering:pixelated;
+
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:contain;
 }
 
-.timer-sub {
-  font-size: 0.45rem;
-  color: var(--text-sub);
+/* Optional placeholder until artwork exists */
+
+.pixel-sprite::after{
+
+    content:"";
+
+    width:32px;
+    height:32px;
+
+    background:#444;
+
+    border:2px solid #666;
 }
+
+.enemy-name{
+
+    display:block;
+
+    color:var(--accent-red);
+
+    font-size:.55rem;
+
+    margin-bottom:8px;
+}
+
+/*========================
+HP BAR
+=========================*/
+
+.hp-bar{
+
+    width:100%;
+
+    height:12px;
+
+    background:#1a1f26;
+
+    border:2px solid var(--panel-border);
+
+    overflow:hidden;
+}
+
+.hp-fill{
+
+    width:100%;
+    height:100%;
+
+    background:linear-gradient(
+        to right,
+        #9d2020,
+        var(--accent-red)
+    );
+
+    transition:width .35s ease;
+}
+
+/*========================
+INFO PANEL
+=========================*/
+
+.metric-card{
+
+    border-top:2px dashed var(--panel-border);
+
+    padding-top:12px;
+
+    color:var(--accent-yellow);
+
+    font-size:.50rem;
+
+    line-height:1.8;
+}
+
+/*========================
+DIALOG BOX
+=========================*/
+
+.dialog-box{
+
+    background:black;
+
+    border:2px solid var(--panel-border);
+
+    padding:14px;
+
+    min-height:72px;
+
+    display:flex;
+
+    align-items:center;
+
+    margin-bottom:14px;
+}
+
+.dialog-box p{
+
+    font-size:.55rem;
+
+    line-height:1.7;
+}
+
+/*========================
+ACTION BUTTONS
+=========================*/
+
+.action-grid{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:8px;
+}
+
+.btn-action{
+
+    background:#21262d;
+
+    text-align:left;
+
+    line-height:1.5;
+
+    padding:12px;
+
+    font-size:.48rem;
+}
+
+.btn-action:hover{
+
+    border-color:var(--accent-yellow);
+}
+
+.btn-flee{
+
+    grid-column:span 2;
+
+    background:#2b1212;
+
+    border-color:var(--accent-red);
+}
+
+/*========================
+QUIZ
+=========================*/
+
+.hidden{
+
+    display:none !important;
+}
+
+.quiz-container{
+
+    margin-top:16px;
+
+    border:2px solid var(--panel-border);
+
+    padding:16px;
+
+    background:#11161d;
+}
+
+.quiz-q{
+
+    color:var(--accent-yellow);
+
+    font-size:.56rem;
+
+    line-height:1.8;
+    margin-bottom:16px;
+}
+
+.quiz-opts{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.quiz-opts button{
+    width:100%;
+    padding:12px;
+    border:2px solid var(--panel-border);
+    background:#21262d;
+    color:white;
+    cursor:pointer;
+    text-align:left;
+    font-size:.50rem;
+    font-family:var(--pixel-font);
+    transition:.18s;
+}
+
+.quiz-opts button:hover{
+    border-color:var(--accent-green);
+    background:#283341;
+}
+
+/*========================
+SMALL ANIMATIONS
+=========================*/
+
+@keyframes pulse{
+
+    0%{
+        transform:scale(1);
+    }
+
+    50%{
+        transform:scale(1.05);
+    }
+
+    100%{
+        transform:scale(1);
+    }
+
+}
+
+@keyframes shake{
+    0%{transform:translateX(0);}
+    20%{transform:translateX(-2px);}
+    40%{transform:translateX(2px);}
+    60%{transform:translateX(-2px);}
+    80%{transform:translateX(2px);}
+    100%{transform:translateX(0);}
+}
+
+.hp-fill.low{
+    animation:pulse .7s infinite;
+}
+
+.enemy-hit{
+    animation:shake .2s;
+}
+/*========================
+TIMER SCREEN
+=========================*/
+
+#step-timer h2{
+
+    color:var(--accent-yellow);
+
+    font-size:.85rem;
+
+    margin-bottom:14px;
+
+}
+
+
+.timer-box{
+
+    background:#0d1117;
+
+    border:2px solid var(--panel-border);
+
+    padding:22px;
+
+    margin:20px 0;
+
+    text-align:center;
+
+}
+
+
+/*
+TODO PIXEL ART
+
+Replace timer placeholder:
+
+assets/sprites/ui/hourglass.png
+
+Suggested size:
+32x32 or 64x64
+
+*/
+
+.timer-box .pixel-sprite{
+
+    margin:0 auto 18px;
+
+}
+
+
+.timer-display{
+
+    color:var(--accent-green);
+
+    font-size:1.1rem;
+
+    letter-spacing:2px;
+
+    margin-bottom:12px;
+
+}
+
+
+.timer-sub{
+
+    color:var(--text-sub);
+
+    font-size:.45rem;
+
+    line-height:1.6;
+
+}
+
+
+/*========================
+VICTORY SCREEN
+=========================*/
+
+
+#step-victory{
+
+    text-align:center;
+
+}
+
+
+#step-victory .pixel-sprite{
+
+    margin:10px auto 20px;
+
+}
+
+
+/*
+TODO PIXEL ART
+
+Victory image:
+
+assets/ui/victory_banner.png
+
+Suggested size:
+128x64
+*/
+
+
+#victory-text{
+
+    margin-bottom:18px;
+
+}
+
+
+#step-victory .metric-card{
+
+    text-align:left;
+
+    margin-bottom:20px;
+
+    border:2px solid var(--panel-border);
+
+    padding:16px;
+
+    background:#0d1117;
+
+}
+
+
+/*========================
+PIXEL ART HELPERS
+=========================*/
+
+
+.pixel-art{
+
+    image-rendering:pixelated;
+
+    image-rendering:crisp-edges;
+
+}
+
+
+.sprite-large{
+
+    width:96px;
+
+    height:96px;
+
+}
+
+
+.sprite-medium{
+
+    width:64px;
+
+    height:64px;
+
+}
+
+
+.sprite-small{
+
+    width:32px;
+
+    height:32px;
+
+}
+
+
+/*========================
+SCREEN TRANSITIONS
+=========================*/
+
+
+.screen.active{
+
+    animation:fadeIn .25s ease;
+
+}
+
+
+@keyframes fadeIn{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(5px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+/*========================
+GAME FEEDBACK EFFECTS
+=========================*/
+
+
+.damage-text{
+
+    color:var(--accent-red);
+
+    animation:damagePop .5s ease;
+
+}
+
+
+.reward-text{
+
+    color:var(--accent-green);
+
+    animation:rewardPop .5s ease;
+
+}
+
+
+@keyframes damagePop{
+
+    0%{
+
+        opacity:0;
+
+        transform:translateY(10px);
+
+    }
+
+    50%{
+
+        opacity:1;
+
+    }
+
+    100%{
+
+        opacity:0;
+
+        transform:translateY(-20px);
+
+    }
+
+}
+
+
+@keyframes rewardPop{
+
+    0%{
+
+        opacity:0;
+
+        transform:scale(.8);
+
+    }
+
+    50%{
+
+        opacity:1;
+
+        transform:scale(1.1);
+
+    }
+
+    100%{
+
+        opacity:1;
+
+        transform:scale(1);
+
+    }
+
+}
+
+
+/*========================
+DISABLED BUTTONS
+=========================*/
+
+
+button:disabled{
+
+    cursor:not-allowed;
+
+    opacity:.5;
+
+    transform:none;
+
+}
+
+
+/*========================
+SCROLLBAR
+=========================*/
+
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+
+::-webkit-scrollbar-track{
+
+    background:#0d1117;
+
+}
+
+
+::-webkit-scrollbar-thumb{
+
+    background:var(--panel-border);
+
+}
+
+
+/*========================
+MOBILE SUPPORT
+=========================*/
+
+
+@media(max-width:520px){
+
+    body{
+
+        padding:10px;
+
+        align-items:flex-start;
+
+    }
+
+
+    .game-container{
+
+        padding:14px;
+
+    }
+
+
+    .player-hud{
+
+        padding:8px;
+
+    }
+
+
+    .game-title{
+
+        font-size:.85rem;
+
+    }
+
+
+    .action-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+
+    .btn-flee{
+
+        grid-column:auto;
+
+    }
+
+
+    .enemy-area{
+
+        flex-direction:column;
+
+        text-align:center;
+
+    }
+
+
+    .enemy-details{
+
+        width:100%;
+
+    }
+
+
+    .timer-display{
+
+        font-size:.85rem;
+
+    }
+
+}
+
+
+/*========================
+FUTURE RPG ELEMENTS
+=========================*/
+
+
+/*
+TODO ART
+
+Future asset folders:
+
+assets/
+|
+├── sprites/
+│   ├── player/
+│   ├── enemies/
+│   ├── npcs/
+│   ├── items/
+│   └── effects/
+|
+├── tiles/
+│   ├── grass.png
+│   ├── stone.png
+│   └── wood.png
+|
+├── ui/
+│   ├── window_frame.png
+│   ├── buttons.png
+│   └── icons.png
+|
+└── backgrounds/
+    ├── forest.png
+    ├── dungeon.png
+    └── town.png
+
+
+*/
+
+
+/*========================
+END STYLE SHEET
+=========================*/
