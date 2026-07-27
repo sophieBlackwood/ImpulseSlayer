@@ -1,245 +1,1268 @@
-// PERSISTENT PLAYER STATE
+// ==========================================
+// IMPULSE SLAYER - PIXEL RPG
+// Main Game Logic
+// ==========================================
+
+
+// ==========================================
+// PLAYER DATA
+// ==========================================
+
 const player = {
-  lvl: 1,
-  xp: 0,
-  xpToNext: 100,
-  goldSaved: 0
+
+    lvl: 1,
+
+    xp: 0,
+
+    xpToNext: 100,
+
+    goldSaved: 0
+
 };
 
+
+// ==========================================
 // CURRENT BATTLE STATE
+// ==========================================
+
 const battle = {
-  itemName: '',
-  price: 0,
-  enemyName: '',
-  enemyMaxHP: 100,
-  enemyHP: 100,
-  sprite: '👾',
-  timerInterval: null
+
+    itemName: "",
+
+    price: 0,
+
+    enemyName: "",
+
+    enemyMaxHP: 100,
+
+    enemyHP: 100,
+
+    enemySprite:
+        "assets/sprites/enemies/placeholder_enemy.png",
+
+    timerInterval: null,
+
+    rewardXP: 0
+
 };
 
-// INITIALIZE APP
-window.addEventListener('DOMContentLoaded', () => {
-  loadPlayerData();
-  checkExistingLock();
-});
 
-function loadPlayerData() {
-  const saved = localStorage.getItem('slayer_player_data');
-  if (saved) {
-    Object.assign(player, JSON.parse(saved));
-  }
-  updateHUD();
+// ==========================================
+// STARTUP
+// ==========================================
+
+window.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        loadPlayerData();
+
+        checkExistingLock();
+
+        updateHUD();
+
+    }
+);
+
+
+
+// ==========================================
+// SAVE SYSTEM
+// ==========================================
+
+function loadPlayerData(){
+
+    const saved =
+        localStorage.getItem(
+            "slayer_player_data"
+        );
+
+
+    if(saved){
+
+        Object.assign(
+            player,
+            JSON.parse(saved)
+        );
+
+    }
+
 }
 
-function savePlayerData() {
-  localStorage.setItem('slayer_player_data', JSON.stringify(player));
-  updateHUD();
+
+
+function savePlayerData(){
+
+    localStorage.setItem(
+        "slayer_player_data",
+        JSON.stringify(player)
+    );
+
+    updateHUD();
+
 }
 
-function updateHUD() {
-  document.getElementById('player-lvl').textContent = player.lvl;
-  document.getElementById('player-xp').textContent = `${player.xp}/${player.xpToNext}`;
-  document.getElementById('player-gold').textContent = `$${player.goldSaved.toFixed(0)}`;
+
+
+function updateHUD(){
+
+    const lvl =
+        document.getElementById(
+            "player-lvl"
+        );
+
+    const xp =
+        document.getElementById(
+            "player-xp"
+        );
+
+    const gold =
+        document.getElementById(
+            "player-gold"
+        );
+
+
+    if(lvl)
+        lvl.textContent = player.lvl;
+
+
+    if(xp)
+        xp.textContent =
+        `${player.xp}/${player.xpToNext}`;
+
+
+    if(gold)
+        gold.textContent =
+        `$${player.goldSaved.toFixed(0)}`;
+
 }
 
-// DYNAMIC ENEMY GENERATOR
-function generateEnemy(price) {
-  if (price < 25) {
-    return { name: "IMPULSE GOBLIN", hp: 60, sprite: "👺" };
-  } else if (price < 100) {
-    return { name: "FOMO KNIGHT", hp: 100, sprite: "👾" };
-  } else {
-    return { name: "OVERSPEND DRAGON", hp: 160, sprite: "🐉" };
-  }
+
+
+// ==========================================
+// SCREEN MANAGEMENT
+// ==========================================
+
+function showScreen(id){
+
+    document
+    .querySelectorAll(".screen")
+    .forEach(screen=>{
+
+        screen.classList.remove(
+            "active"
+        );
+
+    });
+
+
+    const target =
+        document.getElementById(id);
+
+
+    if(target){
+
+        target.classList.add(
+            "active"
+        );
+
+    }
+
 }
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+
+
+// ==========================================
+// ENEMY GENERATION
+// ==========================================
+
+function generateEnemy(price){
+
+    if(price < 25){
+
+        return {
+
+            name:
+            "IMPULSE GOBLIN",
+
+            hp:60,
+
+            sprite:
+            "assets/sprites/enemies/goblin.png"
+
+        };
+
+    }
+
+
+    if(price < 100){
+
+        return {
+
+            name:
+            "FOMO KNIGHT",
+
+            hp:100,
+
+            sprite:
+            "assets/sprites/enemies/knight.png"
+
+        };
+
+    }
+
+
+    return {
+
+        name:
+        "OVERSPEND DRAGON",
+
+        hp:160,
+
+        sprite:
+        "assets/sprites/enemies/dragon.png"
+
+    };
+
 }
 
-function initiateBattle() {
-  const nameInput = document.getElementById('item-name').value;
-  const priceInput = parseFloat(document.getElementById('item-price').value);
 
-  if (!nameInput || isNaN(priceInput) || priceInput <= 0) {
-    alert('ENTER A VALID ITEM AND PRICE');
-    return;
-  }
 
-  battle.itemName = nameInput;
-  battle.price = priceInput;
+// ==========================================
+// START BATTLE
+// ==========================================
 
-  const enemy = generateEnemy(priceInput);
-  battle.enemyName = enemy.name;
-  battle.enemyMaxHP = enemy.hp;
-  battle.enemyHP = enemy.hp;
-  battle.sprite = enemy.sprite;
+function initiateBattle(){
 
-  // Update UI
-  document.getElementById('enemy-sprite').textContent = battle.sprite;
-  document.getElementById('enemy-name').textContent = battle.enemyName;
-  
-  const hoursWork = (priceInput / 12).toFixed(1);
-  document.getElementById('metric-card').innerHTML = `COST: ${hoursWork} HRS OF WORK`;
-  
-  updateHPBar();
-  document.getElementById('battle-text').textContent = `A wild ${battle.enemyName} appears!`;
-  
-  document.getElementById('action-menu').classList.remove('hidden');
-  document.getElementById('quiz-container').classList.add('hidden');
+    const item =
+        document
+        .getElementById("item-name")
+        .value
+        .trim();
 
-  showScreen('step-boss');
-}
 
-function updateHPBar() {
-  const pct = Math.max(0, (battle.enemyHP / battle.enemyMaxHP) * 100);
-  document.getElementById('enemy-hp-fill').style.width = `${pct}%`;
-}
+    const price =
+        parseFloat(
+            document
+            .getElementById("item-price")
+            .value
+        );
 
-// BATTLE ACTIONS
-function handleAction(type) {
-  const textEl = document.getElementById('battle-text');
 
-  if (type === 'attack') {
-    startQuiz();
-  } else if (type === 'defend') {
-    textEl.textContent = "You pause and take a 10 min break. Temptation reduced!";
-    battle.enemyHP -= 20;
+    if(
+        !item ||
+        isNaN(price) ||
+        price <= 0
+    ){
+
+        updateBattleText(
+            "Enter a valid item and price."
+        );
+
+        return;
+
+    }
+
+
+    battle.itemName = item;
+
+    battle.price = price;
+
+
+    const enemy =
+        generateEnemy(price);
+
+
+    battle.enemyName =
+        enemy.name;
+
+
+    battle.enemyMaxHP =
+        enemy.hp;
+
+
+    battle.enemyHP =
+        enemy.hp;
+
+
+    battle.enemySprite =
+        enemy.sprite;
+
+
+
+    const sprite =
+        document.getElementById(
+            "enemy-sprite"
+        );
+
+
+    sprite.src =
+        battle.enemySprite;
+
+
+    document
+    .getElementById("enemy-name")
+    .textContent =
+        battle.enemyName;
+
+
+
+    const workHours =
+        (price / 12)
+        .toFixed(1);
+
+
+    document
+    .getElementById("metric-card")
+    .innerHTML =
+    `
+        COST: $${price.toFixed(2)}
+        <br>
+        EQUALS ${workHours} HOURS OF WORK
+    `;
+
+
+
     updateHPBar();
-    checkBattleEnd();
-  } else if (type === 'item') {
-    const futureVal = (battle.price * 1.5).toFixed(0);
-    textEl.textContent = `Investing this $${battle.price} could yield ~$${futureVal} in 5 yrs!`;
-  } else if (type === 'flee') {
-    // Fleeing means skipping the purchase = WINNING
-    player.goldSaved += battle.price;
-    addXP(Math.round(battle.price));
-    alert(`YOU ESCAPED! Saved $${battle.price.toFixed(2)}.`);
-    showScreen('step-setup');
-  }
+
+
+    updateBattleText(
+        `A wild ${battle.enemyName} appears!`
+    );
+
+
+    document
+    .getElementById("action-menu")
+    .classList.remove(
+        "hidden"
+    );
+
+
+    document
+    .getElementById("quiz-container")
+    .classList.add(
+        "hidden"
+    );
+
+
+    showScreen(
+        "step-boss"
+    );
+
 }
 
-// QUIZ LOGIC
+
+
+// ==========================================
+// BATTLE UI HELPERS
+// ==========================================
+
+function updateBattleText(text){
+
+    const box =
+        document.getElementById(
+            "battle-text"
+        );
+
+
+    if(box){
+
+        box.textContent = text;
+
+    }
+
+}
+
+
+
+function updateHPBar(){
+
+    const fill =
+        document.getElementById(
+            "enemy-hp-fill"
+        );
+
+
+    if(!fill)
+        return;
+
+
+    const percent =
+        Math.max(
+            0,
+            (battle.enemyHP /
+            battle.enemyMaxHP) * 100
+        );
+
+
+    fill.style.width =
+        `${percent}%`;
+
+}
+// ==========================================
+// BATTLE ACTIONS
+// ==========================================
+
+function handleAction(type){
+
+    switch(type){
+
+
+        case "attack":
+
+            startQuiz();
+
+            break;
+
+
+
+        case "defend":
+
+            battle.enemyHP -= 20;
+
+            if(battle.enemyHP < 0){
+
+                battle.enemyHP = 0;
+
+            }
+
+
+            updateHPBar();
+
+
+            updateBattleText(
+                "You waited. The impulse weakened."
+            );
+
+
+            checkBattleEnd();
+
+            break;
+
+
+
+        case "item":
+
+            const futureValue =
+                Math.round(
+                    battle.price * 1.5
+                );
+
+
+            updateBattleText(
+                `Think long term. That $${battle.price.toFixed(2)} could become about $${futureValue} with time.`
+            );
+
+
+            break;
+
+
+
+        case "flee":
+
+            defeatImpulse();
+
+
+            break;
+
+    }
+
+}
+
+
+
+// ==========================================
+// QUIZ SYSTEM
+// ==========================================
+
+
 const questions = [
-  {
-    q: "WILL YOU USE THIS NEXT MONTH?",
-    opts: [
-      { text: "YES, REGULARLY", dmg: 40 },
-      { text: "MAYBE ONCE", dmg: 15 },
-      { text: "PROBABLY NOT", dmg: 0 }
-    ]
-  },
-  {
-    q: "IS THIS WITHIN BUDGET?",
-    opts: [
-      { text: "YES, SAVED UP", dmg: 40 },
-      { text: "TIGHT FIT", dmg: 15 },
-      { text: "NO, IMPULSE BUY", dmg: 0 }
-    ]
-  }
+
+    {
+
+        q:
+        "WILL YOU USE THIS NEXT MONTH?",
+
+
+        opts:[
+
+            {
+                text:
+                "YES, REGULARLY",
+
+                dmg:40
+
+            },
+
+            {
+                text:
+                "MAYBE ONCE",
+
+                dmg:15
+
+            },
+
+            {
+                text:
+                "PROBABLY NOT",
+
+                dmg:0
+
+            }
+
+        ]
+
+    },
+
+
+    {
+
+        q:
+        "IS THIS WITHIN YOUR BUDGET?",
+
+
+        opts:[
+
+            {
+                text:
+                "YES, SAVED UP",
+
+                dmg:40
+
+            },
+
+            {
+                text:
+                "TIGHT FIT",
+
+                dmg:15
+
+            },
+
+            {
+                text:
+                "NO, IMPULSE BUY",
+
+                dmg:0
+
+            }
+
+        ]
+
+    },
+
+
+    {
+
+        q:
+        "WILL THIS IMPROVE YOUR LIFE?",
+
+
+        opts:[
+
+            {
+                text:
+                "CLEARLY YES",
+
+                dmg:40
+
+            },
+
+            {
+                text:
+                "NOT SURE",
+
+                dmg:10
+
+            },
+
+            {
+                text:
+                "JUST EXCITED",
+
+                dmg:0
+
+            }
+
+        ]
+
+    }
+
 ];
 
-let currentQ = 0;
 
-function startQuiz() {
-  currentQ = 0;
-  document.getElementById('action-menu').classList.add('hidden');
-  document.getElementById('quiz-container').classList.remove('hidden');
-  loadQuizQuestion();
+let currentQuestion = 0;
+
+
+
+function startQuiz(){
+
+    currentQuestion = 0;
+
+
+    document
+    .getElementById("action-menu")
+    .classList
+    .add("hidden");
+
+
+    document
+    .getElementById("quiz-container")
+    .classList
+    .remove("hidden");
+
+
+    loadQuizQuestion();
+
 }
 
-function loadQuizQuestion() {
-  if (currentQ >= questions.length) {
-    checkBattleEnd();
-    return;
-  }
 
-  const q = questions[currentQ];
-  document.getElementById('quiz-q').textContent = q.q;
-  const optsDiv = document.getElementById('quiz-opts');
-  optsDiv.innerHTML = '';
 
-  q.opts.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.textContent = opt.text;
-    btn.onclick = () => {
-      battle.enemyHP -= opt.dmg;
-      updateHPBar();
-      currentQ++;
-      loadQuizQuestion();
-    };
-    optsDiv.appendChild(btn);
-  });
+function loadQuizQuestion(){
+
+    const container =
+        document.getElementById(
+            "quiz-opts"
+        );
+
+
+    if(currentQuestion >= questions.length){
+
+        checkBattleEnd();
+
+        return;
+
+    }
+
+
+    const question =
+        questions[currentQuestion];
+
+
+    document
+    .getElementById("quiz-q")
+    .textContent =
+        question.q;
+
+
+
+    container.innerHTML = "";
+
+
+
+    question.opts.forEach(option=>{
+
+
+        const button =
+            document.createElement(
+                "button"
+            );
+
+
+        button.textContent =
+            option.text;
+
+
+
+        button.onclick = ()=>{
+
+
+            battle.enemyHP -=
+                option.dmg;
+
+
+            if(battle.enemyHP < 0){
+
+                battle.enemyHP = 0;
+
+            }
+
+
+            updateHPBar();
+
+
+            currentQuestion++;
+
+
+            loadQuizQuestion();
+
+
+        };
+
+
+        container.appendChild(
+            button
+        );
+
+
+    });
+
+
 }
 
-function checkBattleEnd() {
-  if (battle.enemyHP <= 30) {
-    confetti({ particleCount: 50, spread: 60 });
-    const endTime = new Date().getTime() + (24 * 60 * 60 * 1000);
-    localStorage.setItem('slayer_lock_time', endTime);
-    
-    addXP(50);
+
+
+// ==========================================
+// BATTLE END CHECK
+// ==========================================
+
+function checkBattleEnd(){
+
+
+    if(
+        battle.enemyHP <= 30
+    ){
+
+        defeatImpulse();
+
+
+        return;
+
+    }
+
+
+
+    if(
+        currentQuestion >=
+        questions.length
+    ){
+
+        document
+        .getElementById("action-menu")
+        .classList
+        .remove("hidden");
+
+
+        document
+        .getElementById("quiz-container")
+        .classList
+        .add("hidden");
+
+
+        updateBattleText(
+            "The monster survived. Try another strategy."
+        );
+
+    }
+
+}
+
+
+
+// ==========================================
+// VICTORY / REWARD SYSTEM
+// ==========================================
+
+
+function defeatImpulse(){
+
+    if(window.confetti){
+
+        confetti({
+
+            particleCount:80,
+
+            spread:70
+
+        });
+
+    }
+
+
+
+    const xp =
+        Math.max(
+            25,
+            Math.round(
+                battle.price
+            )
+        );
+
+
+    battle.rewardXP = xp;
+
+
+
+    player.goldSaved +=
+        battle.price;
+
+
+
+    addXP(xp);
+
+
+
+    document
+    .getElementById("reward-xp")
+    .textContent =
+        xp;
+
+
+
+    document
+    .getElementById("reward-money")
+    .textContent =
+        battle.price.toFixed(2);
+
+
+
+    document
+    .getElementById("reward-level")
+    .textContent =
+        player.lvl;
+
+
+
+    showScreen(
+        "step-victory"
+    );
+
+
+}
+
+
+
+// ==========================================
+// EXPERIENCE SYSTEM
+// ==========================================
+
+function addXP(amount){
+
+
+    player.xp += amount;
+
+
+
+    while(
+        player.xp >= player.xpToNext
+    ){
+
+        player.xp -=
+            player.xpToNext;
+
+
+        player.lvl++;
+
+
+        player.xpToNext =
+            Math.floor(
+                player.xpToNext * 1.5
+            );
+
+
+        updateBattleText(
+            `LEVEL UP! You reached Level ${player.lvl}.`
+        );
+
+    }
+
+
+
+    savePlayerData();
+
+
+}
+
+
+
+// ==========================================
+// TIMER SYSTEM
+// ==========================================
+
+function startCoolingTimer(){
+
+
+    const duration =
+        24 *
+        60 *
+        60 *
+        1000;
+
+
+
+    const endTime =
+        Date.now()
+        + duration;
+
+
+
+    localStorage.setItem(
+        "slayer_lock_time",
+        endTime
+    );
+
+
+
     runTimer(endTime);
-    showScreen('step-timer');
-  } else if (currentQ >= questions.length) {
-    document.getElementById('battle-text').textContent = "Monster too strong! Consider fleeing to save gold.";
-    document.getElementById('action-menu').classList.remove('hidden');
-    document.getElementById('quiz-container').classList.add('hidden');
-  }
+
+
+    showScreen(
+        "step-timer"
+    );
+
 }
+// ==========================================
+// TIMER COUNTDOWN
+// ==========================================
 
-function addXP(amount) {
-  player.xp += amount;
-  if (player.xp >= player.xpToNext) {
-    player.lvl++;
-    player.xp -= player.xpToNext;
-    player.xpToNext = Math.round(player.xpToNext * 1.5);
-    alert(`LEVEL UP! You are now Level ${player.lvl}`);
-  }
-  savePlayerData();
-}
+function runTimer(endTime){
 
-// TIMER LOGIC
-function runTimer(endTime) {
-  if (battle.timerInterval) clearInterval(battle.timerInterval);
+    if(battle.timerInterval){
 
-  battle.timerInterval = setInterval(() => {
-    const now = new Date().getTime();
-    const distance = endTime - now;
+        clearInterval(
+            battle.timerInterval
+        );
 
-    const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const s = Math.floor((distance % (1000 * 60)) / 1000);
-
-    document.getElementById('countdown-timer').textContent = 
-      `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-
-    if (distance < 0) {
-      clearInterval(battle.timerInterval);
-      localStorage.removeItem('slayer_lock_time');
-      document.getElementById('countdown-timer').textContent = "UNLOCKED";
     }
-  }, 1000);
+
+
+
+    const timer =
+        document.getElementById(
+            "countdown-timer"
+        );
+
+
+    const finishButton =
+        document.getElementById(
+            "finish-btn"
+        );
+
+
+
+    function updateTimer(){
+
+
+        const now =
+            Date.now();
+
+
+        const distance =
+            endTime - now;
+
+
+
+        if(distance <= 0){
+
+
+            clearInterval(
+                battle.timerInterval
+            );
+
+
+            localStorage.removeItem(
+                "slayer_lock_time"
+            );
+
+
+            if(timer){
+
+                timer.textContent =
+                    "UNLOCKED";
+
+            }
+
+
+            if(finishButton){
+
+                finishButton.disabled =
+                    false;
+
+            }
+
+
+            return;
+
+        }
+
+
+
+        const hours =
+            Math.floor(
+                distance /
+                (1000 * 60 * 60)
+            );
+
+
+
+        const minutes =
+            Math.floor(
+                (distance %
+                (1000 * 60 * 60)) /
+                (1000 * 60)
+            );
+
+
+
+        const seconds =
+            Math.floor(
+                (distance %
+                (1000 * 60)) /
+                1000
+            );
+
+
+
+        if(timer){
+
+            timer.textContent =
+
+                `${hours
+                .toString()
+                .padStart(2,"0")}:` +
+
+                `${minutes
+                .toString()
+                .padStart(2,"0")}:` +
+
+                `${seconds
+                .toString()
+                .padStart(2,"0")}`;
+
+        }
+
+    }
+
+
+
+    updateTimer();
+
+
+
+    battle.timerInterval =
+        setInterval(
+            updateTimer,
+            1000
+        );
+
 }
 
-function checkExistingLock() {
-  const savedLock = localStorage.getItem('slayer_lock_time');
-  if (savedLock) {
-    const endTime = parseInt(savedLock, 10);
-    if (endTime > new Date().getTime()) {
-      runTimer(endTime);
-      showScreen('step-timer');
+
+
+// ==========================================
+// CHECK SAVED TIMER ON LOAD
+// ==========================================
+
+function checkExistingLock(){
+
+
+    const saved =
+        localStorage.getItem(
+            "slayer_lock_time"
+        );
+
+
+
+    if(!saved){
+
+        return;
+
+    }
+
+
+
+    const endTime =
+        parseInt(
+            saved,
+            10
+        );
+
+
+
+    if(endTime > Date.now()){
+
+
+        runTimer(
+            endTime
+        );
+
+
+        showScreen(
+            "step-timer"
+        );
+
+
     } else {
-      localStorage.removeItem('slayer_lock_time');
+
+
+        localStorage.removeItem(
+            "slayer_lock_time"
+        );
+
     }
-  }
+
 }
 
-function resetApp() {
-  localStorage.removeItem('slayer_lock_time');
-  if (battle.timerInterval) clearInterval(battle.timerInterval);
-  document.getElementById('item-name').value = '';
-  document.getElementById('item-price').value = '';
-  showScreen('step-setup');
+
+
+// ==========================================
+// FINISH TIMER REWARD
+// ==========================================
+
+function finishTimer(){
+
+
+    const button =
+        document.getElementById(
+            "finish-btn"
+        );
+
+
+
+    if(button &&
+       button.disabled){
+
+        return;
+
+    }
+
+
+
+    updateBattleText(
+        "The waiting period is complete."
+    );
+
+
+
+    showScreen(
+        "step-victory"
+    );
+
+
+}
+
+
+
+// ==========================================
+// RETURN TO QUEST BOARD
+// ==========================================
+
+function returnToMenu(){
+
+
+    if(battle.timerInterval){
+
+        clearInterval(
+            battle.timerInterval
+        );
+
+    }
+
+
+
+    showScreen(
+        "step-setup"
+    );
+
+
+
+}
+
+
+
+// ==========================================
+// RESET GAME SESSION
+// ==========================================
+
+function resetApp(){
+
+
+    localStorage.removeItem(
+        "slayer_lock_time"
+    );
+
+
+
+    if(battle.timerInterval){
+
+        clearInterval(
+            battle.timerInterval
+        );
+
+    }
+
+
+
+    battle.itemName = "";
+
+    battle.price = 0;
+
+    battle.enemyHP = 0;
+
+
+
+    const item =
+        document.getElementById(
+            "item-name"
+        );
+
+
+    const price =
+        document.getElementById(
+            "item-price"
+        );
+
+
+
+    if(item){
+
+        item.value = "";
+
+    }
+
+
+
+    if(price){
+
+        price.value = "";
+
+    }
+
+
+
+    const finishButton =
+        document.getElementById(
+            "finish-btn"
+        );
+
+
+
+    if(finishButton){
+
+        finishButton.disabled =
+            true;
+
+    }
+
+
+
+    showScreen(
+        "step-setup"
+    );
+
+}
+
+
+
+// ==========================================
+// DEBUG / DEVELOPMENT HELPERS
+// ==========================================
+
+
+// TODO REMOVE BEFORE RELEASE
+// Useful while building pixel art assets.
+
+function resetSaveData(){
+
+    localStorage.removeItem(
+        "slayer_player_data"
+    );
+
+    localStorage.removeItem(
+        "slayer_lock_time"
+    );
+
+
+    location.reload();
+
 }
