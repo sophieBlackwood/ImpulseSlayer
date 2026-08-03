@@ -1,70 +1,57 @@
-// PERSISTENT DATA STORAGE OBJECT
-const db = {
-  profile: {
-    wage: 15.00,
-    mealPrice: 12.00,
-    gamePrice: 70.00,
-    isConfigured: false
-  },
-  player: {
-    lvl: 1,
-    xp: 0,
-    xpToNext: 100,
-    savedTotal: 0
-  }
-};
+// GLOBAL ACCOUNT STATE
+let currentTrainer = null;
 
-// CURRENT BATTLE STATE
 const state = {
-  targetName: '',
-  targetPrice: 0,
-  enemyName: 'IMPULSE GOBLIN',
+  price: 0,
   enemyHP: 100,
-  enemyMaxHP: 100,
-  currentQ: 0,
-  timerInterval: null
+  maxHP: 100,
+  qIndex: 0
 };
 
-// QUIZ DATA
-const questions = [
-  {
-    q: "Will this item maintain high utility in 30 days?",
-    opts: [
-      { text: "HIGH UTILITY - USE DAILY", dmg: 40 },
-      { text: "MODERATE UTILITY", dmg: 20 },
-      { text: "LOW UTILITY - RARELY", dmg: 0 }
-    ]
-  },
-  {
-    q: "Is this purchase planned within your budget?",
-    opts: [
-      { text: "YES - PLANNED SAVINGS", dmg: 40 },
-      { text: "PARTIAL - IMPULSE AD", dmg: 15 },
-      { text: "NO - UNPLANNED BUY", dmg: 0 }
-    ]
-  }
-];
+// USER ACCOUNT MANAGEMENT
+function loginTrainer() {
+  const name = document.getElementById('trainer-name').value.trim();
+  if (!name) return alert("ENTER A TRAINER NAME");
 
-window.addEventListener('DOMContentLoaded', () => {
-  loadStoredData();
-  checkVaultLock();
-});
-
-function loadStoredData() {
-  const savedDb = localStorage.getItem('impulse_slayer_db');
-  if (savedDb) {
-    Object.assign(db, JSON.parse(savedDb));
-  }
-
-  if (db.profile.isConfigured) {
-    showQuestScreen();
-  } else {
-    showScreen('screen-survey');
-  }
+  currentTrainer = name.toUpperCase();
+  loadTrainerData();
+  showScreen('screen-hub');
 }
 
-function saveData() {
-  localStorage.setItem('impulse_slayer_db', JSON.stringify(db));
+function logoutTrainer() {
+  currentTrainer = null;
+  document.getElementById('trainer-name').value = '';
+  showScreen('screen-login');
+}
+
+function loadTrainerData() {
+  const data = JSON.parse(localStorage.getItem(`trainer_${currentTrainer}`)) || {
+    lvl: 1,
+    xp: 0,
+    saved: 0
+  };
+
+  document.getElementById('hub-trainer-name').textContent = `TRAINER ${currentTrainer}`;
+  document.getElementById('hub-trainer-lvl').textContent = `LVL ${data.lvl}`;
+  document.getElementById('hub-saved').textContent = `$${data.saved.toFixed(2)}`;
+  document.getElementById('hub-exp').textContent = `${data.xp}/100`;
+}
+
+function updateTrainerStats(xpGained, goldSaved) {
+  const key = `trainer_${currentTrainer}`;
+  const data = JSON.parse(localStorage.getItem(key)) || { lvl: 1, xp: 0, saved: 0 };
+
+  data.xp += xpGained;
+  data.saved += goldSaved;
+
+  if (data.xp >= 100) {
+    data.lvl += 1;
+    data.xp -= 100;
+    alert(`LEVEL UP! You are now Level ${data.lvl}!`);
+  }
+
+  localStorage.setItem(key, JSON.stringify(data));
+  loadTrainerData();
 }
 
 function showScreen(id) {
@@ -72,200 +59,104 @@ function showScreen(id) {
   document.getElementById(id).classList.add('active');
 }
 
-// SURVEY LOGIC
-function saveSurvey(e) {
-  e.preventDefault();
-  db.profile.wage = parseFloat(document.getElementById('user-wage').value) || 15.00;
-  db.profile.mealPrice = parseFloat(document.getElementById('user-item1').value) || 12.00;
-  db.profile.gamePrice = parseFloat(document.getElementById('user-item2').value) || 70.00;
-  db.profile.isConfigured = true;
-
-  saveData();
-  showQuestScreen();
-}
-
-function resetSurvey() {
-  db.profile.isConfigured = false;
-  saveData();
-  showScreen('screen-survey');
-}
-
-function showQuestScreen() {
-  showScreen('screen-quest');
-}
-
-// BATTLE INITIALIZATION
+// BATTLE SYSTEM
 function startBattle() {
-  const nameInput = document.getElementById('target-name').value;
-  const priceInput = parseFloat(document.getElementById('target-price').value);
+  const name = document.getElementById('target-name').value;
+  const price = parseFloat(document.getElementById('target-price').value);
 
-  if (!nameInput || isNaN(priceInput) || priceInput <= 0) {
-    alert('ENTER VALID ITEM NAME AND PRICE');
-    return;
-  }
+  if (!name || isNaN(price) || price <= 0) return alert("ENTER VALID ITEM DETAILS");
 
-  state.targetName = nameInput;
-  state.targetPrice = priceInput;
+  state.price = price;
+  state.maxHP = price > 100 ? 150 : 100;
+  state.enemyHP = state.maxHP;
+  state.qIndex = 0;
 
-  // Scale Enemy HP and Sprite based on price
-  if (priceInput < 30) {
-    state.enemyName = "IMPULSE SLIME";
-    state.enemyMaxHP = 60;
-    document.getElementById('enemy-sprite').textContent = "🟢";
-  } else if (priceInput < 100) {
-    state.enemyName = "FOMO KNIGHT";
-    state.enemyMaxHP = 100;
-    document.getElementById('enemy-sprite').textContent = "👾";
-  } else {
-    state.enemyName = "OVERSPEND DRAGON";
-    state.enemyMaxHP = 150;
-    document.getElementById('enemy-sprite').textContent = "🐉";
-  }
+  document.getElementById('enemy-name').textContent = price > 100 ? "OVERSPEND DRAGON" : "FOMO MONSTER";
+  document.getElementById('enemy-sprite').textContent = price > 100 ? "🐉" : "👹";
+  document.getElementById('player-battle-name').textContent = currentTrainer;
 
-  state.enemyHP = state.enemyMaxHP;
-  state.currentQ = 0;
-
-  // Update Battle HUD
-  document.getElementById('enemy-name').textContent = state.enemyName;
-  document.getElementById('player-lvl').textContent = `Lv${db.player.lvl}`;
-  document.getElementById('player-exp').textContent = `EXP: ${db.player.xp}/${db.player.xpToNext}`;
-  
   updateHPUI();
-  setDialogue(`A wild ${state.enemyName} appeared! What will you do?`);
-  
-  document.getElementById('menu-main').classList.remove('hidden');
-  document.getElementById('menu-quiz').classList.add('hidden');
+  setDialogue(`A wild impulse monster appeared!`);
+
+  document.getElementById('battle-commands').classList.remove('hidden');
+  document.getElementById('quiz-deck').classList.add('hidden');
 
   showScreen('screen-battle');
 }
 
 function updateHPUI() {
-  const pct = Math.max(0, (state.enemyHP / state.enemyMaxHP) * 100);
-  document.getElementById('enemy-hp-fill').style.width = `${pct}%`;
+  const pct = Math.max(0, (state.enemyHP / state.maxHP) * 100);
+  document.getElementById('enemy-hp').style.width = `${pct}%`;
 }
 
 function setDialogue(msg) {
-  document.getElementById('dialogue-box').textContent = msg;
+  document.getElementById('battle-text').textContent = msg;
 }
 
-// BATTLE ACTIONS
-function showMicroMetrics() {
-  const hours = (state.targetPrice / db.profile.wage).toFixed(1);
-  const meals = (state.targetPrice / db.profile.mealPrice).toFixed(1);
-  const games = (state.targetPrice / db.profile.gamePrice).toFixed(1);
-
-  setDialogue(`COSTS: ${hours}h work | ${meals} meals | ${games} games`);
+function showMetrics() {
+  const hours = (state.price / 15).toFixed(1);
+  setDialogue(`Metric: Costs ${hours} hrs of average hourly work.`);
 }
 
-function takeRest() {
-  setDialogue("You paused to reflect for 10 mins. Temptation weakened!");
+function restTurn() {
   state.enemyHP -= 20;
   updateHPUI();
-  checkBattleEnd();
+  setDialogue("You paused for reflection. Monster HP decreased!");
+  checkEnd();
 }
 
-function fleeBattle() {
-  db.player.savedTotal += state.targetPrice;
-  addXP(Math.round(state.targetPrice));
-  alert(`YOU ESCAPED! Saved $${state.targetPrice.toFixed(2)}.`);
-  showQuestScreen();
+function runAway() {
+  updateTrainerStats(25, state.price);
+  alert(`YOU ESCAPED! Saved $${state.price.toFixed(2)}.`);
+  showScreen('screen-hub');
 }
 
-// QUIZ BATTLE MECHANIC
-function openAttackMenu() {
-  document.getElementById('menu-main').classList.add('hidden');
-  document.getElementById('menu-quiz').classList.remove('hidden');
-  loadQuestion();
+// QUIZ FLOW
+const questions = [
+  { q: "WILL YOU USE THIS IN 30 DAYS?", opts: [{ t: "DEFINITELY", d: 40 }, { t: "PROBABLY NOT", d: 0 }] },
+  { q: "IS THIS IN YOUR BUDGET?", opts: [{ t: "YES, SAVED UP", d: 40 }, { t: "NO, IMPULSE BUY", d: 0 }] }
+];
+
+function triggerQuiz() {
+  document.getElementById('battle-commands').classList.add('hidden');
+  document.getElementById('quiz-deck').classList.remove('hidden');
+  loadQuizQuestion();
 }
 
-function loadQuestion() {
-  if (state.currentQ >= questions.length) {
-    checkBattleEnd();
-    return;
-  }
+function loadQuizQuestion() {
+  if (state.qIndex >= questions.length) return checkEnd();
 
-  const q = questions[state.currentQ];
-  document.getElementById('quiz-question').textContent = q.q;
-  const optsContainer = document.getElementById('quiz-options');
-  optsContainer.innerHTML = '';
+  const q = questions[state.qIndex];
+  document.getElementById('quiz-q').textContent = q.q;
+
+  const container = document.getElementById('quiz-answers');
+  container.innerHTML = '';
 
   q.opts.forEach(opt => {
     const btn = document.createElement('button');
-    btn.textContent = opt.text;
+    btn.textContent = opt.t;
     btn.onclick = () => {
-      state.enemyHP -= opt.dmg;
+      state.enemyHP -= opt.d;
       updateHPUI();
-      state.currentQ++;
-      
-      if (state.enemyHP <= 20) {
-        checkBattleEnd();
-      } else {
-        loadQuestion();
-      }
+      state.qIndex++;
+      loadQuizQuestion();
     };
-    optsContainer.appendChild(btn);
+    container.appendChild(btn);
   });
 }
 
-function checkBattleEnd() {
-  if (state.enemyHP <= 20) {
-    confetti({ particleCount: 60, spread: 60 });
-    const endTime = new Date().getTime() + (24 * 60 * 60 * 1000);
-    localStorage.setItem('slayer_vault_lock', endTime);
-    
-    addXP(50);
-    runVaultTimer(endTime);
+function checkEnd() {
+  if (state.enemyHP <= 30) {
+    confetti({ particleCount: 70, spread: 60 });
+    updateTrainerStats(50, 0);
     showScreen('screen-vault');
-  } else if (state.currentQ >= questions.length) {
-    setDialogue("Enemy resists! Try using REST or RUNNING.");
-    document.getElementById('menu-main').classList.remove('hidden');
-    document.getElementById('menu-quiz').classList.add('hidden');
+  } else if (state.qIndex >= questions.length) {
+    setDialogue("Monster withstands attack! Consider running away to save money.");
+    document.getElementById('battle-commands').classList.remove('hidden');
+    document.getElementById('quiz-deck').classList.add('hidden');
   }
 }
 
-function addXP(amount) {
-  db.player.xp += amount;
-  if (db.player.xp >= db.player.xpToNext) {
-    db.player.lvl++;
-    db.player.xp -= db.player.xpToNext;
-    db.player.xpToNext = Math.round(db.player.xpToNext * 1.5);
-    alert(`LEVEL UP! You reached Level ${db.player.lvl}!`);
-  }
-  saveData();
-}
-
-// VAULT LOCK TIMER
-function runVaultTimer(endTime) {
-  if (state.timerInterval) clearInterval(state.timerInterval);
-
-  state.timerInterval = setInterval(() => {
-    const now = new Date().getTime();
-    const distance = endTime - now;
-
-    const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const s = Math.floor((distance % (1000 * 60)) / 1000);
-
-    document.getElementById('vault-timer').textContent = 
-      `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-
-    if (distance < 0) {
-      clearInterval(state.timerInterval);
-      localStorage.removeItem('slayer_vault_lock');
-      document.getElementById('vault-timer').textContent = "UNLOCKED";
-    }
-  }, 1000);
-}
-
-function checkVaultLock() {
-  const savedLock = localStorage.getItem('slayer_vault_lock');
-  if (savedLock) {
-    const endTime = parseInt(savedLock, 10);
-    if (endTime > new Date().getTime()) {
-      runVaultTimer(endTime);
-      showScreen('screen-vault');
-    } else {
-      localStorage.removeItem('slayer_vault_lock');
-    }
-  }
+function checkVaultDirect() {
+  showScreen('screen-vault');
 }
