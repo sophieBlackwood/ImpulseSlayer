@@ -1,10 +1,11 @@
-// GLOBAL BATTLE STATE
 let selectedSpriteTemp = '🧙‍♂️';
 
 const battleState = {
   price: 0,
   enemyHP: 100,
-  maxHP: 100,
+  maxEnemyHP: 100,
+  playerHP: 100,
+  maxPlayerHP: 100,
   qIndex: 0,
   timerInterval: null
 };
@@ -23,7 +24,7 @@ function switchAuthTab(tab) {
   document.getElementById('tab-signup').classList.toggle('active', isLogin);
 }
 
-// LOCAL AUTHENTICATION SYSTEM
+// LOCAL AUTHENTICATION SYSTEM (AUTO-SAVED SESSION)
 function handleLocalSignup(e) {
   e.preventDefault();
   const name = document.getElementById('signup-name').value.trim();
@@ -37,21 +38,24 @@ function handleLocalSignup(e) {
     return;
   }
 
-  // Create new profile structure
   users[email] = {
     password: pass,
     trainerName: name.toUpperCase(),
+    wage: 15,
+    mealPrice: 12,
+    subPrice: 15,
     sprite: '🧙‍♂️',
     lvl: 1,
     xp: 0,
-    savedTotal: 0
+    savedTotal: 0,
+    vaultUnlockTime: null
   };
 
   localStorage.setItem('slayer_users', JSON.stringify(users));
   localStorage.setItem('slayer_active_user', email);
 
-  // Transition to Sprite Selection
-  showScreen('screen-sprite');
+  // Transition to Financial Survey
+  showScreen('screen-survey');
 }
 
 function handleLocalLogin(e) {
@@ -69,6 +73,24 @@ function handleLocalLogin(e) {
 
   localStorage.setItem('slayer_active_user', email);
   loadTrainerSession();
+}
+
+// FINANCIAL PROFILE SETUP
+function saveFinancialProfile(e) {
+  e.preventDefault();
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  if (!activeEmail) return showScreen('screen-login');
+
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  if (users[activeEmail]) {
+    users[activeEmail].wage = parseFloat(document.getElementById('survey-wage').value) || 15;
+    users[activeEmail].mealPrice = parseFloat(document.getElementById('survey-meal').value) || 12;
+    users[activeEmail].subPrice = parseFloat(document.getElementById('survey-sub').value) || 15;
+
+    localStorage.setItem('slayer_users', JSON.stringify(users));
+  }
+
+  showScreen('screen-sprite');
 }
 
 // SPRITE SELECTION SYSTEM
@@ -108,9 +130,13 @@ function loadTrainerSession() {
     document.getElementById('hub-saved').textContent = `$${user.savedTotal.toFixed(2)}`;
     document.getElementById('hub-exp').textContent = `${user.xp} / 100`;
     
-    // Set avatars
     document.getElementById('hub-avatar').textContent = user.sprite || '🧙‍♂️';
     document.getElementById('player-sprite').textContent = user.sprite || '🧙‍♂️';
+
+    // Resume vault timer if lock is active
+    if (user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
+      startVaultTimer(user.vaultUnlockTime);
+    }
 
     showScreen('screen-hub');
   }
@@ -143,7 +169,7 @@ function logoutTrainer() {
   showScreen('screen-login');
 }
 
-// BATTLE MECHANICS
+// BATTLE MECHANICS & ENEMY AI
 function startBattle() {
   const name = document.getElementById('target-name').value;
   const price = parseFloat(document.getElementById('target-price').value);
@@ -155,8 +181,11 @@ function startBattle() {
   const user = users[activeEmail] || { trainerName: 'RED', lvl: 1 };
 
   battleState.price = price;
-  battleState.maxHP = price > 100 ? 150 : 100;
-  battleState.enemyHP = battleState.maxHP;
+  battleState.maxEnemyHP = price > 100 ? 150 : 100;
+  battleState.enemyHP = battleState.maxEnemyHP;
+  
+  battleState.maxPlayerHP = 100;
+  battleState.playerHP = 100;
   battleState.qIndex = 0;
 
   document.getElementById('enemy-name').textContent = price > 100 ? "OVERSPEND DRAGON" : "FOMO MONSTER";
@@ -175,23 +204,51 @@ function startBattle() {
 }
 
 function updateHPUI() {
-  const pct = Math.max(0, (battleState.enemyHP / battleState.maxHP) * 100);
-  document.getElementById('enemy-hp').style.width = `${pct}%`;
+  const enemyPct = Math.max(0, (battleState.enemyHP / battleState.maxEnemyHP) * 100);
+  const playerPct = Math.max(0, (battleState.playerHP / battleState.maxPlayerHP) * 100);
+  
+  document.getElementById('enemy-hp').style.width = `${enemyPct}%`;
+  document.getElementById('player-hp').style.width = `${playerPct}%`;
 }
 
 function setDialogue(msg) {
   document.getElementById('battle-text').textContent = msg;
 }
 
+// ENEMY COUNTER-ATTACK AI
+function enemyCounterAttack() {
+  if (battleState.enemyHP <= 0) return;
+
+  const dmg = Math.floor(Math.random() * 15) + 10;
+  battleState.playerHP -= dmg;
+  updateHPUI();
+
+  if (battleState.playerHP <= 0) {
+    alert("YOUR WILLPOWER FAILED! The monster tempted you!");
+    showScreen('screen-hub');
+  } else {
+    setDialogue(`Monster attacked back! Took ${dmg} damage.`);
+  }
+}
+
 function showMetrics() {
-  const hours = (battleState.price / 15).toFixed(1);
-  setDialogue(`Metric: Costs ~${hours} hrs of average work.`);
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail] || { wage: 15, mealPrice: 12, subPrice: 15 };
+
+  const hours = (battleState.price / user.wage).toFixed(1);
+  const meals = (battleState.price / user.mealPrice).toFixed(1);
+
+  setDialogue(`COSTS: ${hours}h work | ${meals} meals.`);
 }
 
 function restTurn() {
   battleState.enemyHP -= 20;
+  battleState.playerHP = Math.min(100, battleState.playerHP + 15);
   updateHPUI();
-  setDialogue("You paused for reflection. Monster HP decreased!");
+  setDialogue("You meditated. Restored 15 HP and weakened monster!");
+  
+  setTimeout(enemyCounterAttack, 1200);
   checkBattleEnd();
 }
 
@@ -229,6 +286,11 @@ function loadQuizQuestion() {
       battleState.enemyHP -= opt.d;
       updateHPUI();
       battleState.qIndex++;
+
+      if (battleState.enemyHP > 0) {
+        enemyCounterAttack();
+      }
+
       loadQuizQuestion();
     };
     container.appendChild(btn);
@@ -236,22 +298,64 @@ function loadQuizQuestion() {
 }
 
 function checkBattleEnd() {
-  if (battleState.enemyHP <= 30) {
+  if (battleState.enemyHP <= 20) {
     confetti({ particleCount: 70, spread: 60 });
     updateTrainerStats(50, 0);
+
+    // Save 24-Hour Cooldown Timestamp
+    const activeEmail = localStorage.getItem('slayer_active_user');
+    const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+    if (users[activeEmail]) {
+      const unlockTime = Date.now() + (24 * 60 * 60 * 1000);
+      users[activeEmail].vaultUnlockTime = unlockTime;
+      localStorage.setItem('slayer_users', JSON.stringify(users));
+      startVaultTimer(unlockTime);
+    }
+
     showScreen('screen-vault');
-  } else if (battleState.qIndex >= questions.length) {
-    setDialogue("Monster withstands attack! Consider running away to save gold.");
-    document.getElementById('battle-commands').classList.remove('hidden');
-    document.getElementById('quiz-deck').classList.add('hidden');
   }
 }
 
+// PERSISTENT COOLDOWN TIMER LOGIC
+function startVaultTimer(unlockTimestamp) {
+  if (battleState.timerInterval) clearInterval(battleState.timerInterval);
+
+  function updateDisplay() {
+    const remaining = unlockTimestamp - Date.now();
+
+    if (remaining <= 0) {
+      clearInterval(battleState.timerInterval);
+      document.getElementById('vault-timer').textContent = "UNLOCKED";
+      return;
+    }
+
+    const hours = Math.floor(remaining / (1000 * 60 * 60));
+    const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+
+    document.getElementById('vault-timer').textContent = 
+      `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  updateDisplay();
+  battleState.timerInterval = setInterval(updateDisplay, 1000);
+}
+
 function checkVaultDirect() {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail];
+
+  if (user && user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
+    startVaultTimer(user.vaultUnlockTime);
+  } else {
+    document.getElementById('vault-timer').textContent = "NO LOCK";
+  }
+
   showScreen('screen-vault');
 }
 
-// INITIALIZE APP
+// AUTO-LOGIN & APP INIT
 window.addEventListener('DOMContentLoaded', () => {
   loadTrainerSession();
 });
