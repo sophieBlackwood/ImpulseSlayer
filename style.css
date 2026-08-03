@@ -394,3 +394,7 @@ input:focus { border-color: var(--cyan); }
 .log-name { color: var(--text-primary); }
 .log-val.saved { color: var(--green); font-weight: bold; }
 .log-val.spent { color: var(--red); font-weight: bold; }
+
+#screen-login {
+  background: url('login-bg.png') center/cover no-repeat;
+}
