@@ -1,82 +1,172 @@
-// GLOBAL ACCOUNT STATE
-let currentTrainer = null;
+// GLOBAL BATTLE STATE
+let selectedSpriteTemp = '🧙‍♂️';
 
-const state = {
+const battleState = {
   price: 0,
   enemyHP: 100,
   maxHP: 100,
-  qIndex: 0
+  qIndex: 0,
+  timerInterval: null
 };
 
-// USER ACCOUNT MANAGEMENT
-function loginTrainer() {
-  const name = document.getElementById('trainer-name').value.trim();
-  if (!name) return alert("ENTER A TRAINER NAME");
-
-  currentTrainer = name.toUpperCase();
-  loadTrainerData();
-  showScreen('screen-hub');
-}
-
-function logoutTrainer() {
-  currentTrainer = null;
-  document.getElementById('trainer-name').value = '';
-  showScreen('screen-login');
-}
-
-function loadTrainerData() {
-  const data = JSON.parse(localStorage.getItem(`trainer_${currentTrainer}`)) || {
-    lvl: 1,
-    xp: 0,
-    saved: 0
-  };
-
-  document.getElementById('hub-trainer-name').textContent = `TRAINER ${currentTrainer}`;
-  document.getElementById('hub-trainer-lvl').textContent = `LVL ${data.lvl}`;
-  document.getElementById('hub-saved').textContent = `$${data.saved.toFixed(2)}`;
-  document.getElementById('hub-exp').textContent = `${data.xp}/100`;
-}
-
-function updateTrainerStats(xpGained, goldSaved) {
-  const key = `trainer_${currentTrainer}`;
-  const data = JSON.parse(localStorage.getItem(key)) || { lvl: 1, xp: 0, saved: 0 };
-
-  data.xp += xpGained;
-  data.saved += goldSaved;
-
-  if (data.xp >= 100) {
-    data.lvl += 1;
-    data.xp -= 100;
-    alert(`LEVEL UP! You are now Level ${data.lvl}!`);
-  }
-
-  localStorage.setItem(key, JSON.stringify(data));
-  loadTrainerData();
-}
-
+// UI & TAB NAVIGATION
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-// BATTLE SYSTEM
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+  document.getElementById('form-signup').classList.toggle('hidden', isLogin);
+  document.getElementById('tab-login').classList.toggle('active', isLogin);
+  document.getElementById('tab-signup').classList.toggle('active', isLogin);
+}
+
+// LOCAL AUTHENTICATION SYSTEM
+function handleLocalSignup(e) {
+  e.preventDefault();
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim().toLowerCase();
+  const pass = document.getElementById('signup-pass').value;
+
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+
+  if (users[email]) {
+    alert("An account with this email already exists!");
+    return;
+  }
+
+  // Create new profile structure
+  users[email] = {
+    password: pass,
+    trainerName: name.toUpperCase(),
+    sprite: '🧙‍♂️',
+    lvl: 1,
+    xp: 0,
+    savedTotal: 0
+  };
+
+  localStorage.setItem('slayer_users', JSON.stringify(users));
+  localStorage.setItem('slayer_active_user', email);
+
+  // Transition to Sprite Selection
+  showScreen('screen-sprite');
+}
+
+function handleLocalLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-pass').value;
+
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[email];
+
+  if (!user || user.password !== pass) {
+    alert("Invalid email or password!");
+    return;
+  }
+
+  localStorage.setItem('slayer_active_user', email);
+  loadTrainerSession();
+}
+
+// SPRITE SELECTION SYSTEM
+function selectSprite(spriteIcon, element) {
+  selectedSpriteTemp = spriteIcon;
+  document.querySelectorAll('.sprite-option').forEach(opt => opt.classList.remove('active'));
+  element.classList.add('active');
+}
+
+function confirmSpriteSelection() {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  if (!activeEmail) return showScreen('screen-login');
+
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  if (users[activeEmail]) {
+    users[activeEmail].sprite = selectedSpriteTemp;
+    localStorage.setItem('slayer_users', JSON.stringify(users));
+  }
+
+  loadTrainerSession();
+}
+
+// LOAD PROFILE DATA INTO HUB & BATTLE
+function loadTrainerSession() {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  if (!activeEmail) {
+    showScreen('screen-login');
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail];
+
+  if (user) {
+    document.getElementById('hub-trainer-name').textContent = `TRAINER ${user.trainerName}`;
+    document.getElementById('hub-trainer-lvl').textContent = `LVL ${user.lvl.toString().padStart(2, '0')}`;
+    document.getElementById('hub-saved').textContent = `$${user.savedTotal.toFixed(2)}`;
+    document.getElementById('hub-exp').textContent = `${user.xp} / 100`;
+    
+    // Set avatars
+    document.getElementById('hub-avatar').textContent = user.sprite || '🧙‍♂️';
+    document.getElementById('player-sprite').textContent = user.sprite || '🧙‍♂️';
+
+    showScreen('screen-hub');
+  }
+}
+
+function updateTrainerStats(xpGained, goldSaved) {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  if (!activeEmail) return;
+
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail];
+
+  if (user) {
+    user.xp += xpGained;
+    user.savedTotal += goldSaved;
+
+    if (user.xp >= 100) {
+      user.lvl += 1;
+      user.xp -= 100;
+      alert(`LEVEL UP! You are now Level ${user.lvl}!`);
+    }
+
+    localStorage.setItem('slayer_users', JSON.stringify(users));
+    loadTrainerSession();
+  }
+}
+
+function logoutTrainer() {
+  localStorage.removeItem('slayer_active_user');
+  showScreen('screen-login');
+}
+
+// BATTLE MECHANICS
 function startBattle() {
   const name = document.getElementById('target-name').value;
   const price = parseFloat(document.getElementById('target-price').value);
 
   if (!name || isNaN(price) || price <= 0) return alert("ENTER VALID ITEM DETAILS");
 
-  state.price = price;
-  state.maxHP = price > 100 ? 150 : 100;
-  state.enemyHP = state.maxHP;
-  state.qIndex = 0;
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail] || { trainerName: 'RED', lvl: 1 };
+
+  battleState.price = price;
+  battleState.maxHP = price > 100 ? 150 : 100;
+  battleState.enemyHP = battleState.maxHP;
+  battleState.qIndex = 0;
 
   document.getElementById('enemy-name').textContent = price > 100 ? "OVERSPEND DRAGON" : "FOMO MONSTER";
   document.getElementById('enemy-sprite').textContent = price > 100 ? "🐉" : "👹";
-  document.getElementById('player-battle-name').textContent = currentTrainer;
+  
+  document.getElementById('player-battle-name').textContent = user.trainerName;
+  document.getElementById('player-battle-lvl').textContent = `Lv${user.lvl}`;
 
   updateHPUI();
-  setDialogue(`A wild impulse monster appeared!`);
+  setDialogue(`A wild impulse monster blocks your path!`);
 
   document.getElementById('battle-commands').classList.remove('hidden');
   document.getElementById('quiz-deck').classList.add('hidden');
@@ -85,7 +175,7 @@ function startBattle() {
 }
 
 function updateHPUI() {
-  const pct = Math.max(0, (state.enemyHP / state.maxHP) * 100);
+  const pct = Math.max(0, (battleState.enemyHP / battleState.maxHP) * 100);
   document.getElementById('enemy-hp').style.width = `${pct}%`;
 }
 
@@ -94,26 +184,26 @@ function setDialogue(msg) {
 }
 
 function showMetrics() {
-  const hours = (state.price / 15).toFixed(1);
-  setDialogue(`Metric: Costs ${hours} hrs of average hourly work.`);
+  const hours = (battleState.price / 15).toFixed(1);
+  setDialogue(`Metric: Costs ~${hours} hrs of average work.`);
 }
 
 function restTurn() {
-  state.enemyHP -= 20;
+  battleState.enemyHP -= 20;
   updateHPUI();
   setDialogue("You paused for reflection. Monster HP decreased!");
-  checkEnd();
+  checkBattleEnd();
 }
 
 function runAway() {
-  updateTrainerStats(25, state.price);
-  alert(`YOU ESCAPED! Saved $${state.price.toFixed(2)}.`);
+  updateTrainerStats(25, battleState.price);
+  alert(`YOU ESCAPED! Saved $${battleState.price.toFixed(2)}.`);
   showScreen('screen-hub');
 }
 
-// QUIZ FLOW
+// QUIZ SYSTEM
 const questions = [
-  { q: "WILL YOU USE THIS IN 30 DAYS?", opts: [{ t: "DEFINITELY", d: 40 }, { t: "PROBABLY NOT", d: 0 }] },
+  { q: "WILL YOU USE THIS IN 30 DAYS?", opts: [{ t: "DEFINITELY USE IT", d: 40 }, { t: "PROBABLY NOT", d: 0 }] },
   { q: "IS THIS IN YOUR BUDGET?", opts: [{ t: "YES, SAVED UP", d: 40 }, { t: "NO, IMPULSE BUY", d: 0 }] }
 ];
 
@@ -124,9 +214,9 @@ function triggerQuiz() {
 }
 
 function loadQuizQuestion() {
-  if (state.qIndex >= questions.length) return checkEnd();
+  if (battleState.qIndex >= questions.length) return checkBattleEnd();
 
-  const q = questions[state.qIndex];
+  const q = questions[battleState.qIndex];
   document.getElementById('quiz-q').textContent = q.q;
 
   const container = document.getElementById('quiz-answers');
@@ -136,22 +226,22 @@ function loadQuizQuestion() {
     const btn = document.createElement('button');
     btn.textContent = opt.t;
     btn.onclick = () => {
-      state.enemyHP -= opt.d;
+      battleState.enemyHP -= opt.d;
       updateHPUI();
-      state.qIndex++;
+      battleState.qIndex++;
       loadQuizQuestion();
     };
     container.appendChild(btn);
   });
 }
 
-function checkEnd() {
-  if (state.enemyHP <= 30) {
+function checkBattleEnd() {
+  if (battleState.enemyHP <= 30) {
     confetti({ particleCount: 70, spread: 60 });
     updateTrainerStats(50, 0);
     showScreen('screen-vault');
-  } else if (state.qIndex >= questions.length) {
-    setDialogue("Monster withstands attack! Consider running away to save money.");
+  } else if (battleState.qIndex >= questions.length) {
+    setDialogue("Monster withstands attack! Consider running away to save gold.");
     document.getElementById('battle-commands').classList.remove('hidden');
     document.getElementById('quiz-deck').classList.add('hidden');
   }
@@ -160,3 +250,8 @@ function checkEnd() {
 function checkVaultDirect() {
   showScreen('screen-vault');
 }
+
+// INITIALIZE APP
+window.addEventListener('DOMContentLoaded', () => {
+  loadTrainerSession();
+});
