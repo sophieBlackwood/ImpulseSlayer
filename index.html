@@ -24,17 +24,73 @@
       </div>
 
       <div class="glass-card">
-        <div class="input-field">
-          <label for="trainer-name">TRAINER ID</label>
-          <input type="text" id="trainer-name" placeholder="Enter name..." autocomplete="off" />
+        <div class="auth-toggle">
+          <button id="tab-login" class="toggle-btn active" onclick="switchAuthTab('login')">LOGIN</button>
+          <button id="tab-signup" class="toggle-btn" onclick="switchAuthTab('signup')">SIGN UP</button>
         </div>
-        <button class="btn btn-primary" onclick="loginTrainer()">INITIALIZE HUB</button>
+
+        <form id="form-login" onsubmit="handleLocalLogin(event)">
+          <div class="input-field">
+            <label>EMAIL</label>
+            <input type="email" id="login-email" placeholder="trainer@slayer.com" required />
+          </div>
+          <div class="input-field">
+            <label>PASSWORD</label>
+            <input type="password" id="login-pass" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="btn btn-primary">ENTER HUB</button>
+        </form>
+
+        <form id="form-signup" class="hidden" onsubmit="handleLocalSignup(event)">
+          <div class="input-field">
+            <label>TRAINER NAME</label>
+            <input type="text" id="signup-name" placeholder="Red" required />
+          </div>
+          <div class="input-field">
+            <label>EMAIL</label>
+            <input type="email" id="signup-email" placeholder="trainer@slayer.com" required />
+          </div>
+          <div class="input-field">
+            <label>PASSWORD</label>
+            <input type="password" id="signup-pass" placeholder="••••••••" required />
+          </div>
+          <button type="submit" class="btn btn-primary">NEXT: CHOOSE SPRITE</button>
+        </form>
       </div>
+    </section>
+
+    <section id="screen-sprite" class="screen">
+      <div class="brand-header">
+        <span class="logo-tag">CHARACTER SETUP</span>
+        <h2 class="main-title">CHOOSE YOUR<br>AVATAR</h2>
+        <p class="sub-text">Select your starter hero frame.</p>
+      </div>
+
+      <div class="sprite-selector-grid">
+        <div class="sprite-option active" onclick="selectSprite('🧙‍♂️', this)">
+          <div class="sprite-icon">🧙‍♂️</div>
+          <span class="sprite-label">MAGE</span>
+        </div>
+        <div class="sprite-option" onclick="selectSprite('⚔️', this)">
+          <div class="sprite-icon">⚔️</div>
+          <span class="sprite-label">PALADIN</span>
+        </div>
+        <div class="sprite-option" onclick="selectSprite('🥷', this)">
+          <div class="sprite-icon">🥷</div>
+          <span class="sprite-label">NINJA</span>
+        </div>
+        <div class="sprite-option" onclick="selectSprite('🤖', this)">
+          <div class="sprite-icon">🤖</div>
+          <span class="sprite-label">CYBORG</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="confirmSpriteSelection()">LOCK IN SPRITE</button>
     </section>
 
     <section id="screen-hub" class="screen">
       <div class="profile-header glass-card">
-        <div class="avatar-box">🧙‍♂️</div>
+        <div id="hub-avatar" class="avatar-box">🧙‍♂️</div>
         <div class="user-meta">
           <h2 id="hub-trainer-name">TRAINER RED</h2>
           <span id="hub-trainer-lvl" class="lvl-tag">LVL 01</span>
@@ -55,6 +111,7 @@
       <div class="hub-actions">
         <button class="btn btn-action-main" onclick="showScreen('screen-quest')">⚔️ ENGAGE BOSS</button>
         <button class="btn btn-secondary" onclick="checkVaultDirect()">🛡️ INSPECT VAULT</button>
+        <button class="btn btn-ghost" onclick="showScreen('screen-sprite')">🎨 CHANGE AVATAR</button>
         <button class="btn btn-ghost" onclick="logoutTrainer()">DISCONNECT</button>
       </div>
     </section>
@@ -92,7 +149,7 @@
         </div>
 
         <div class="unit-row player-side">
-          <div class="sprite-box">🧙‍♂️</div>
+          <div id="player-sprite" class="sprite-box">🧙‍♂️</div>
           <div class="hud-plate">
             <div class="plate-top">
               <span id="player-battle-name" class="unit-name">RED</span>
