@@ -36,7 +36,6 @@ body {
   padding: 12px;
 }
 
-/* APP PORTRAIT CONTAINER */
 .app-viewport {
   width: 100vw;
   max-width: 420px;
@@ -84,7 +83,7 @@ body {
 }
 
 .main-title {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   line-height: 1.2;
   color: var(--text-primary);
   text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
@@ -105,8 +104,33 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+/* AUTH TOGGLE TABS */
+.auth-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-neon);
+  padding-bottom: 10px;
+}
+
+.toggle-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-pixel);
+  font-size: 0.6rem;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.toggle-btn.active {
+  color: var(--cyan);
+  border-bottom: 2px solid var(--cyan);
+}
+
 .input-field {
-  margin-bottom: 18px;
+  margin-bottom: 16px;
   text-align: left;
 }
 
@@ -114,44 +138,71 @@ body {
   display: block;
   font-size: 0.55rem;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: 1px;
 }
 
 input {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   background: #090d16;
   border: 1px solid var(--border-neon);
   border-radius: 6px;
   color: var(--cyan);
   font-family: var(--font-ui);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   outline: none;
-  transition: border-color 0.2s;
 }
 
 input:focus { border-color: var(--cyan); }
 
+/* SPRITE SELECTOR GRID */
+.sprite-selector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.sprite-option {
+  background: var(--card-surface);
+  border: 2px solid var(--border-neon);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sprite-option:hover {
+  border-color: var(--cyan);
+}
+
+.sprite-option.active {
+  border-color: var(--cyan);
+  background: rgba(56, 189, 248, 0.1);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+.sprite-icon { font-size: 2.2rem; margin-bottom: 6px; }
+.sprite-label { font-size: 0.55rem; color: var(--text-primary); }
+
 /* BUTTONS */
 .btn {
   width: 100%;
-  padding: 16px;
+  padding: 14px;
   border: none;
   border-radius: 6px;
   font-family: var(--font-pixel);
   font-size: 0.65rem;
   cursor: pointer;
-  margin-top: 10px;
-  transition: transform 0.1s, filter 0.2s;
+  margin-top: 8px;
 }
 
-.btn:active { transform: scale(0.98); }
-
 .btn-primary { background: var(--cyan); color: #090d16; font-weight: bold; }
-.btn-action-main { background: var(--violet); color: #fff; padding: 18px; font-size: 0.75rem; }
+.btn-action-main { background: var(--violet); color: #fff; padding: 16px; font-size: 0.75rem; }
 .btn-secondary { background: #1e293b; color: var(--text-primary); border: 1px solid var(--border-neon); }
-.btn-ghost { background: transparent; color: var(--text-muted); font-family: var(--font-ui); font-size: 0.75rem; }
+.btn-ghost { background: transparent; color: var(--text-muted); font-family: var(--font-ui); font-size: 0.7rem; }
 
 /* HUB DASHBOARD */
 .profile-header {
