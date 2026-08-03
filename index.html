@@ -2,126 +2,129 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Impulse Slayer - RPG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Impulse Slayer</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
 
-  <main class="game-boy-screen">
-    
-    <section id="screen-survey" class="screen active">
-      <div class="header-tag">TRAINER REGISTRATION</div>
-      <h2>PROFILE SETUP</h2>
-      <p class="subtitle">Set your economy parameters to calculate micro-metrics.</p>
-      
-      <form id="survey-form" onsubmit="saveSurvey(event)">
-        <div class="field">
-          <label for="user-wage">HOURLY WAGE ($/HR)</label>
-          <input type="number" id="user-wage" placeholder="15.00" step="0.50" required />
-        </div>
+  <div class="app-viewport">
 
-        <div class="field">
-          <label for="user-item1">FAVORITE MEAL / BOBA ($)</label>
-          <input type="number" id="user-item1" placeholder="12.00" step="0.50" required />
-        </div>
+    <section id="screen-login" class="screen active">
+      <div class="logo-badge">SLAYER HUB</div>
+      <h1 class="main-title">IMPULSE SLAYER</h1>
+      <p class="sub-text">Select or create your Trainer ID.</p>
 
-        <div class="field">
-          <label for="user-item2">GAME / SUBSCRIPTION ($)</label>
-          <input type="number" id="user-item2" placeholder="70.00" step="1.00" required />
+      <div class="card-panel">
+        <div class="input-field">
+          <label for="trainer-name">TRAINER NAME</label>
+          <input type="text" id="trainer-name" placeholder="Red" autocomplete="off" />
         </div>
+        <button class="btn btn-primary" onclick="loginTrainer()">ENTER HUB</button>
+      </div>
+    </section>
 
-        <button type="submit" class="btn btn-primary">SAVE PROFILE</button>
-      </form>
+    <section id="screen-hub" class="screen">
+      <div class="user-card">
+        <div class="avatar-box">🧙‍♂️</div>
+        <div class="user-info">
+          <h2 id="hub-trainer-name">TRAINER RED</h2>
+          <span id="hub-trainer-lvl" class="lvl-badge">LVL 1</span>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <span class="stat-label">TOTAL SAVED</span>
+          <span id="hub-saved" class="stat-val">$0.00</span>
+        </div>
+        <div class="stat-box">
+          <span class="stat-label">EXP</span>
+          <span id="hub-exp" class="stat-val">0/100</span>
+        </div>
+      </div>
+
+      <div class="hub-menu">
+        <button class="btn btn-action-large" onclick="showScreen('screen-quest')">⚔️ CHALLENGE BOSS</button>
+        <button class="btn btn-secondary" onclick="checkVaultDirect()">🛡️ OPEN VAULT</button>
+        <button class="btn btn-subtle" onclick="logoutTrainer()">LOGOUT</button>
+      </div>
     </section>
 
     <section id="screen-quest" class="screen">
-      <div class="header-tag">NEW CHALLENGE</div>
-      <h2>TARGET IMPULSE</h2>
-      
-      <div class="field">
-        <label for="target-name">ITEM NAME</label>
-        <input type="text" id="target-name" placeholder="Sneakers" />
+      <div class="nav-bar">
+        <button class="back-btn" onclick="showScreen('screen-hub')">← BACK</button>
+        <span>NEW BATTLE</span>
       </div>
 
-      <div class="field">
-        <label for="target-price">PRICE ($)</label>
-        <input type="number" id="target-price" placeholder="120.00" step="0.01" />
+      <div class="card-panel">
+        <div class="input-field">
+          <label for="target-name">ITEM NAME</label>
+          <input type="text" id="target-name" placeholder="Wireless Headphones" />
+        </div>
+        <div class="input-field">
+          <label for="target-price">PRICE ($)</label>
+          <input type="number" id="target-price" placeholder="99.99" step="0.01" />
+        </div>
+        <button class="btn btn-primary" onclick="startBattle()">ENGAGE MONSTER</button>
       </div>
-
-      <button class="btn btn-primary" onclick="startBattle()">ENGAGE BOSS</button>
-      <button class="btn btn-subtle" onclick="resetSurvey()">EDIT PROFILE SETTINGS</button>
     </section>
 
     <section id="screen-battle" class="screen">
-      <div class="battle-arena">
-        
-        <div class="enemy-row">
-          <div class="status-box enemy-status">
-            <div class="status-header">
-              <span id="enemy-name">IMPULSE GOBLIN</span>
+      <div class="battle-stage">
+        <div class="unit-row enemy-side">
+          <div class="status-plate">
+            <div class="plate-head">
+              <span id="enemy-name">FOMO MONSTER</span>
               <span id="enemy-lvl">Lv5</span>
             </div>
-            <div class="hp-bar-container">
-              <span class="hp-label">HP</span>
-              <div class="hp-bar"><div id="enemy-hp-fill" class="hp-fill"></div></div>
-            </div>
+            <div class="hp-track"><div id="enemy-hp" class="hp-fill"></div></div>
           </div>
-          <div class="sprite-box"><div id="enemy-sprite" class="sprite">👹</div></div>
+          <div id="enemy-sprite" class="sprite-container">👹</div>
         </div>
 
-        <div class="player-row">
-          <div class="sprite-box"><div class="sprite">🧙‍♂️</div></div>
-          <div class="status-box player-status">
-            <div class="status-header">
-              <span id="player-name">SAVER</span>
-              <span id="player-lvl">Lv1</span>
+        <div class="unit-row player-side">
+          <div class="sprite-container">🧙‍♂️</div>
+          <div class="status-plate">
+            <div class="plate-head">
+              <span id="player-battle-name">RED</span>
+              <span id="player-battle-lvl">Lv1</span>
             </div>
-            <div class="hp-bar-container">
-              <span class="hp-label">HP</span>
-              <div class="hp-bar"><div id="player-hp-fill" class="hp-fill player-hp"></div></div>
-            </div>
-            <div id="player-exp" class="exp-text">EXP: 0/100</div>
+            <div class="hp-track"><div id="player-hp" class="hp-fill player-fill"></div></div>
           </div>
         </div>
-
       </div>
 
-      <div class="battle-control-panel">
-        <div id="dialogue-box" class="dialogue-box">
-          A wild Impulse Monster appeared! What will you do?
+      <div class="control-deck">
+        <div id="battle-text" class="dialogue-box">A wild impulse monster blocks your path!</div>
+        
+        <div id="battle-commands" class="command-grid">
+          <button class="cmd-btn" onclick="triggerQuiz()">⚔️ FIGHT</button>
+          <button class="cmd-btn" onclick="showMetrics()">📊 METRICS</button>
+          <button class="cmd-btn" onclick="restTurn()">🛡️ REST</button>
+          <button class="cmd-btn flee" onclick="runAway()">🏃 RUN</button>
         </div>
 
-        <div id="menu-main" class="action-grid">
-          <button class="action-btn" onclick="openAttackMenu()">⚔️ FIGHT</button>
-          <button class="action-btn" onclick="showMicroMetrics()">📊 METRICS</button>
-          <button class="action-btn" onclick="takeRest()">🛡️ REST</button>
-          <button class="action-btn flee" onclick="fleeBattle()">🏃 RUN</button>
-        </div>
-
-        <div id="menu-quiz" class="quiz-menu hidden">
-          <p id="quiz-question" class="quiz-q"></p>
-          <div id="quiz-options" class="quiz-options-grid"></div>
+        <div id="quiz-deck" class="quiz-deck hidden">
+          <p id="quiz-q" class="quiz-q">Question text...</p>
+          <div id="quiz-answers" class="answers-grid"></div>
         </div>
       </div>
     </section>
 
     <section id="screen-vault" class="screen">
-      <div class="header-tag success">VICTORY</div>
-      <h2>VAULT LOCKED</h2>
-      <p class="subtitle">Monster subdued! Return when the timer hits zero.</p>
-      
-      <div class="timer-card">
+      <div class="card-panel text-center">
+        <div class="logo-badge success">VAULT SECURED</div>
+        <h2>COOLING OFF</h2>
         <div id="vault-timer" class="timer-digits">24:00:00</div>
-        <span class="timer-sub">TIME REMAINING</span>
+        <p class="sub-text">Return when timer finishes to claim or drop the purchase.</p>
+        <button class="btn btn-primary" onclick="showScreen('screen-hub')">RETURN TO HUB</button>
       </div>
-
-      <button class="btn btn-primary" onclick="showQuestScreen()">NEW BATTLE</button>
     </section>
 
-  </main>
+  </div>
 
   <script src="app.js"></script>
 </body>
