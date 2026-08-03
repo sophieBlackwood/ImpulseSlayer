@@ -62,6 +62,12 @@ body {
 
 .screen.active { display: flex; }
 
+/* Shared background for Onboarding Screens */
+.onboarding-screen {
+  background: url('login-bg.png') center/cover no-repeat;
+  image-rendering: pixelated;
+}
+
 /* TYPOGRAPHY & CARDS */
 .logo-tag {
   font-size: 0.55rem;
@@ -168,18 +174,18 @@ input:focus { border-color: var(--cyan); }
 }
 
 /* SPRITE SELECTOR GRID */
-.sprite-selector-grid {
+.sprite-selector-grid.binary-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 16px 0;
+  gap: 16px;
+  margin: 20px 0;
 }
 
 .sprite-option {
   background: var(--card-surface);
   border: 2px solid var(--border-neon);
   border-radius: 8px;
-  padding: 16px;
+  padding: 24px 16px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
@@ -193,8 +199,8 @@ input:focus { border-color: var(--cyan); }
   box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
 }
 
-.sprite-icon { font-size: 2.2rem; margin-bottom: 6px; }
-.sprite-label { font-size: 0.55rem; color: var(--text-primary); }
+.sprite-icon { font-size: 3rem; margin-bottom: 8px; }
+.sprite-label { font-size: 0.65rem; color: var(--text-primary); }
 
 /* BUTTONS */
 .btn {
@@ -214,7 +220,7 @@ input:focus { border-color: var(--cyan); }
 .btn-danger { background: rgba(244, 63, 94, 0.15); color: var(--red); border: 1px solid var(--red); }
 .btn-ghost { background: transparent; color: var(--text-muted); font-family: var(--font-ui); font-size: 0.7rem; }
 
-/* HUB DASHBOARD */
+/* HUB DASHBOARD & SVG ICON */
 .profile-header {
   display: flex;
   align-items: center;
@@ -223,6 +229,7 @@ input:focus { border-color: var(--cyan); }
 }
 
 .avatar-box { font-size: 2.2rem; }
+.avatar-box.large { font-size: 3.5rem; margin-bottom: 6px; }
 
 .user-meta { flex: 1; }
 .user-meta h2 { font-size: 0.85rem; color: var(--text-primary); margin-bottom: 4px; }
@@ -231,9 +238,23 @@ input:focus { border-color: var(--cyan); }
 .settings-btn {
   background: transparent;
   border: none;
-  font-size: 1.3rem;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 0.2s, transform 0.2s;
+}
+
+.settings-btn:hover {
+  color: var(--cyan);
+  transform: rotate(45deg);
+}
+
+.settings-icon {
+  width: 22px;
+  height: 22px;
 }
 
 .stats-grid { display: flex; gap: 12px; margin: 16px 0; }
@@ -250,6 +271,8 @@ input:focus { border-color: var(--cyan); }
 
 .stat-label { font-family: var(--font-ui); font-size: 0.65rem; color: var(--text-muted); }
 .stat-val { font-family: var(--font-ui); font-size: 0.9rem; color: var(--green); font-weight: bold; }
+
+.hub-actions { display: flex; flex-direction: column; gap: 4px; }
 
 /* BATTLE STAGE */
 .top-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
@@ -395,10 +418,42 @@ input:focus { border-color: var(--cyan); }
 .log-val.saved { color: var(--green); font-weight: bold; }
 .log-val.spent { color: var(--red); font-weight: bold; }
 
-/* Shared background for all onboarding screens */
-#screen-login,
-#screen-survey,
-#screen-sprite {
-  background: url('login-bg.png') center/cover no-repeat;
-  image-rendering: pixelated; 
+/* SHOP & WARDROBE */
+.mb-12 { margin-bottom: 12px; }
+.gold-badge {
+  display: inline-block;
+  background: rgba(250, 204, 21, 0.15);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 12px;
+  margin-top: 8px;
 }
+
+.shop-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card-surface);
+  border: 1px solid var(--border-neon);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.item-icon { font-size: 1.8rem; }
+.item-info { flex: 1; margin-left: 12px; text-align: left; }
+.item-name { display: block; font-size: 0.6rem; color: var(--text-primary); }
+.item-cost { font-family: var(--font-ui); font-size: 0.7rem; color: var(--yellow); }
+
+.btn-sm { width: auto; padding: 8px 14px; font-size: 0.55rem; margin-top: 0; }
+.btn-equipped { background: var(--green); color: #000; font-weight: bold; border: none; }
