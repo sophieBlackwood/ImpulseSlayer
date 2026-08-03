@@ -16,7 +16,7 @@
 
   <div class="app-viewport">
 
-    <section id="screen-login" class="screen active">
+    <section id="screen-login" class="screen active onboarding-screen">
       <div class="brand-header">
         <span class="logo-tag">HUB v2.0</span>
         <h1 class="main-title">IMPULSE<br>SLAYER</h1>
@@ -59,7 +59,7 @@
       </div>
     </section>
 
-    <section id="screen-survey" class="screen">
+    <section id="screen-survey" class="screen onboarding-screen">
       <div class="brand-header">
         <span class="logo-tag">METRIC SETUP</span>
         <h2 class="main-title">FINANCIAL<br>PROFILE</h2>
@@ -85,33 +85,25 @@
       </div>
     </section>
 
-    <section id="screen-sprite" class="screen">
+    <section id="screen-sprite" class="screen onboarding-screen">
       <div class="brand-header">
         <span class="logo-tag">CHARACTER SETUP</span>
-        <h2 class="main-title">CHOOSE YOUR<br>AVATAR</h2>
-        <p class="sub-text">Select your starter hero frame.</p>
+        <h2 class="main-title">CHOOSE YOUR<br>HERO</h2>
+        <p class="sub-text">Select your base character sprite.</p>
       </div>
 
-      <div class="sprite-selector-grid">
+      <div class="sprite-selector-grid binary-grid">
         <div class="sprite-option active" onclick="selectSprite('🧙‍♂️', this)">
           <div class="sprite-icon">🧙‍♂️</div>
-          <span class="sprite-label">MAGE</span>
+          <span class="sprite-label">MALE</span>
         </div>
-        <div class="sprite-option" onclick="selectSprite('⚔️', this)">
-          <div class="sprite-icon">⚔️</div>
-          <span class="sprite-label">PALADIN</span>
-        </div>
-        <div class="sprite-option" onclick="selectSprite('🥷', this)">
-          <div class="sprite-icon">🥷</div>
-          <span class="sprite-label">NINJA</span>
-        </div>
-        <div class="sprite-option" onclick="selectSprite('🤖', this)">
-          <div class="sprite-icon">🤖</div>
-          <span class="sprite-label">CYBORG</span>
+        <div class="sprite-option" onclick="selectSprite('🧙‍♀️', this)">
+          <div class="sprite-icon">🧙‍♀️</div>
+          <span class="sprite-label">FEMALE</span>
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="confirmSpriteSelection()">LOCK IN SPRITE</button>
+      <button class="btn btn-primary" onclick="confirmSpriteSelection()">LOCK IN HERO</button>
     </section>
 
     <section id="screen-hub" class="screen">
@@ -121,7 +113,12 @@
           <h2 id="hub-trainer-name">TRAINER RED</h2>
           <span id="hub-trainer-lvl" class="lvl-tag">LVL 01</span>
         </div>
-        <button class="settings-btn" onclick="showScreen('screen-settings')">⚙️</button>
+        <button class="settings-btn" onclick="showScreen('screen-settings')" aria-label="Settings">
+          <svg class="settings-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
       </div>
 
       <div class="stats-grid">
@@ -137,6 +134,7 @@
 
       <div class="hub-actions">
         <button id="btn-engage-boss" class="btn btn-action-main" onclick="checkBossAvailability()">⚔️ ENGAGE BOSS</button>
+        <button class="btn btn-secondary" onclick="openShop()">🛍️ WARDROBE & SHOP</button>
         <button class="btn btn-secondary" onclick="checkVaultDirect()">🛡️ INSPECT VAULT</button>
         <button class="btn btn-ghost" onclick="logoutTrainer()">DISCONNECT</button>
       </div>
@@ -173,7 +171,7 @@
 
         <hr class="divider" />
 
-        <button class="btn btn-secondary" onclick="showScreen('screen-sprite')">🎨 CHANGE SPRITE</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-sprite')">🎨 CHANGE HERO SPRITE</button>
 
         <hr class="divider" />
 
@@ -251,7 +249,7 @@
       <div class="glass-card text-center vault-card">
         <span class="logo-tag success">LOCK STATUS</span>
         <h2>COOLING PERIOD</h2>
-        <div id="vault<div id="vault-timer" class="timer-display">15:00</div>
+        <div id="vault-timer" class="timer-display">15:00</div>
         <p class="sub-text">Boss battles locked during active cooldown.</p>
       </div>
 
@@ -263,6 +261,57 @@
       </div>
 
       <button class="btn btn-primary" onclick="showScreen('screen-hub')">RETURN TO HUB</button>
+    </section>
+
+    <section id="screen-shop" class="screen">
+      <div class="top-bar">
+        <button class="back-btn" onclick="showScreen('screen-hub')">← BACK</button>
+        <span class="screen-title">WARDROBE & SHOP</span>
+      </div>
+
+      <div class="glass-card text-center mb-12">
+        <div id="shop-preview-avatar" class="avatar-box large">🧙‍♂️</div>
+        <p class="sub-text">CURRENT OUTFIT</p>
+        <div class="gold-badge">🪙 <span id="shop-gold-val">0.00</span> GOLD</div>
+      </div>
+
+      <div class="shop-grid">
+        <div class="shop-item">
+          <div class="item-icon">👑</div>
+          <div class="item-info">
+            <span class="item-name">ROYAL CROWN</span>
+            <span class="item-cost">🪙 50.00</span>
+          </div>
+          <button id="btn-hat_crown" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_crown', 50, '👑')">BUY</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="item-icon">🥳</div>
+          <div class="item-info">
+            <span class="item-name">PARTY HAT</span>
+            <span class="item-cost">🪙 25.00</span>
+          </div>
+          <button id="btn-hat_party" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_party', 25, '🥳')">BUY</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="item-icon">😎</div>
+          <div class="item-info">
+            <span class="item-name">COOL SHADES</span>
+            <span class="item-cost">🪙 35.00</span>
+          </div>
+          <button id="btn-hat_sunglasses" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_sunglasses', 35, '😎')">BUY</button>
+        </div>
+
+        <div class="shop-item">
+          <div class="item-icon">🧙‍♂️</div>
+          <div class="item-info">
+            <span class="item-name">DEFAULT STARTER</span>
+            <span class="item-cost">FREE</span>
+          </div>
+          <button id="btn-hat_default" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_default', 0, 'BASE')">EQUIP</button>
+        </div>
+      </div>
     </section>
 
   </div>
