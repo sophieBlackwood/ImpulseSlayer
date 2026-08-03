@@ -45,7 +45,10 @@ function handleLocalSignup(e) {
     wage: 15.00,
     foodPrice: 7.50,
     eventPrice: 25.00,
+    baseSprite: '🧙‍♂️',
     sprite: '🧙‍♂️',
+    equippedSprite: '🧙‍♂️',
+    inventory: ['hat_default'],
     lvl: 1,
     xp: 0,
     savedTotal: 0,
@@ -94,7 +97,7 @@ function saveFinancialProfile(e) {
   showScreen('screen-sprite');
 }
 
-// SPRITE SELECTION
+// SPRITE SELECTION (MALE / FEMALE)
 function selectSprite(spriteIcon, element) {
   selectedSpriteTemp = spriteIcon;
   document.querySelectorAll('.sprite-option').forEach(opt => opt.classList.remove('active'));
@@ -107,7 +110,9 @@ function confirmSpriteSelection() {
 
   const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
   if (users[activeEmail]) {
+    users[activeEmail].baseSprite = selectedSpriteTemp;
     users[activeEmail].sprite = selectedSpriteTemp;
+    users[activeEmail].equippedSprite = selectedSpriteTemp;
     localStorage.setItem('slayer_users', JSON.stringify(users));
   }
 
@@ -131,8 +136,9 @@ function loadTrainerSession() {
     document.getElementById('hub-saved').textContent = `$${user.savedTotal.toFixed(2)}`;
     document.getElementById('hub-exp').textContent = `${user.xp} / 100`;
     
-    document.getElementById('hub-avatar').textContent = user.sprite || '🧙‍♂️';
-    document.getElementById('player-sprite').textContent = user.sprite || '🧙‍♂️';
+    const activeSprite = user.equippedSprite || user.baseSprite || user.sprite || '🧙‍♂️';
+    document.getElementById('hub-avatar').textContent = activeSprite;
+    document.getElementById('player-sprite').textContent = activeSprite;
 
     // Populate Settings Inputs
     document.getElementById('settings-name').value = user.trainerName || '';
@@ -301,7 +307,6 @@ function enemyCounterAttack() {
 
   if (battleState.playerHP <= 0) {
     alert("YOUR WILLPOWER FAILED! You gave in to impulse.");
-    // Log as spent
     updateTrainerStats(10, 0, {
       name: battleState.itemName,
       price: battleState.price,
@@ -390,7 +395,6 @@ function checkBattleEnd() {
   if (battleState.enemyHP <= 20) {
     confetti({ particleCount: 70, spread: 60 });
 
-    // Save 15-Minute Cooldown Timestamp (15 * 60 * 1000 ms)
     const activeEmail = localStorage.getItem('slayer_active_user');
     const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
     
@@ -483,6 +487,81 @@ function renderHistoryLogs(logs) {
     `;
     container.appendChild(div);
   });
+}
+
+// SHOP & WARDROBE SYSTEM
+function openShop() {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail];
+
+  if (!user) return;
+
+  if (!user.inventory) user.inventory = ['hat_default'];
+  if (!user.equippedSprite) user.equippedSprite = user.baseSprite || user.sprite || '🧙‍♂️';
+
+  document.getElementById('shop-gold-val').textContent = user.savedTotal.toFixed(2);
+  document.getElementById('shop-preview-avatar').textContent = user.equippedSprite;
+
+  updateShopButtons(user);
+  showScreen('screen-shop');
+}
+
+function updateShopButtons(user) {
+  const items = ['hat_crown', 'hat_party', 'hat_sunglasses', 'hat_default'];
+
+  items.forEach(itemId => {
+    const btn = document.getElementById(`btn-${itemId}`);
+    if (!btn) return;
+
+    const isOwned = user.inventory.includes(itemId);
+    const baseSprite = user.baseSprite || user.sprite || '🧙‍♂️';
+    const isEquipped = (itemId === 'hat_default' && user.equippedSprite === baseSprite) ||
+                       (itemId === 'hat_crown' && user.equippedSprite === '👑') ||
+                       (itemId === 'hat_party' && user.equippedSprite === '🥳') ||
+                       (itemId === 'hat_sunglasses' && user.equippedSprite === '😎');
+
+    if (isEquipped) {
+      btn.textContent = "EQUIPPED";
+      btn.className = "btn btn-sm btn-equipped";
+    } else if (isOwned) {
+      btn.textContent = "EQUIP";
+      btn.className = "btn btn-secondary btn-sm";
+    } else {
+      btn.textContent = "BUY";
+      btn.className = "btn btn-primary btn-sm";
+    }
+  });
+}
+
+function buyOrEquip(itemId, price, spriteIcon) {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail];
+
+  if (!user) return;
+
+  if (!user.inventory) user.inventory = ['hat_default'];
+
+  const isOwned = user.inventory.includes(itemId);
+  const targetSprite = spriteIcon === 'BASE' ? (user.baseSprite || '🧙‍♂️') : spriteIcon;
+
+  if (isOwned) {
+    user.equippedSprite = targetSprite;
+  } else {
+    if (user.savedTotal < price) {
+      alert("Not enough gold saved to buy this costume!");
+      return;
+    }
+    user.savedTotal -= price;
+    user.inventory.push(itemId);
+    user.equippedSprite = targetSprite;
+    alert("Unlocked & Equipped!");
+  }
+
+  localStorage.setItem('slayer_users', JSON.stringify(users));
+  loadTrainerSession();
+  openShop();
 }
 
 // INITIALIZE APP
