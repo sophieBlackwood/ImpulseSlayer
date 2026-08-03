@@ -253,8 +253,7 @@ input:focus { border-color: var(--cyan); }
 }
 
 .settings-icon {
-  width: 22px;
-  height: 22px;
+  font-size: 1.3rem;
 }
 
 .stats-grid { display: flex; gap: 12px; margin: 16px 0; }
