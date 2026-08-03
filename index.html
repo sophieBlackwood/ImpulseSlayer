@@ -5,7 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Impulse Slayer</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
@@ -13,94 +17,96 @@
   <div class="app-viewport">
 
     <section id="screen-login" class="screen active">
-      <div class="logo-badge">SLAYER HUB</div>
-      <h1 class="main-title">IMPULSE SLAYER</h1>
-      <p class="sub-text">Select or create your Trainer ID.</p>
+      <div class="brand-header">
+        <span class="logo-tag">HUB v2.0</span>
+        <h1 class="main-title">IMPULSE<br>SLAYER</h1>
+        <p class="sub-text">Anti-Impulse System & Vault</p>
+      </div>
 
-      <div class="card-panel">
+      <div class="glass-card">
         <div class="input-field">
-          <label for="trainer-name">TRAINER NAME</label>
-          <input type="text" id="trainer-name" placeholder="Red" autocomplete="off" />
+          <label for="trainer-name">TRAINER ID</label>
+          <input type="text" id="trainer-name" placeholder="Enter name..." autocomplete="off" />
         </div>
-        <button class="btn btn-primary" onclick="loginTrainer()">ENTER HUB</button>
+        <button class="btn btn-primary" onclick="loginTrainer()">INITIALIZE HUB</button>
       </div>
     </section>
 
     <section id="screen-hub" class="screen">
-      <div class="user-card">
+      <div class="profile-header glass-card">
         <div class="avatar-box">🧙‍♂️</div>
-        <div class="user-info">
+        <div class="user-meta">
           <h2 id="hub-trainer-name">TRAINER RED</h2>
-          <span id="hub-trainer-lvl" class="lvl-badge">LVL 1</span>
+          <span id="hub-trainer-lvl" class="lvl-tag">LVL 01</span>
         </div>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-box">
+      <div class="stats-grid">
+        <div class="stat-card">
           <span class="stat-label">TOTAL SAVED</span>
           <span id="hub-saved" class="stat-val">$0.00</span>
         </div>
-        <div class="stat-box">
-          <span class="stat-label">EXP</span>
-          <span id="hub-exp" class="stat-val">0/100</span>
+        <div class="stat-card">
+          <span class="stat-label">EXP PROGRESS</span>
+          <span id="hub-exp" class="stat-val">0 / 100</span>
         </div>
       </div>
 
-      <div class="hub-menu">
-        <button class="btn btn-action-large" onclick="showScreen('screen-quest')">⚔️ CHALLENGE BOSS</button>
-        <button class="btn btn-secondary" onclick="checkVaultDirect()">🛡️ OPEN VAULT</button>
-        <button class="btn btn-subtle" onclick="logoutTrainer()">LOGOUT</button>
+      <div class="hub-actions">
+        <button class="btn btn-action-main" onclick="showScreen('screen-quest')">⚔️ ENGAGE BOSS</button>
+        <button class="btn btn-secondary" onclick="checkVaultDirect()">🛡️ INSPECT VAULT</button>
+        <button class="btn btn-ghost" onclick="logoutTrainer()">DISCONNECT</button>
       </div>
     </section>
 
     <section id="screen-quest" class="screen">
-      <div class="nav-bar">
+      <div class="top-bar">
         <button class="back-btn" onclick="showScreen('screen-hub')">← BACK</button>
-        <span>NEW BATTLE</span>
+        <span class="screen-title">TARGET ENTRY</span>
       </div>
 
-      <div class="card-panel">
+      <div class="glass-card">
         <div class="input-field">
-          <label for="target-name">ITEM NAME</label>
-          <input type="text" id="target-name" placeholder="Wireless Headphones" />
+          <label for="target-name">TARGET ITEM</label>
+          <input type="text" id="target-name" placeholder="Wireless Earbuds" />
         </div>
         <div class="input-field">
           <label for="target-price">PRICE ($)</label>
-          <input type="number" id="target-price" placeholder="99.99" step="0.01" />
+          <input type="number" id="target-price" placeholder="120.00" step="0.01" />
         </div>
-        <button class="btn btn-primary" onclick="startBattle()">ENGAGE MONSTER</button>
+        <button class="btn btn-primary" onclick="startBattle()">INITIATE BATTLE</button>
       </div>
     </section>
 
     <section id="screen-battle" class="screen">
-      <div class="battle-stage">
+      <div class="arena-stage">
         <div class="unit-row enemy-side">
-          <div class="status-plate">
-            <div class="plate-head">
-              <span id="enemy-name">FOMO MONSTER</span>
-              <span id="enemy-lvl">Lv5</span>
+          <div class="hud-plate">
+            <div class="plate-top">
+              <span id="enemy-name" class="unit-name">FOMO MONSTER</span>
+              <span id="enemy-lvl" class="unit-lvl">Lv5</span>
             </div>
-            <div class="hp-track"><div id="enemy-hp" class="hp-fill"></div></div>
+            <div class="hp-bar-bg"><div id="enemy-hp" class="hp-bar-fill"></div></div>
           </div>
-          <div id="enemy-sprite" class="sprite-container">👹</div>
+          <div id="enemy-sprite" class="sprite-box">👹</div>
         </div>
 
         <div class="unit-row player-side">
-          <div class="sprite-container">🧙‍♂️</div>
-          <div class="status-plate">
-            <div class="plate-head">
-              <span id="player-battle-name">RED</span>
-              <span id="player-battle-lvl">Lv1</span>
+          <div class="sprite-box">🧙‍♂️</div>
+          <div class="hud-plate">
+            <div class="plate-top">
+              <span id="player-battle-name" class="unit-name">RED</span>
+              <span id="player-battle-lvl" class="unit-lvl">Lv1</span>
             </div>
-            <div class="hp-track"><div id="player-hp" class="hp-fill player-fill"></div></div>
+            <div class="hp-bar-bg"><div id="player-hp" class="hp-bar-fill player-hp"></div></div>
           </div>
         </div>
       </div>
 
-      <div class="control-deck">
-        <div id="battle-text" class="dialogue-box">A wild impulse monster blocks your path!</div>
+      <div class="console-box">
+        <div id="battle-text" class="terminal-text">A wild impulse monster blocks your path!</div>
         
-        <div id="battle-commands" class="command-grid">
+        <div id="battle-commands" class="cmd-grid">
           <button class="cmd-btn" onclick="triggerQuiz()">⚔️ FIGHT</button>
           <button class="cmd-btn" onclick="showMetrics()">📊 METRICS</button>
           <button class="cmd-btn" onclick="restTurn()">🛡️ REST</button>
@@ -108,18 +114,18 @@
         </div>
 
         <div id="quiz-deck" class="quiz-deck hidden">
-          <p id="quiz-q" class="quiz-q">Question text...</p>
-          <div id="quiz-answers" class="answers-grid"></div>
+          <p id="quiz-q" class="quiz-q">Loading prompt...</p>
+          <div id="quiz-answers" class="answers-stack"></div>
         </div>
       </div>
     </section>
 
     <section id="screen-vault" class="screen">
-      <div class="card-panel text-center">
-        <div class="logo-badge success">VAULT SECURED</div>
-        <h2>COOLING OFF</h2>
-        <div id="vault-timer" class="timer-digits">24:00:00</div>
-        <p class="sub-text">Return when timer finishes to claim or drop the purchase.</p>
+      <div class="glass-card text-center">
+        <span class="logo-tag success">LOCK ACTIVE</span>
+        <h2>COOLING PERIOD</h2>
+        <div id="vault-timer" class="timer-display">24:00:00</div>
+        <p class="sub-text">Item on hold. Complete countdown to unlock funds.</p>
         <button class="btn btn-primary" onclick="showScreen('screen-hub')">RETURN TO HUB</button>
       </div>
     </section>
