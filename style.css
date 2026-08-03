@@ -395,6 +395,10 @@ input:focus { border-color: var(--cyan); }
 .log-val.saved { color: var(--green); font-weight: bold; }
 .log-val.spent { color: var(--red); font-weight: bold; }
 
-#screen-login {
+/* Shared background for all onboarding screens */
+#screen-login,
+#screen-survey,
+#screen-sprite {
   background: url('login-bg.png') center/cover no-repeat;
+  image-rendering: pixelated; 
 }
