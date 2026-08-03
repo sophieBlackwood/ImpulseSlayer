@@ -26,7 +26,6 @@
 
 body {
   background: var(--bg-deep);
-  background: url('woodFrame.png') center/cover no-repeat fixed, var(--bg-deep);
   color: var(--text-primary);
   font-family: var(--font-pixel);
   min-height: 100vh;
@@ -104,7 +103,6 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* AUTH TOGGLE TABS */
 .auth-toggle {
   display: flex;
   gap: 8px;
