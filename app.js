@@ -140,7 +140,7 @@ function loadTrainerSession() {
     document.getElementById('settings-food').value = user.foodPrice || 7.50;
     document.getElementById('settings-event').value = user.eventPrice || 25.00;
 
-    // Check 1-hour Boss Lock Status
+    // Check 15-minute Boss Lock Status
     checkLockStatus(user);
 
     showScreen('screen-hub');
@@ -164,7 +164,7 @@ function checkBossAvailability() {
   const user = users[activeEmail];
 
   if (user && user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
-    alert("Boss fight is locked during your 1-hour cooling period! Check Vault for remaining time.");
+    alert("Boss fight is locked during your 15-minute cooling period! Check Vault for remaining time.");
     checkVaultDirect();
   } else {
     showScreen('screen-quest');
@@ -390,12 +390,12 @@ function checkBattleEnd() {
   if (battleState.enemyHP <= 20) {
     confetti({ particleCount: 70, spread: 60 });
 
-    // Save 1-Hour Cooldown Timestamp (1 * 60 * 60 * 1000)
+    // Save 15-Minute Cooldown Timestamp (15 * 60 * 1000 ms)
     const activeEmail = localStorage.getItem('slayer_active_user');
     const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
     
     if (users[activeEmail]) {
-      const unlockTime = Date.now() + (1 * 60 * 60 * 1000);
+      const unlockTime = Date.now() + (15 * 60 * 1000);
       users[activeEmail].vaultUnlockTime = unlockTime;
       localStorage.setItem('slayer_users', JSON.stringify(users));
       startVaultTimer(unlockTime);
@@ -433,11 +433,11 @@ function startVaultTimer(unlockTimestamp) {
       return;
     }
 
-    const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+    const mins = Math.floor(remaining / (1000 * 60));
     const secs = Math.floor((remaining % (1000 * 60)) / 1000);
 
     document.getElementById('vault-timer').textContent = 
-      `00:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
   updateDisplay();
