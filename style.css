@@ -243,7 +243,7 @@ input:focus { border-color: var(--cyan); }
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-muted);
+  color: #ffffff;
   transition: color 0.2s, transform 0.2s;
 }
 
@@ -254,6 +254,7 @@ input:focus { border-color: var(--cyan); }
 
 .settings-icon {
   font-size: 1.3rem;
+  color: #ffffff;
 }
 
 .stats-grid { display: flex; gap: 12px; margin: 16px 0; }
