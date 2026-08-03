@@ -1,375 +1,128 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impulse Slayer - Pixel RPG</title>
-
-    <!-- Pixel Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Victory Effect -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Impulse Slayer - RPG</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
-
 <body>
 
-<main class="game-container">
-
-    <!-- ========================= -->
-    <!-- PLAYER HUD -->
-    <!-- ========================= -->
-
-    <header class="player-hud">
-
-        <div class="hud-stat">
-            <span class="label">LVL</span>
-            <span id="player-lvl" class="val">1</span>
+  <main class="game-boy-screen">
+    
+    <section id="screen-survey" class="screen active">
+      <div class="header-tag">TRAINER REGISTRATION</div>
+      <h2>PROFILE SETUP</h2>
+      <p class="subtitle">Set your economy parameters to calculate micro-metrics.</p>
+      
+      <form id="survey-form" onsubmit="saveSurvey(event)">
+        <div class="field">
+          <label for="user-wage">HOURLY WAGE ($/HR)</label>
+          <input type="number" id="user-wage" placeholder="15.00" step="0.50" required />
         </div>
 
-        <div class="hud-stat">
-            <span class="label">XP</span>
-            <span id="player-xp" class="val">0 / 100</span>
+        <div class="field">
+          <label for="user-item1">FAVORITE MEAL / BOBA ($)</label>
+          <input type="number" id="user-item1" placeholder="12.00" step="0.50" required />
         </div>
 
-        <div class="hud-stat">
-            <span class="label">SAVED</span>
-            <span id="player-gold" class="val">$0</span>
+        <div class="field">
+          <label for="user-item2">GAME / SUBSCRIPTION ($)</label>
+          <input type="number" id="user-item2" placeholder="70.00" step="1.00" required />
         </div>
 
-    </header>
-
-    <!-- ========================= -->
-    <!-- QUEST BOARD -->
-    <!-- ========================= -->
-
-    <section id="step-setup" class="screen active">
-
-        <div class="pixel-badge">
-            QUEST BOARD
-        </div>
-
-        <h1 class="game-title">
-            IMPULSE SLAYER
-        </h1>
-
-        <p class="subtitle">
-            Enter something you want to buy. Your impulse becomes a monster.
-        </p>
-
-        <div class="input-group">
-
-            <label for="item-name">
-                TARGET ITEM
-            </label>
-
-            <input
-                id="item-name"
-                type="text"
-                placeholder="Retro Arcade Cabinet"
-                autocomplete="off">
-
-        </div>
-
-        <div class="input-group">
-
-            <label for="item-price">
-                PRICE ($)
-            </label>
-
-            <input
-                id="item-price"
-                type="number"
-                placeholder="85.00"
-                step="0.01">
-
-        </div>
-
-        <button
-            class="btn btn-primary"
-            onclick="initiateBattle()">
-
-            START QUEST
-
-        </button>
-
+        <button type="submit" class="btn btn-primary">SAVE PROFILE</button>
+      </form>
     </section>
 
-    <!-- ========================= -->
-    <!-- BATTLE SCREEN -->
-    <!-- ========================= -->
+    <section id="screen-quest" class="screen">
+      <div class="header-tag">NEW CHALLENGE</div>
+      <h2>TARGET IMPULSE</h2>
+      
+      <div class="field">
+        <label for="target-name">ITEM NAME</label>
+        <input type="text" id="target-name" placeholder="Sneakers" />
+      </div>
 
-    <section id="step-boss" class="screen">
+      <div class="field">
+        <label for="target-price">PRICE ($)</label>
+        <input type="number" id="target-price" placeholder="120.00" step="0.01" />
+      </div>
 
-        <div class="battle-stage">
-
-            <div class="enemy-area">
-
-                <!--
-                TODO PIXEL ART
-
-                Replace with:
-                assets/sprites/enemies/placeholder_enemy.png
-
-                Size:
-                64x64 pixels
-                -->
-
-                <img
-                    id="enemy-sprite"
-                    class="pixel-sprite"
-                    src="assets/sprites/enemies/placeholder_enemy.png"
-                    alt="Enemy">
-
-                <div class="enemy-details">
-
-                    <span
-                        id="enemy-name"
-                        class="enemy-name">
-
-                        IMPULSE MONSTER
-
-                    </span>
-
-                    <div class="hp-bar">
-
-                        <div
-                            id="enemy-hp-fill"
-                            class="hp-fill">
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            <div
-                id="metric-card"
-                class="metric-card">
-            </div>
-
-        </div>
-
-        <div class="dialog-box">
-
-            <p id="battle-text">
-
-                Your impulse has appeared.
-
-            </p>
-
-        </div>
-
-        <div
-            id="action-menu"
-            class="action-grid">
-
-            <button
-                class="btn btn-action"
-                onclick="handleAction('attack')">
-
-                REALITY CHECK
-
-            </button>
-
-            <button
-                class="btn btn-action"
-                onclick="handleAction('defend')">
-
-                WAIT 10 MINUTES
-
-            </button>
-
-            <button
-                class="btn btn-action"
-                onclick="handleAction('item')">
-
-                THINK LONG TERM
-
-            </button>
-
-            <button
-                class="btn btn-action btn-flee"
-                onclick="handleAction('flee')">
-
-                WALK AWAY
-
-            </button>
-
-        </div>
-
-        <div
-            id="quiz-container"
-            class="quiz-container hidden">
-
-            <p
-                id="quiz-q"
-                class="quiz-q">
-            </p>
-
-            <div
-                id="quiz-opts"
-                class="quiz-opts">
-            </div>
-
-        </div>
-
+      <button class="btn btn-primary" onclick="startBattle()">ENGAGE BOSS</button>
+      <button class="btn btn-subtle" onclick="resetSurvey()">EDIT PROFILE SETTINGS</button>
     </section>
 
-    <!-- ========================= -->
-    <!-- TIMER -->
-    <!-- ========================= -->
-
-    <section id="step-timer" class="screen">
-
-        <div class="pixel-badge success">
-
-            LOCK ACTIVE
-
+    <section id="screen-battle" class="screen">
+      <div class="battle-arena">
+        
+        <div class="enemy-row">
+          <div class="status-box enemy-status">
+            <div class="status-header">
+              <span id="enemy-name">IMPULSE GOBLIN</span>
+              <span id="enemy-lvl">Lv5</span>
+            </div>
+            <div class="hp-bar-container">
+              <span class="hp-label">HP</span>
+              <div class="hp-bar"><div id="enemy-hp-fill" class="hp-fill"></div></div>
+            </div>
+          </div>
+          <div class="sprite-box"><div id="enemy-sprite" class="sprite">👹</div></div>
         </div>
 
-        <h2>
-
-            COOLING OFF
-
-        </h2>
-
-        <p class="subtitle">
-
-            Resist the purchase until the timer expires.
-
-        </p>
-
-        <div class="timer-box">
-
-            <!--
-            TODO PIXEL ART
-
-            Animated Hourglass
-
-            File:
-            assets/sprites/ui/hourglass.png
-            -->
-
-            <div class="pixel-sprite"></div>
-
-            <div
-                id="countdown-timer"
-                class="timer-display">
-
-                24:00:00
-
+        <div class="player-row">
+          <div class="sprite-box"><div class="sprite">🧙‍♂️</div></div>
+          <div class="status-box player-status">
+            <div class="status-header">
+              <span id="player-name">SAVER</span>
+              <span id="player-lvl">Lv1</span>
             </div>
-
-            <div class="timer-sub">
-
-                Stay strong.
-
+            <div class="hp-bar-container">
+              <span class="hp-label">HP</span>
+              <div class="hp-bar"><div id="player-hp-fill" class="hp-fill player-hp"></div></div>
             </div>
-
+            <div id="player-exp" class="exp-text">EXP: 0/100</div>
+          </div>
         </div>
 
-        <button
-            id="finish-btn"
-            class="btn btn-primary"
-            onclick="finishTimer()"
-            disabled>
+      </div>
 
-            CLAIM REWARD
+      <div class="battle-control-panel">
+        <div id="dialogue-box" class="dialogue-box">
+          A wild Impulse Monster appeared! What will you do?
+        </div>
 
-        </button>
+        <div id="menu-main" class="action-grid">
+          <button class="action-btn" onclick="openAttackMenu()">⚔️ FIGHT</button>
+          <button class="action-btn" onclick="showMicroMetrics()">📊 METRICS</button>
+          <button class="action-btn" onclick="takeRest()">🛡️ REST</button>
+          <button class="action-btn flee" onclick="fleeBattle()">🏃 RUN</button>
+        </div>
 
-        <button
-            class="btn btn-secondary"
-            onclick="resetApp()">
-
-            CANCEL TIMER
-
-        </button>
-
+        <div id="menu-quiz" class="quiz-menu hidden">
+          <p id="quiz-question" class="quiz-q"></p>
+          <div id="quiz-options" class="quiz-options-grid"></div>
+        </div>
+      </div>
     </section>
 
-    <!-- ========================= -->
-    <!-- VICTORY -->
-    <!-- ========================= -->
+    <section id="screen-vault" class="screen">
+      <div class="header-tag success">VICTORY</div>
+      <h2>VAULT LOCKED</h2>
+      <p class="subtitle">Monster subdued! Return when the timer hits zero.</p>
+      
+      <div class="timer-card">
+        <div id="vault-timer" class="timer-digits">24:00:00</div>
+        <span class="timer-sub">TIME REMAINING</span>
+      </div>
 
-    <section id="step-victory" class="screen">
-
-        <div class="pixel-badge success">
-
-            QUEST COMPLETE
-
-        </div>
-
-        <!--
-        TODO PIXEL ART
-
-        Victory Banner
-
-        File:
-        assets/ui/victory_banner.png
-        -->
-
-        <div class="pixel-sprite"></div>
-
-        <h2 class="game-title">
-
-            IMPULSE DEFEATED
-
-        </h2>
-
-        <p
-            id="victory-text"
-            class="subtitle">
-
-            You defeated the impulse and protected your savings.
-
-        </p>
-
-        <div class="metric-card">
-
-            <p>
-
-                XP Earned:
-                <span id="reward-xp">0</span>
-
-            </p>
-
-            <p>
-
-                Money Saved:
-                $<span id="reward-money">0.00</span>
-
-            </p>
-
-            <p>
-
-                Current Level:
-                <span id="reward-level">1</span>
-
-            </p>
-
-        </div>
-
-        <button
-            class="btn btn-primary"
-            onclick="resetApp()">
-
-            NEXT QUEST
-
-        </button>
-
+      <button class="btn btn-primary" onclick="showQuestScreen()">NEW BATTLE</button>
     </section>
 
-</main>
+  </main>
 
-<script src="app.js"></script>
-
+  <script src="app.js"></script>
 </body>
 </html>
