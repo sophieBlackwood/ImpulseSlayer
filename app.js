@@ -2,6 +2,7 @@ let selectedSpriteTemp = '🧙‍♂️';
 
 const battleState = {
   price: 0,
+  itemName: '',
   enemyHP: 100,
   maxEnemyHP: 100,
   playerHP: 100,
@@ -10,7 +11,7 @@ const battleState = {
   timerInterval: null
 };
 
-// UI & TAB NAVIGATION
+// UI NAVIGATION
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -24,7 +25,7 @@ function switchAuthTab(tab) {
   document.getElementById('tab-signup').classList.toggle('active', isLogin);
 }
 
-// LOCAL AUTHENTICATION SYSTEM (AUTO-SAVED SESSION)
+// LOCAL AUTHENTICATION
 function handleLocalSignup(e) {
   e.preventDefault();
   const name = document.getElementById('signup-name').value.trim();
@@ -41,20 +42,20 @@ function handleLocalSignup(e) {
   users[email] = {
     password: pass,
     trainerName: name.toUpperCase(),
-    wage: 15,
-    mealPrice: 12,
-    subPrice: 15,
+    wage: 15.00,
+    foodPrice: 7.50,
+    eventPrice: 25.00,
     sprite: '🧙‍♂️',
     lvl: 1,
     xp: 0,
     savedTotal: 0,
-    vaultUnlockTime: null
+    vaultUnlockTime: null,
+    logs: []
   };
 
   localStorage.setItem('slayer_users', JSON.stringify(users));
   localStorage.setItem('slayer_active_user', email);
 
-  // Transition to Financial Survey
   showScreen('screen-survey');
 }
 
@@ -83,9 +84,9 @@ function saveFinancialProfile(e) {
 
   const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
   if (users[activeEmail]) {
-    users[activeEmail].wage = parseFloat(document.getElementById('survey-wage').value) || 15;
-    users[activeEmail].mealPrice = parseFloat(document.getElementById('survey-meal').value) || 12;
-    users[activeEmail].subPrice = parseFloat(document.getElementById('survey-sub').value) || 15;
+    users[activeEmail].wage = parseFloat(document.getElementById('survey-wage').value) || 15.00;
+    users[activeEmail].foodPrice = parseFloat(document.getElementById('survey-food').value) || 7.50;
+    users[activeEmail].eventPrice = parseFloat(document.getElementById('survey-event').value) || 25.00;
 
     localStorage.setItem('slayer_users', JSON.stringify(users));
   }
@@ -93,7 +94,7 @@ function saveFinancialProfile(e) {
   showScreen('screen-sprite');
 }
 
-// SPRITE SELECTION SYSTEM
+// SPRITE SELECTION
 function selectSprite(spriteIcon, element) {
   selectedSpriteTemp = spriteIcon;
   document.querySelectorAll('.sprite-option').forEach(opt => opt.classList.remove('active'));
@@ -113,7 +114,7 @@ function confirmSpriteSelection() {
   loadTrainerSession();
 }
 
-// LOAD PROFILE DATA INTO HUB & BATTLE
+// SESSION MANAGEMENT & HUB LOAD
 function loadTrainerSession() {
   const activeEmail = localStorage.getItem('slayer_active_user');
   if (!activeEmail) {
@@ -133,16 +134,88 @@ function loadTrainerSession() {
     document.getElementById('hub-avatar').textContent = user.sprite || '🧙‍♂️';
     document.getElementById('player-sprite').textContent = user.sprite || '🧙‍♂️';
 
-    // Resume vault timer if lock is active
-    if (user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
-      startVaultTimer(user.vaultUnlockTime);
-    }
+    // Populate Settings Inputs
+    document.getElementById('settings-name').value = user.trainerName || '';
+    document.getElementById('settings-wage').value = user.wage || 15.00;
+    document.getElementById('settings-food').value = user.foodPrice || 7.50;
+    document.getElementById('settings-event').value = user.eventPrice || 25.00;
+
+    // Check 1-hour Boss Lock Status
+    checkLockStatus(user);
 
     showScreen('screen-hub');
   }
 }
 
-function updateTrainerStats(xpGained, goldSaved) {
+function checkLockStatus(user) {
+  const btn = document.getElementById('btn-engage-boss');
+  if (user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
+    btn.textContent = "🔒 BOSS LOCKED";
+    btn.style.opacity = "0.6";
+  } else {
+    btn.textContent = "⚔️ ENGAGE BOSS";
+    btn.style.opacity = "1";
+  }
+}
+
+function checkBossAvailability() {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail];
+
+  if (user && user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
+    alert("Boss fight is locked during your 1-hour cooling period! Check Vault for remaining time.");
+    checkVaultDirect();
+  } else {
+    showScreen('screen-quest');
+  }
+}
+
+// SETTINGS ACTIONS
+function updateTrainerName() {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const newName = document.getElementById('settings-name').value.trim().toUpperCase();
+  if (!newName) return alert("ENTER A VALID NAME");
+
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  if (users[activeEmail]) {
+    users[activeEmail].trainerName = newName;
+    localStorage.setItem('slayer_users', JSON.stringify(users));
+    alert("Trainer Name Updated!");
+    loadTrainerSession();
+  }
+}
+
+function updateMetricsSettings() {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const wage = parseFloat(document.getElementById('settings-wage').value);
+  const food = parseFloat(document.getElementById('settings-food').value);
+  const eventVal = parseFloat(document.getElementById('settings-event').value);
+
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  if (users[activeEmail]) {
+    users[activeEmail].wage = wage || 15.00;
+    users[activeEmail].foodPrice = food || 7.50;
+    users[activeEmail].eventPrice = eventVal || 25.00;
+    localStorage.setItem('slayer_users', JSON.stringify(users));
+    alert("Financial Metrics Updated!");
+    loadTrainerSession();
+  }
+}
+
+function deleteAccount() {
+  if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+    const activeEmail = localStorage.getItem('slayer_active_user');
+    const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+    delete users[activeEmail];
+    localStorage.setItem('slayer_users', JSON.stringify(users));
+    localStorage.removeItem('slayer_active_user');
+    alert("Account deleted.");
+    showScreen('screen-login');
+  }
+}
+
+function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
   const activeEmail = localStorage.getItem('slayer_active_user');
   if (!activeEmail) return;
 
@@ -152,6 +225,9 @@ function updateTrainerStats(xpGained, goldSaved) {
   if (user) {
     user.xp += xpGained;
     user.savedTotal += goldSaved;
+
+    if (!user.logs) user.logs = [];
+    if (logEntry) user.logs.unshift(logEntry);
 
     if (user.xp >= 100) {
       user.lvl += 1;
@@ -169,9 +245,9 @@ function logoutTrainer() {
   showScreen('screen-login');
 }
 
-// BATTLE MECHANICS & ENEMY AI
+// BATTLE ARENA & METRICS
 function startBattle() {
-  const name = document.getElementById('target-name').value;
+  const name = document.getElementById('target-name').value.trim();
   const price = parseFloat(document.getElementById('target-price').value);
 
   if (!name || isNaN(price) || price <= 0) return alert("ENTER VALID ITEM DETAILS");
@@ -180,6 +256,7 @@ function startBattle() {
   const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
   const user = users[activeEmail] || { trainerName: 'RED', lvl: 1 };
 
+  battleState.itemName = name;
   battleState.price = price;
   battleState.maxEnemyHP = price > 100 ? 150 : 100;
   battleState.enemyHP = battleState.maxEnemyHP;
@@ -215,7 +292,6 @@ function setDialogue(msg) {
   document.getElementById('battle-text').textContent = msg;
 }
 
-// ENEMY COUNTER-ATTACK AI
 function enemyCounterAttack() {
   if (battleState.enemyHP <= 0) return;
 
@@ -224,7 +300,14 @@ function enemyCounterAttack() {
   updateHPUI();
 
   if (battleState.playerHP <= 0) {
-    alert("YOUR WILLPOWER FAILED! The monster tempted you!");
+    alert("YOUR WILLPOWER FAILED! You gave in to impulse.");
+    // Log as spent
+    updateTrainerStats(10, 0, {
+      name: battleState.itemName,
+      price: battleState.price,
+      type: 'SPENT',
+      date: new Date().toLocaleDateString()
+    });
     showScreen('screen-hub');
   } else {
     setDialogue(`Monster attacked back! Took ${dmg} damage.`);
@@ -234,12 +317,13 @@ function enemyCounterAttack() {
 function showMetrics() {
   const activeEmail = localStorage.getItem('slayer_active_user');
   const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail] || { wage: 15, mealPrice: 12, subPrice: 15 };
+  const user = users[activeEmail] || { wage: 15, foodPrice: 7.5, eventPrice: 25 };
 
   const hours = (battleState.price / user.wage).toFixed(1);
-  const meals = (battleState.price / user.mealPrice).toFixed(1);
+  const foods = (battleState.price / user.foodPrice).toFixed(1);
+  const events = (battleState.price / user.eventPrice).toFixed(1);
 
-  setDialogue(`COSTS: ${hours}h work | ${meals} meals.`);
+  setDialogue(`METRICS: ${hours}h work | ${foods} fav meals | ${events} fav events`);
 }
 
 function restTurn() {
@@ -253,7 +337,12 @@ function restTurn() {
 }
 
 function runAway() {
-  updateTrainerStats(25, battleState.price);
+  updateTrainerStats(25, battleState.price, {
+    name: battleState.itemName,
+    price: battleState.price,
+    type: 'SAVED',
+    date: new Date().toLocaleDateString()
+  });
   alert(`YOU ESCAPED! Saved $${battleState.price.toFixed(2)}.`);
   showScreen('screen-hub');
 }
@@ -300,23 +389,30 @@ function loadQuizQuestion() {
 function checkBattleEnd() {
   if (battleState.enemyHP <= 20) {
     confetti({ particleCount: 70, spread: 60 });
-    updateTrainerStats(50, 0);
 
-    // Save 24-Hour Cooldown Timestamp
+    // Save 1-Hour Cooldown Timestamp (1 * 60 * 60 * 1000)
     const activeEmail = localStorage.getItem('slayer_active_user');
     const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+    
     if (users[activeEmail]) {
-      const unlockTime = Date.now() + (24 * 60 * 60 * 1000);
+      const unlockTime = Date.now() + (1 * 60 * 60 * 1000);
       users[activeEmail].vaultUnlockTime = unlockTime;
       localStorage.setItem('slayer_users', JSON.stringify(users));
       startVaultTimer(unlockTime);
     }
 
+    updateTrainerStats(50, battleState.price, {
+      name: battleState.itemName,
+      price: battleState.price,
+      type: 'SAVED',
+      date: new Date().toLocaleDateString()
+    });
+
     showScreen('screen-vault');
   }
 }
 
-// PERSISTENT COOLDOWN TIMER LOGIC
+// VAULT & TIMER & HISTORY LOGS
 function startVaultTimer(unlockTimestamp) {
   if (battleState.timerInterval) clearInterval(battleState.timerInterval);
 
@@ -326,15 +422,22 @@ function startVaultTimer(unlockTimestamp) {
     if (remaining <= 0) {
       clearInterval(battleState.timerInterval);
       document.getElementById('vault-timer').textContent = "UNLOCKED";
+      
+      const activeEmail = localStorage.getItem('slayer_active_user');
+      const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+      if (users[activeEmail]) {
+        users[activeEmail].vaultUnlockTime = null;
+        localStorage.setItem('slayer_users', JSON.stringify(users));
+        loadTrainerSession();
+      }
       return;
     }
 
-    const hours = Math.floor(remaining / (1000 * 60 * 60));
     const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
     const secs = Math.floor((remaining % (1000 * 60)) / 1000);
 
     document.getElementById('vault-timer').textContent = 
-      `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      `00:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }
 
   updateDisplay();
@@ -349,13 +452,40 @@ function checkVaultDirect() {
   if (user && user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
     startVaultTimer(user.vaultUnlockTime);
   } else {
-    document.getElementById('vault-timer').textContent = "NO LOCK";
+    document.getElementById('vault-timer').textContent = "READY";
   }
 
+  renderHistoryLogs(user ? user.logs || [] : []);
   showScreen('screen-vault');
 }
 
-// AUTO-LOGIN & APP INIT
+function renderHistoryLogs(logs) {
+  const container = document.getElementById('history-list');
+  container.innerHTML = '';
+
+  if (!logs || logs.length === 0) {
+    container.innerHTML = `<p class="empty-log">No transactions logged yet.</p>`;
+    return;
+  }
+
+  logs.forEach(item => {
+    const div = document.createElement('div');
+    const isSaved = item.type === 'SAVED';
+    div.className = `log-item ${isSaved ? 'saved' : 'spent'}`;
+    div.innerHTML = `
+      <div>
+        <div class="log-name">${item.name}</div>
+        <div class="sub-text">${item.date}</div>
+      </div>
+      <div class="log-val ${isSaved ? 'saved' : 'spent'}">
+        ${isSaved ? '+' : '-'}$${parseFloat(item.price).toFixed(2)}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// INITIALIZE APP
 window.addEventListener('DOMContentLoaded', () => {
   loadTrainerSession();
 });
