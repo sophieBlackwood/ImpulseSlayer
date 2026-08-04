@@ -1,5 +1,5 @@
-let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
-let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
+let selectedSpriteStaticTemp = 'assets/character/hero-male.png';
+let selectedSpriteIdleTemp = 'assets/character/hero-male-idle.gif';
 
 const battleState = {
   price: 0,
@@ -46,9 +46,9 @@ function handleLocalSignup(e) {
     wage: 15.00,
     foodPrice: 7.50,
     eventPrice: 25.00,
-    baseSpriteStatic: 'assets/characters/hero-male.png',
-    baseSpriteIdle: 'assets/characters/hero-male-idle.gif',
-    equippedSprite: 'assets/characters/hero-male-idle.gif',
+    baseSpriteStatic: 'assets/character/hero-male.png',
+    baseSpriteIdle: 'assets/character/hero-male-idle.gif',
+    equippedSprite: 'assets/character/hero-male-idle.gif',
     inventory: ['hat_default'],
     lvl: 1,
     xp: 0,
@@ -139,7 +139,7 @@ function loadTrainerSession() {
     document.getElementById('hub-saved').textContent = `$${user.savedTotal.toFixed(2)}`;
     document.getElementById('hub-exp').textContent = `${user.xp} / 100`;
     
-    const activeSprite = user.equippedSprite || user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif';
+    const activeSprite = user.equippedSprite || user.baseSpriteIdle || 'assets/character/hero-male-idle.gif';
     
     const hubImg = document.getElementById('hub-avatar-img');
     const battleImg = document.getElementById('battle-avatar-img');
@@ -507,7 +507,7 @@ function openShop() {
   if (!user) return;
 
   if (!user.inventory) user.inventory = ['hat_default'];
-  if (!user.equippedSprite) user.equippedSprite = user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif';
+  if (!user.equippedSprite) user.equippedSprite = user.baseSpriteIdle || 'assets/character/hero-male-idle.gif';
 
   document.getElementById('shop-gold-val').textContent = user.savedTotal.toFixed(2);
   document.getElementById('shop-preview-img').src = user.equippedSprite;
@@ -524,7 +524,7 @@ function updateShopButtons(user) {
     if (!btn) return;
 
     const isOwned = user.inventory.includes(itemId);
-    const baseSprite = user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif';
+    const baseSprite = user.baseSpriteIdle || 'assets/character/hero-male-idle.gif';
     const isEquipped = (itemId === 'hat_default' && user.equippedSprite === baseSprite) ||
                        (itemId === 'hat_crown' && user.equippedSprite === '👑') ||
                        (itemId === 'hat_party' && user.equippedSprite === '🥳') ||
@@ -553,7 +553,7 @@ function buyOrEquip(itemId, price, spriteIcon) {
   if (!user.inventory) user.inventory = ['hat_default'];
 
   const isOwned = user.inventory.includes(itemId);
-  const targetSprite = spriteIcon === 'BASE' ? (user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif') : spriteIcon;
+  const targetSprite = spriteIcon === 'BASE' ? (user.baseSpriteIdle || 'assets/character/hero-male-idle.gif') : spriteIcon;
 
   if (isOwned) {
     user.equippedSprite = targetSprite;
