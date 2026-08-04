@@ -95,12 +95,16 @@
       </div>
 
       <div class="sprite-selector-grid binary-grid">
-        <div class="sprite-option active" onclick="selectSprite('🧙‍♂️', this)">
-          <div class="sprite-icon">🧙‍♂️</div>
+        <div class="sprite-option active" onclick="selectSprite('assets/characters/hero-male.png', 'assets/characters/hero-male-idle.gif', this)">
+          <div class="sprite-icon">
+            <img src="assets/characters/hero-male.png" alt="Male Hero" class="character-img" />
+          </div>
           <span class="sprite-label">MALE</span>
         </div>
-        <div class="sprite-option" onclick="selectSprite('🧙‍♀️', this)">
-          <div class="sprite-icon">🧙‍♀️</div>
+        <div class="sprite-option" onclick="selectSprite('assets/characters/hero-female.png', 'assets/characters/hero-female-idle.gif', this)">
+          <div class="sprite-icon">
+            <img src="assets/characters/hero-female.png" alt="Female Hero" class="character-img" />
+          </div>
           <span class="sprite-label">FEMALE</span>
         </div>
       </div>
@@ -110,7 +114,9 @@
 
     <section id="screen-hub" class="screen">
       <div class="profile-header glass-card">
-        <div id="hub-avatar" class="avatar-box">🧙‍♂️</div>
+        <div id="hub-avatar" class="avatar-box">
+          <img id="hub-avatar-img" src="assets/characters/hero-male-idle.gif" alt="Hero Avatar" class="character-img" />
+        </div>
         <div class="user-meta">
           <h2 id="hub-trainer-name">TRAINER RED</h2>
           <span id="hub-trainer-lvl" class="lvl-tag">LVL 01</span>
@@ -132,9 +138,9 @@
       </div>
 
       <div class="hub-actions">
-        <button id="btn-engage-boss" class="btn btn-action-main" onclick="checkBossAvailability()">⚔️ ENGAGE BOSS</button>
-        <button class="btn btn-secondary" onclick="openShop()">🛍️ WARDROBE & SHOP</button>
-        <button class="btn btn-secondary" onclick="checkVaultDirect()">🛡️ INSPECT VAULT</button>
+        <button id="btn-engage-boss" class="btn btn-action-main" onclick="checkBossAvailability()"> ENGAGE BOSS</button>
+        <button class="btn btn-secondary" onclick="openShop()"> WARDROBE & SHOP</button>
+        <button class="btn btn-secondary" onclick="checkVaultDirect()">INSPECT VAULT</button>
         <button class="btn btn-ghost" onclick="logoutTrainer()">DISCONNECT</button>
       </div>
     </section>
@@ -170,7 +176,7 @@
 
         <hr class="divider" />
 
-        <button class="btn btn-secondary" onclick="showScreen('screen-sprite')">🎨 CHANGE HERO SPRITE</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-sprite')"> CHANGE HERO SPRITE</button>
 
         <hr class="divider" />
 
@@ -211,7 +217,9 @@
         </div>
 
         <div class="unit-row player-side">
-          <div id="player-sprite" class="sprite-box">🧙‍♂️</div>
+          <div id="player-sprite" class="sprite-box">
+            <img id="battle-avatar-img" src="assets/characters/hero-male-idle.gif" alt="Hero Battle Sprite" class="character-img" />
+          </div>
           <div class="hud-plate">
             <div class="plate-top">
               <span id="player-battle-name" class="unit-name">RED</span>
@@ -226,10 +234,10 @@
         <div id="battle-text" class="terminal-text">A wild impulse monster blocks your path!</div>
         
         <div id="battle-commands" class="cmd-grid">
-          <button class="cmd-btn" onclick="triggerQuiz()">⚔️ FIGHT</button>
-          <button class="cmd-btn" onclick="showMetrics()">📊 METRICS</button>
-          <button class="cmd-btn" onclick="restTurn()">🛡️ REST</button>
-          <button class="cmd-btn flee" onclick="runAway()">🏃 RUN</button>
+          <button class="cmd-btn" onclick="triggerQuiz()">FIGHT</button>
+          <button class="cmd-btn" onclick="showMetrics()">METRICS</button>
+          <button class="cmd-btn" onclick="restTurn()"> REST</button>
+          <button class="cmd-btn flee" onclick="runAway()"> RUN</button>
         </div>
 
         <div id="quiz-deck" class="quiz-deck hidden">
@@ -269,7 +277,9 @@
       </div>
 
       <div class="glass-card text-center mb-12">
-        <div id="shop-preview-avatar" class="avatar-box large">🧙‍♂️</div>
+        <div id="shop-preview-avatar" class="avatar-box large">
+          <img id="shop-preview-img" src="assets/characters/hero-male-idle.gif" alt="Hero Wardrobe Preview" class="character-img" />
+        </div>
         <p class="sub-text">CURRENT OUTFIT</p>
         <div class="gold-badge">🪙 <span id="shop-gold-val">0.00</span> GOLD</div>
       </div>
@@ -303,7 +313,7 @@
         </div>
 
         <div class="shop-item">
-          <div class="item-icon">🧙‍♂️</div>
+          <div class="item-icon">🛡️</div>
           <div class="item-info">
             <span class="item-name">DEFAULT STARTER</span>
             <span class="item-cost">FREE</span>
