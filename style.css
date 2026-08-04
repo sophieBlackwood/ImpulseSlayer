@@ -62,11 +62,39 @@ body {
 
 .screen.active { display: flex; }
 
-/* Shared background for Onboarding Screens */
+/* -------------------------------------------------------------
+   BACKGROUND ASSETS PATH INTEGRATION
+------------------------------------------------------------- */
+
+/* Onboarding (Login, Survey, Sprite Select) */
 .onboarding-screen {
-  background: url('login-bg.png') center/cover no-repeat;
+  background: url('assets/background/login-bg.png') center/cover no-repeat;
   image-rendering: pixelated;
 }
+
+/* Hub & Dashboard Screens */
+#screen-hub,
+#screen-settings,
+#screen-shop,
+#screen-vault {
+  background: url('assets/background/hub-bg.png') center/cover no-repeat;
+  image-rendering: pixelated;
+}
+
+/* Battle Arena Stage */
+.arena-stage {
+  flex: 1;
+  background: url('assets/background/battle-bg.png') center/cover no-repeat;
+  image-rendering: pixelated;
+  border: 1px solid var(--border-neon);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* ------------------------------------------------------------- */
 
 /* TYPOGRAPHY & CARDS */
 .logo-tag {
@@ -220,7 +248,7 @@ input:focus { border-color: var(--cyan); }
 .btn-danger { background: rgba(244, 63, 94, 0.15); color: var(--red); border: 1px solid var(--red); }
 .btn-ghost { background: transparent; color: var(--text-muted); font-family: var(--font-ui); font-size: 0.7rem; }
 
-/* HUB DASHBOARD & SVG ICON */
+/* HUB DASHBOARD & WHITE FONT AWESOME ICON */
 .profile-header {
   display: flex;
   align-items: center;
@@ -274,21 +302,10 @@ input:focus { border-color: var(--cyan); }
 
 .hub-actions { display: flex; flex-direction: column; gap: 4px; }
 
-/* BATTLE STAGE */
+/* BATTLE STAGE & HUD */
 .top-bar { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
 .back-btn { background: none; border: none; color: var(--cyan); font-family: var(--font-pixel); font-size: 0.6rem; cursor: pointer; }
 .screen-title { font-size: 0.7rem; color: var(--text-muted); }
-
-.arena-stage {
-  flex: 1;
-  background: #050811;
-  border: 1px solid var(--border-neon);
-  border-radius: 8px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
 
 .unit-row { display: flex; align-items: center; justify-content: space-between; }
 .hud-plate {
@@ -312,7 +329,7 @@ input:focus { border-color: var(--cyan); }
 /* BATTLE CONSOLE */
 .console-box { margin-top: 12px; }
 .terminal-text {
-  background: #000;
+  background: rgba(0, 0, 0, 0.85);
   border: 1px solid var(--border-neon);
   border-radius: 6px;
   padding: 12px;
