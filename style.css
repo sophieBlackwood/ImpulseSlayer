@@ -736,10 +736,14 @@ body {
     margin-top: 8px;
   }
 
+  /* ==========================================
+     SHOP ITEM STAGNANT PREVIEWS
+     ========================================== */
+
   .shop-grid {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     max-height: 380px;
     overflow-y: auto;
   }
@@ -751,7 +755,45 @@ body {
     background: var(--card-surface);
     border: 1px solid var(--card-border);
     border-radius: 10px;
-    padding: 10px 12px;
+    padding: 12px;
+  }
+
+  /* Container for the shop item thumbnail */
+  .shop-item-preview {
+    width: 64px;
+    height: 64px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  /* Enlarge image & pause sprite animations in shop */
+  .shop-item-preview img,
+  .shop-item .item-ph {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+    /* Pauses CSS animations or GIF playback behavior where applicable */
+    animation-play-state: paused !important; 
+  }
+
+  /* ==========================================
+     CHARACTER ANIMATION TOGGLES
+     ========================================== */
+
+  /* Default state: Standing / Stagnant */
+  .character-img.is-idle {
+    animation-play-state: paused;
+  }
+
+  /* Moving state: Apply/play active animations */
+  .character-img.is-moving {
+    animation-play-state: running;
   }
 
   .item-info { 
