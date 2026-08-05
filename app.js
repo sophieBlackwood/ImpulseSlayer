@@ -4,6 +4,7 @@ let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 const battleState = {
   price: 0,
   itemName: '',
+  category: 'general',
   enemyHP: 100,
   maxEnemyHP: 100,
   playerHP: 100,
@@ -144,7 +145,6 @@ function confirmSpriteSelection() {
   loadTrainerSession();
 }
 
-// SESSION MANAGEMENT & HUB LOAD
 function loadTrainerSession() {
   const activeEmail = localStorage.getItem('slayer_active_user');
   if (!activeEmail) {
@@ -206,12 +206,62 @@ function checkBossAvailability() {
 }
 
 // ==========================================
-// 3. COMBAT & MINDFUL REFLECTION SYSTEM
+// 3. COMBAT & DYNAMIC MONSTER SYSTEM
 // ==========================================
+
+function getMonsterData(itemName, price, category) {
+  const lowerName = itemName.toLowerCase();
+
+  // Price-based override for major purchases
+  if (price >= 150) {
+    return {
+      name: "Buyer's Remorse Titan",
+      sprite: "assets/monsters/monster-dragon-fomo.png"
+    };
+  }
+
+  // Category & Keyword matching
+  if (category === 'tech' || lowerName.includes('phone') || lowerName.includes('headphone') || lowerName.includes('gadget')) {
+    return {
+      name: "Upgrade Overlord",
+      sprite: "assets/monsters/monster-beast-impulse.png"
+    };
+  } else if (category === 'fashion' || lowerName.includes('shoes') || lowerName.includes('shirt') || lowerName.includes('clothes')) {
+    return {
+      name: "Fast-Fashion Phantom",
+      sprite: "assets/monsters/monster-phantom-subscription.png"
+    };
+  } else if (category === 'food' || lowerName.includes('snack') || lowerName.includes('coffee') || lowerName.includes('takeout')) {
+    return {
+      name: "Snack-Attack Slime",
+      sprite: "assets/monsters/monster-gremlin-splurge.png"
+    };
+  } else if (category === 'sub' || lowerName.includes('subscription') || lowerName.includes('pass')) {
+    return {
+      name: "Recurring Subscription Imp",
+      sprite: "assets/monsters/monster-phantom-subscription.png"
+    };
+  }
+
+  // Fallback defaults by price tier
+  if (price < 30) {
+    return {
+      name: "Splurge Gremlin",
+      sprite: "assets/monsters/monster-gremlin-splurge.png"
+    };
+  }
+
+  return {
+    name: "FOMO Beast",
+    sprite: "assets/monsters/monster-beast-impulse.png"
+  };
+}
 
 function startBattle() {
   const name = document.getElementById('target-name').value.trim();
   const price = parseFloat(document.getElementById('target-price').value);
+  const categorySelect = document.getElementById('target-category');
+  const category = categorySelect ? categorySelect.value : 'general';
 
   if (!name || isNaN(price) || price <= 0) return alert("Please enter a valid item name and price.");
 
@@ -221,25 +271,24 @@ function startBattle() {
 
   battleState.itemName = name;
   battleState.price = price;
+  battleState.category = category;
   battleState.maxEnemyHP = price > 100 ? 150 : 100;
   battleState.enemyHP = battleState.maxEnemyHP;
   battleState.maxPlayerHP = 100;
   battleState.playerHP = 100;
 
+  // Retrieve dynamic monster based on item attributes
+  const monster = getMonsterData(name, price, category);
   const enemySpriteContainer = document.getElementById('enemy-sprite');
-  if (price > 100) {
-    document.getElementById('enemy-name').textContent = "Big Impulse Monster";
-    enemySpriteContainer.innerHTML = `<img src="assets/monsters/monster-dragon.png" alt="Big Impulse Monster" class="character-img" />`;
-  } else {
-    document.getElementById('enemy-name').textContent = "Impulse Monster";
-    enemySpriteContainer.innerHTML = `<img src="assets/monsters/monster-beast.png" alt="Impulse Monster" class="character-img" />`;
-  }
+
+  document.getElementById('enemy-name').textContent = monster.name;
+  enemySpriteContainer.innerHTML = `<img src="${monster.sprite}" alt="${monster.name}" class="character-img" />`;
 
   document.getElementById('player-battle-name').textContent = user.trainerName;
   document.getElementById('player-battle-lvl').textContent = `Lv ${user.lvl}`;
 
   updateHPUI();
-  setDialogue(`An impulse purchase appears! Choose a reflection tactic to fight back.`);
+  setDialogue(`A wild ${monster.name} appears! Choose a reflection tactic to fight back.`);
   
   showAttackMenu();
   showScreen('screen-battle');
