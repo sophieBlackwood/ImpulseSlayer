@@ -1,13 +1,10 @@
 // ==========================================
-// CONFIG & INITIALIZATION
+// LOCAL STORAGE AUTH & GAME STATE
 // ==========================================
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
-const SUPABASE_URL = 'https://jojqltaalzoukopmwwu.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvanFsdGFhbHpvdWtvcG5td3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NDA0OTUsImV4cCI6MjEwMTUxNjQ5NX0.kKUXuQS-cAzRkALyXg2XMqlxa4DXbCNBaC5khRITULQ';
-
-const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+let currentUser = null;
 
 const battleState = {
   price: 0,
@@ -20,6 +17,13 @@ const battleState = {
   timerInterval: null,
   lastAnswer1: ''
 };
+
+// Helper function to persist state
+function saveUserData() {
+  if (currentUser && currentUser.email) {
+    localStorage.setItem(`user_${currentUser.email}`, JSON.stringify(currentUser));
+  }
+}
 
 // ==========================================
 // 1. UI NAVIGATION & SCREEN MANAGEMENT
@@ -48,7 +52,7 @@ function switchAuthTab(tab) {
 
 function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
-  if (!container) return;
+  if (!container || !user) return;
 
   const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
   const equippedList = user.equipped_items || [];
@@ -68,95 +72,72 @@ function renderCharacterAvatar(containerId, user) {
 // 2. AUTHENTICATION & PROFILE SETUP
 // ==========================================
 
-async function handleLocalSignup(e) {
+function handleLocalSignup(e) {
   e.preventDefault();
-  if (!supabaseClient) return alert("Supabase library is not loaded properly.");
-
   const name = document.getElementById('signup-name').value.trim();
   const email = document.getElementById('signup-email').value.trim().toLowerCase();
   const pass = document.getElementById('signup-pass').value;
 
-  if (pass.length < 6) {
-    alert("Password must be at least 6 characters long.");
+  const existingUser = localStorage.getItem(`user_${email}`);
+  if (existingUser) {
+    alert("An account with this email already exists!");
     return;
   }
 
-  const { data: authData, error: authError } = await supabaseClient.auth.signUp({
+  const newUser = {
     email: email,
-    password: pass
-  });
+    password: pass,
+    trainer_name: name || 'Hero',
+    wage: 15.00,
+    food_price: 7.50,
+    event_price: 25.00,
+    lvl: 1,
+    xp: 0,
+    saved_total: 0,
+    equipped_items: [],
+    inventory: ['hat_default'],
+    logs: [],
+    vault_unlock_time: null
+  };
 
-  if (authError) {
-    alert("Signup failed: " + authError.message);
-    return;
-  }
-
-  if (!authData.user) {
-    alert("Signup initiated. Please check your email for a confirmation link.");
-    return;
-  }
-
-  const userId = authData.user.id;
-
-  const { error: dbError } = await supabaseClient
-    .from('profiles')
-    .insert([{
-      id: userId,
-      email: email,
-      trainer_name: name || 'Hero',
-      wage: 15.00,
-      food_price: 7.50,
-      event_price: 25.00,
-      lvl: 1,
-      xp: 0,
-      saved_total: 0,
-      equipped_items: [],
-      inventory: ['hat_default'],
-      logs: []
-    }]);
-
-  if (dbError) {
-    alert("Profile creation failed: " + dbError.message);
-    return;
-  }
+  localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
+  localStorage.setItem('session_user', email);
+  currentUser = newUser;
 
   showScreen('screen-survey');
 }
 
-async function handleLocalLogin(e) {
+function handleLocalLogin(e) {
   e.preventDefault();
-  if (!supabaseClient) return alert("Supabase library is not loaded properly.");
-
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const pass = document.getElementById('login-pass').value;
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: pass
-  });
-
-  if (error) {
-    alert("Login failed: " + error.message);
+  const userData = localStorage.getItem(`user_${email}`);
+  if (!userData) {
+    alert("User not found!");
     return;
   }
 
+  const user = JSON.parse(userData);
+  if (user.password !== pass) {
+    alert("Incorrect password!");
+    return;
+  }
+
+  localStorage.setItem('session_user', email);
+  currentUser = user;
   loadTrainerSession();
 }
 
-async function saveFinancialProfile(e) {
+function saveFinancialProfile(e) {
   if (e) e.preventDefault();
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return showScreen('screen-login');
+  if (!currentUser) return showScreen('screen-login');
 
-  const wage = parseFloat(document.getElementById('survey-wage').value) || 15.00;
-  const food = parseFloat(document.getElementById('survey-food').value) || 7.50;
-  const eventVal = parseFloat(document.getElementById('survey-event').value) || 25.00;
+  currentUser.wage = parseFloat(document.getElementById('survey-wage').value) || 15.00;
+  currentUser.food_price = parseFloat(document.getElementById('survey-food').value) || 7.50;
+  currentUser.event_price = parseFloat(document.getElementById('survey-event').value) || 25.00;
 
-  await supabaseClient
-    .from('profiles')
-    .update({ wage: wage, food_price: food, event_price: eventVal })
-    .eq('id', session.user.id);
-
+  saveUserData();
   showScreen('screen-sprite');
 }
 
@@ -168,56 +149,46 @@ function selectSprite(staticSrc, idleSrc, element) {
   element.classList.add('active');
 }
 
-async function confirmSpriteSelection() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return showScreen('screen-login');
+function confirmSpriteSelection() {
+  if (!currentUser) return showScreen('screen-login');
 
-  await supabaseClient
-    .from('profiles')
-    .update({
-      base_sprite_static: selectedSpriteStaticTemp,
-      base_sprite_idle: selectedSpriteIdleTemp
-    })
-    .eq('id', session.user.id);
+  currentUser.base_sprite_static = selectedSpriteStaticTemp;
+  currentUser.base_sprite_idle = selectedSpriteIdleTemp;
 
+  saveUserData();
   loadTrainerSession();
 }
 
-async function loadTrainerSession() {
-  if (!supabaseClient) return;
-  const { data: { session } } = await supabaseClient.auth.getSession();
-
-  if (!session) {
+function loadTrainerSession() {
+  const sessionEmail = localStorage.getItem('session_user');
+  if (!sessionEmail) {
     showScreen('screen-login');
     return;
   }
 
-  const { data: user, error } = await supabaseClient
-    .from('profiles')
-    .select('*')
-    .eq('id', session.user.id)
-    .single();
-
-  if (error || !user) {
-    console.error("Error fetching profile:", error);
+  const userData = localStorage.getItem(`user_${sessionEmail}`);
+  if (!userData) {
+    showScreen('screen-login');
     return;
   }
 
-  if (document.getElementById('hub-trainer-name')) document.getElementById('hub-trainer-name').textContent = user.trainer_name || 'Hero';
-  if (document.getElementById('hub-trainer-lvl')) document.getElementById('hub-trainer-lvl').textContent = `Level ${user.lvl || 1}`;
-  if (document.getElementById('hub-saved')) document.getElementById('hub-saved').textContent = `$${parseFloat(user.saved_total || 0).toFixed(2)}`;
-  if (document.getElementById('hub-exp')) document.getElementById('hub-exp').textContent = `${user.xp || 0} / 100`;
+  currentUser = JSON.parse(userData);
 
-  renderCharacterAvatar('hub-avatar', user);
-  renderCharacterAvatar('player-sprite', user);
-  renderCharacterAvatar('shop-preview-avatar', user);
+  if (document.getElementById('hub-trainer-name')) document.getElementById('hub-trainer-name').textContent = currentUser.trainer_name || 'Hero';
+  if (document.getElementById('hub-trainer-lvl')) document.getElementById('hub-trainer-lvl').textContent = `Level ${currentUser.lvl || 1}`;
+  if (document.getElementById('hub-saved')) document.getElementById('hub-saved').textContent = `$${parseFloat(currentUser.saved_total || 0).toFixed(2)}`;
+  if (document.getElementById('hub-exp')) document.getElementById('hub-exp').textContent = `${currentUser.xp || 0} / 100`;
 
-  if (document.getElementById('settings-name')) document.getElementById('settings-name').value = user.trainer_name || '';
-  if (document.getElementById('settings-wage')) document.getElementById('settings-wage').value = user.wage || 15.00;
-  if (document.getElementById('settings-food')) document.getElementById('settings-food').value = user.food_price || 7.50;
-  if (document.getElementById('settings-event')) document.getElementById('settings-event').value = user.event_price || 25.00;
+  renderCharacterAvatar('hub-avatar', currentUser);
+  renderCharacterAvatar('player-sprite', currentUser);
+  renderCharacterAvatar('shop-preview-avatar', currentUser);
 
-  checkLockStatus(user);
+  if (document.getElementById('settings-name')) document.getElementById('settings-name').value = currentUser.trainer_name || '';
+  if (document.getElementById('settings-wage')) document.getElementById('settings-wage').value = currentUser.wage || 15.00;
+  if (document.getElementById('settings-food')) document.getElementById('settings-food').value = currentUser.food_price || 7.50;
+  if (document.getElementById('settings-event')) document.getElementById('settings-event').value = currentUser.event_price || 25.00;
+
+  checkLockStatus(currentUser);
   showScreen('screen-hub');
 }
 
@@ -233,13 +204,10 @@ function checkLockStatus(user) {
   }
 }
 
-async function checkBossAvailability() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return showScreen('screen-login');
+function checkBossAvailability() {
+  if (!currentUser) return showScreen('screen-login');
 
-  const { data: user } = await supabaseClient.from('profiles').select('vault_unlock_time').eq('id', session.user.id).single();
-
-  if (user && user.vault_unlock_time && user.vault_unlock_time > Date.now()) {
+  if (currentUser.vault_unlock_time && currentUser.vault_unlock_time > Date.now()) {
     alert("Battles are temporarily paused during your cooling period. Check your vault timer!");
     checkVaultDirect();
   } else {
@@ -273,16 +241,17 @@ function getMonsterData(itemName, price, category) {
     : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
 }
 
-async function startBattle() {
-  const name = document.getElementById('target-name').value.trim();
-  const price = parseFloat(document.getElementById('target-price').value);
+function startBattle() {
+  const nameInput = document.getElementById('target-name');
+  const priceInput = document.getElementById('target-price');
+  if (!nameInput || !priceInput) return;
+
+  const name = nameInput.value.trim();
+  const price = parseFloat(priceInput.value);
   const categorySelect = document.getElementById('target-category');
   const category = categorySelect ? categorySelect.value : 'general';
 
   if (!name || isNaN(price) || price <= 0) return alert("Please enter a valid item name and price.");
-
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  const { data: user } = await supabaseClient.from('profiles').select('trainer_name, lvl').eq('id', session.user.id).single();
 
   battleState.itemName = name;
   battleState.price = price;
@@ -296,8 +265,8 @@ async function startBattle() {
   document.getElementById('enemy-name').textContent = monster.name;
   document.getElementById('enemy-sprite').innerHTML = `<img src="${monster.sprite}" alt="${monster.name}" class="character-img" />`;
 
-  document.getElementById('player-battle-name').textContent = user ? user.trainer_name : 'Hero';
-  document.getElementById('player-battle-lvl').textContent = `Lv ${user ? user.lvl : 1}`;
+  document.getElementById('player-battle-name').textContent = currentUser ? currentUser.trainer_name : 'Hero';
+  document.getElementById('player-battle-lvl').textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
 
   updateHPUI();
   setDialogue(`A wild ${monster.name} appears! Choose a reflection tactic to fight back.`);
@@ -408,14 +377,11 @@ function processPlayerAttack(attackType) {
   }
 }
 
-async function monsterRealityCounter(attackType) {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  const { data: user } = await supabaseClient.from('profiles').select('wage, food_price, event_price').eq('id', session.user.id).single();
-
+function monsterRealityCounter(attackType) {
   const price = battleState.price;
-  const wage = user ? user.wage : 15.00;
-  const food = user ? user.food_price : 7.50;
-  const eventVal = user ? user.event_price : 25.00;
+  const wage = currentUser ? currentUser.wage : 15.00;
+  const food = currentUser ? currentUser.food_price : 7.50;
+  const eventVal = currentUser ? currentUser.event_price : 25.00;
 
   const hoursWorked = (price / wage).toFixed(1);
   const mealsCount = Math.floor(price / food);
@@ -445,14 +411,13 @@ async function monsterRealityCounter(attackType) {
   }
 }
 
-async function victorySavedMoney() {
+function victorySavedMoney() {
   if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
   alert(`Great job! You beat the impulse and saved $${battleState.price.toFixed(2)}.`);
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  const unlockTime = Date.now() + (15 * 60 * 1000);
-
-  await supabaseClient.from('profiles').update({ vault_unlock_time: unlockTime }).eq('id', session.user.id);
+  if (currentUser) {
+    currentUser.vault_unlock_time = Date.now() + (15 * 60 * 1000);
+  }
 
   updateTrainerStats(50, battleState.price, {
     name: battleState.itemName,
@@ -481,54 +446,53 @@ function giveInAndSpend() {
 // 4. SETTINGS & ACCOUNT ACTIONS
 // ==========================================
 
-async function updateTrainerName() {
+function updateTrainerName() {
   const newName = document.getElementById('settings-name').value.trim();
   if (!newName) return alert("Please enter a valid name.");
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  await supabaseClient.from('profiles').update({ trainer_name: newName }).eq('id', session.user.id);
-
-  alert("Trainer name saved.");
-  loadTrainerSession();
+  if (currentUser) {
+    currentUser.trainer_name = newName;
+    saveUserData();
+    alert("Trainer name saved.");
+    loadTrainerSession();
+  }
 }
 
-async function updateMetricsSettings() {
+function updateMetricsSettings() {
   const wage = parseFloat(document.getElementById('settings-wage').value);
   const food = parseFloat(document.getElementById('settings-food').value);
   const eventVal = parseFloat(document.getElementById('settings-event').value);
 
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  await supabaseClient.from('profiles').update({
-    wage: wage || 15.00,
-    food_price: food || 7.50,
-    event_price: eventVal || 25.00
-  }).eq('id', session.user.id);
+  if (currentUser) {
+    currentUser.wage = wage || 15.00;
+    currentUser.food_price = food || 7.50;
+    currentUser.event_price = eventVal || 25.00;
 
-  alert("Financial metrics saved.");
-  loadTrainerSession();
-}
-
-async function deleteAccount() {
-  if (confirm("Are you sure you want to delete your account? This will erase all your progress.")) {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    await supabaseClient.from('profiles').delete().eq('id', session.user.id);
-    await supabaseClient.auth.signOut();
-    alert("Account deleted.");
-    showScreen('screen-login');
+    saveUserData();
+    alert("Financial metrics saved.");
+    loadTrainerSession();
   }
 }
 
-async function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return;
+function deleteAccount() {
+  if (confirm("Are you sure you want to delete your account? This will erase all your progress.")) {
+    if (currentUser) {
+      localStorage.removeItem(`user_${currentUser.email}`);
+      localStorage.removeItem('session_user');
+      currentUser = null;
+      alert("Account deleted.");
+      showScreen('screen-login');
+    }
+  }
+}
 
-  const { data: user } = await supabaseClient.from('profiles').select('xp, lvl, saved_total, logs').eq('id', session.user.id).single();
-  if (!user) return;
+function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
+  if (!currentUser) return;
 
-  let newXp = (user.xp || 0) + xpGained;
-  let newLvl = user.lvl || 1;
-  let newSaved = parseFloat(user.saved_total || 0) + goldSaved;
-  let newLogs = user.logs || [];
+  let newXp = (currentUser.xp || 0) + xpGained;
+  let newLvl = currentUser.lvl || 1;
+  let newSaved = parseFloat(currentUser.saved_total || 0) + goldSaved;
+  let newLogs = currentUser.logs || [];
 
   if (logEntry) newLogs.unshift(logEntry);
 
@@ -538,18 +502,18 @@ async function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
     alert(`Level Up! You reached Level ${newLvl}.`);
   }
 
-  await supabaseClient.from('profiles').update({
-    xp: newXp,
-    lvl: newLvl,
-    saved_total: newSaved,
-    logs: newLogs
-  }).eq('id', session.user.id);
+  currentUser.xp = newXp;
+  currentUser.lvl = newLvl;
+  currentUser.saved_total = newSaved;
+  currentUser.logs = newLogs;
 
+  saveUserData();
   loadTrainerSession();
 }
 
-async function logoutTrainer() {
-  await supabaseClient.auth.signOut();
+function logoutTrainer() {
+  localStorage.removeItem('session_user');
+  currentUser = null;
   showScreen('screen-login');
 }
 
@@ -560,16 +524,16 @@ async function logoutTrainer() {
 function startVaultTimer(unlockTimestamp) {
   if (battleState.timerInterval) clearInterval(battleState.timerInterval);
 
-  async function updateDisplay() {
+  function updateDisplay() {
     const remaining = unlockTimestamp - Date.now();
 
     if (remaining <= 0) {
       clearInterval(battleState.timerInterval);
       document.getElementById('vault-timer').textContent = "Ready";
 
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        await supabaseClient.from('profiles').update({ vault_unlock_time: null }).eq('id', session.user.id);
+      if (currentUser) {
+        currentUser.vault_unlock_time = null;
+        saveUserData();
         loadTrainerSession();
       }
       return;
@@ -586,19 +550,16 @@ function startVaultTimer(unlockTimestamp) {
   battleState.timerInterval = setInterval(updateDisplay, 1000);
 }
 
-async function checkVaultDirect() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return showScreen('screen-login');
+function checkVaultDirect() {
+  if (!currentUser) return showScreen('screen-login');
 
-  const { data: user } = await supabaseClient.from('profiles').select('vault_unlock_time, logs').eq('id', session.user.id).single();
-
-  if (user && user.vault_unlock_time && user.vault_unlock_time > Date.now()) {
-    startVaultTimer(user.vault_unlock_time);
+  if (currentUser.vault_unlock_time && currentUser.vault_unlock_time > Date.now()) {
+    startVaultTimer(currentUser.vault_unlock_time);
   } else {
     document.getElementById('vault-timer').textContent = "Ready";
   }
 
-  renderHistoryLogs(user ? user.logs || [] : []);
+  renderHistoryLogs(currentUser.logs || []);
   showScreen('screen-vault');
 }
 
@@ -633,19 +594,15 @@ function renderHistoryLogs(logs) {
 // 6. SHOP & MULTI-EQUIP SYSTEM
 // ==========================================
 
-async function openShop() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return showScreen('screen-login');
-
-  const { data: user } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-  if (!user) return;
+function openShop() {
+  if (!currentUser) return showScreen('screen-login');
 
   if (document.getElementById('shop-gold-val')) {
-    document.getElementById('shop-gold-val').textContent = parseFloat(user.saved_total || 0).toFixed(2);
+    document.getElementById('shop-gold-val').textContent = parseFloat(currentUser.saved_total || 0).toFixed(2);
   }
-  renderCharacterAvatar('shop-preview-avatar', user);
+  renderCharacterAvatar('shop-preview-avatar', currentUser);
 
-  updateShopButtons(user);
+  updateShopButtons(currentUser);
   showScreen('screen-shop');
 }
 
@@ -702,16 +659,12 @@ function updateShopButtons(user) {
   });
 }
 
-async function buyOrEquip(itemId, price, spritePath) {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) return showScreen('screen-login');
+function buyOrEquip(itemId, price, spritePath) {
+  if (!currentUser) return showScreen('screen-login');
 
-  const { data: user } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
-  if (!user) return;
-
-  let equipped = user.equipped_items || [];
-  let inventory = user.inventory || ['hat_default'];
-  let savedTotal = parseFloat(user.saved_total || 0);
+  let equipped = currentUser.equipped_items || [];
+  let inventory = currentUser.inventory || ['hat_default'];
+  let savedTotal = parseFloat(currentUser.saved_total || 0);
 
   if (itemId === 'hat_default') {
     equipped = [];
@@ -737,12 +690,11 @@ async function buyOrEquip(itemId, price, spritePath) {
     }
   }
 
-  await supabaseClient.from('profiles').update({
-    equipped_items: equipped,
-    inventory: inventory,
-    saved_total: savedTotal
-  }).eq('id', session.user.id);
+  currentUser.equipped_items = equipped;
+  currentUser.inventory = inventory;
+  currentUser.saved_total = savedTotal;
 
+  saveUserData();
   loadTrainerSession();
   openShop();
 }
@@ -752,24 +704,16 @@ async function buyOrEquip(itemId, price, spritePath) {
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('form-signup');
-  if (signupForm) {
-    signupForm.addEventListener('submit', handleLocalSignup);
-  }
+  if (signupForm) signupForm.addEventListener('submit', handleLocalSignup);
 
   const loginForm = document.getElementById('form-login');
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleLocalLogin);
-  }
+  if (loginForm) loginForm.addEventListener('submit', handleLocalLogin);
 
   const tabLogin = document.getElementById('tab-login');
   const tabSignup = document.getElementById('tab-signup');
 
-  if (tabLogin) {
-    tabLogin.addEventListener('click', () => switchAuthTab('login'));
-  }
-  if (tabSignup) {
-    tabSignup.addEventListener('click', () => switchAuthTab('signup'));
-  }
+  if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
+  if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
 
   loadTrainerSession();
 });
