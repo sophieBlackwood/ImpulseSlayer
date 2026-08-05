@@ -15,7 +15,8 @@ const battleState = {
   playerHP: 100,
   maxPlayerHP: 100,
   timerInterval: null,
-  lastAnswer1: ''
+  lastAnswer1: '',
+  isMoving: false
 };
 
 // Helper function to persist state
@@ -33,6 +34,9 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(id);
   if (target) target.classList.add('active');
+
+  // Stop moving state when switching screens
+  setMovementState(false);
 }
 
 function switchAuthTab(tab) {
@@ -54,10 +58,13 @@ function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
-  const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
+  const baseSprite = battleState.isMoving 
+    ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
+    : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
+
   const equippedList = user.equipped_items || [];
 
-  let layersHTML = `<img src="${baseSprite}" alt="Base Hero" class="character-img base-layer" />`;
+  let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${battleState.isMoving ? 'is-moving' : 'is-idle'}" />`;
 
   equippedList.forEach(path => {
     if (path && path !== 'BASE') {
@@ -66,6 +73,18 @@ function renderCharacterAvatar(containerId, user) {
   });
 
   container.innerHTML = layersHTML;
+}
+
+/* Dynamic Sprite Movement State Handler */
+function setMovementState(moving) {
+  if (battleState.isMoving === moving) return;
+  battleState.isMoving = moving;
+
+  if (currentUser) {
+    renderCharacterAvatar('hub-avatar', currentUser);
+    renderCharacterAvatar('player-sprite', currentUser);
+    renderCharacterAvatar('shop-preview-avatar', currentUser);
+  }
 }
 
 // ==========================================
@@ -97,7 +116,9 @@ function handleLocalSignup(e) {
     equipped_items: [],
     inventory: ['hat_default'],
     logs: [],
-    vault_unlock_time: null
+    vault_unlock_time: null,
+    base_sprite_idle: 'assets/characters/hero-male-idle.gif',
+    base_sprite_walk: 'assets/characters/hero-male-walk.gif'
   };
 
   localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
@@ -700,7 +721,7 @@ function buyOrEquip(itemId, price, spritePath) {
 }
 
 // ==========================================
-// 7. INITIALIZATION & EVENT BINDING
+// 7. INITIALIZATION & KEYBOARD LISTENERS
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('form-signup');
@@ -714,6 +735,26 @@ window.addEventListener('DOMContentLoaded', () => {
 
   if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
   if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
+
+  // Global WASD / Arrow Key Listener for character movement animation toggling
+  const moveKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+  const activeKeys = new Set();
+
+  window.addEventListener('keydown', (e) => {
+    if (moveKeys.includes(e.code)) {
+      activeKeys.add(e.code);
+      setMovementState(true);
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    if (moveKeys.includes(e.code)) {
+      activeKeys.delete(e.code);
+      if (activeKeys.size === 0) {
+        setMovementState(false);
+      }
+    }
+  });
 
   loadTrainerSession();
 });
