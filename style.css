@@ -203,22 +203,32 @@ body {
   display: flex;
   gap: 8px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--card-border);
-  padding-bottom: 10px;
+  border-bottom: 2px solid var(--card-border);
+  padding-bottom: 0; /* Remove extra padding so active borders align flush */
 }
 
 .toggle-btn {
   flex: 1;
   background: transparent;
   border: none;
+  border-bottom: 2px solid transparent; /* Reserve space for active/hover line */
   color: var(--text-muted);
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 0.9rem;
-  padding: 8px;
+  padding: 10px 8px;
   cursor: pointer;
+  margin-bottom: -2px; /* Pull down to overlap wrapper border */
+  transition: color 0.2s, border-color 0.2s;
 }
 
+/* Hover effect on inactive tab */
+.toggle-btn:hover:not(.active) {
+  color: var(--text-primary);
+  border-bottom-color: var(--card-border);
+}
+
+/* Active selected tab state */
 .toggle-btn.active {
   color: var(--poke-yellow);
   border-bottom: 2px solid var(--poke-yellow);
