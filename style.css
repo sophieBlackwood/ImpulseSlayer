@@ -709,3 +709,20 @@ input:focus {
   font-size: 0.75rem; 
   margin-top: 0; 
 }
+
+.custom-select {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--card-surface);
+  border: 2px solid var(--card-border);
+  color: var(--text-primary);
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.custom-select option {
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+}
