@@ -42,6 +42,10 @@ body {
   padding: 12px;
 }
 
+/* ==========================================
+   ALL STYLES SCOPED TO .APP-VIEWPORT
+   ========================================== */
+
 .app-viewport {
   width: 100vw;
   max-width: 420px;
@@ -55,672 +59,675 @@ body {
   flex-direction: column;
   overflow: hidden;
   position: relative;
-}
-
-.screen {
-  display: none;
-  height: 100%;
-  padding: 24px 20px;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow-y: auto;
-}
-
-.screen.active { 
-  display: flex; 
-}
-
-/* BACKGROUND INTEGRATION */
-.onboarding-screen {
-  background: url('assets/background/login-bg.png') center/cover no-repeat;
-}
-
-#screen-hub,
-#screen-quest,
-#screen-settings,
-#screen-shop,
-#screen-vault {
-  background: url('assets/background/hub-bg.png') center/cover no-repeat;
-}
-
-.arena-stage {
-  flex: 1;
-  background: url('assets/background/battle-bg.png') center/cover no-repeat;
-  border: 2px solid var(--card-border);
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* STACKING MULTIPLE COSTUME LAYERS */
-.avatar-box,
-.sprite-box,
-#shop-preview-avatar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.base-layer {
-  position: relative;
-  z-index: 1;
-}
-
-.costume-overlay-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.character-img {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-}
-
-/* DRAWING PLACEHOLDERS */
-.img-placeholder {
-  border: 2px dashed var(--card-border);
-  background: rgba(24, 15, 18, 0.8);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px;
-  color: var(--poke-yellow);
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-align: center;
-}
-
-.icon-ph {
-  width: 36px;
-  height: 36px;
-  font-size: 0.55rem;
-  padding: 2px;
-}
-
-.monster-ph {
-  width: 96px;
-  height: 96px;
-}
-
-.item-ph {
-  width: 48px;
-  height: 48px;
-  font-size: 0.6rem;
-}
-
-/* TYPOGRAPHY & CARDS */
-.logo-tag {
-  font-size: 0.75rem;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  background: rgba(122, 154, 72, 0.15);
-  color: var(--poke-blue);
-  border: 1px solid var(--poke-blue);
-  padding: 4px 10px;
-  border-radius: 20px;
-  display: inline-block;
-  margin-bottom: 12px;
-}
-
-.logo-tag.success {
-  background: rgba(65, 82, 31, 0.25);
-  color: var(--poke-yellow);
-  border-color: var(--hp-green);
-}
-
-.main-title {
-  font-family: var(--font-heading);
-  font-size: 1.6rem;
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--poke-yellow);
-  margin-bottom: 6px;
-}
-
-.sub-text {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.glass-card {
-  background: var(--card-surface);
-  border: 2px solid var(--card-border);
-  border-radius: 14px;
-  padding: 18px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.scrollable-card {
-  max-height: 520px;
-  overflow-y: auto;
-}
-
-.auth-toggle {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-  border-bottom: 2px solid var(--card-border);
-  padding-bottom: 0;
-}
-
-.toggle-btn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text-muted);
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.9rem;
-  padding: 10px 8px;
-  cursor: pointer;
-  margin-bottom: -2px;
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.toggle-btn:hover:not(.active) {
-  color: var(--text-primary);
-  border-bottom-color: var(--card-border);
-}
-
-.toggle-btn.active {
-  color: var(--poke-yellow);
-  border-bottom: 2px solid var(--poke-yellow);
-}
-
-.input-field {
-  margin-bottom: 14px;
-  text-align: left;
-}
-
-.input-field label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--poke-yellow);
-  margin-bottom: 6px;
-}
-
-input {
-  width: 100%;
-  padding: 12px;
-  background: var(--bg-deep);
-  border: 1px solid var(--card-border);
-  border-radius: 8px;
-  color: var(--text-primary);
-  font-family: var(--font-main);
-  font-size: 0.9rem;
-  outline: none;
-}
-
-input:focus { 
-  border-color: var(--poke-yellow); 
-}
-
-.divider {
-  border: 0;
-  height: 1px;
-  background: var(--card-border);
-  margin: 16px 0;
-}
-
-/* SPRITE SELECTOR GRID */
-.sprite-selector-grid.binary-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin: 20px 0;
-}
-
-.sprite-option {
-  background: var(--card-surface);
-  border: 2px solid var(--card-border);
-  border-radius: 12px;
-  padding: 20px 12px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.sprite-option:hover { 
-  border-color: var(--poke-yellow);
-  transform: translateY(-2px);
-}
-
-.sprite-option.active {
-  border-color: var(--poke-yellow);
-  background: rgba(242, 201, 76, 0.15);
-}
-
-.sprite-icon { 
-  margin-bottom: 8px; 
-}
-
-.sprite-label { 
-  font-size: 0.85rem; 
-  font-weight: 600; 
-  color: var(--text-primary); 
-}
-
-/* BUTTONS */
-.btn {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 10px;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: transform 0.1s ease, background-color 0.2s;
-}
-
-.btn:active { 
-  transform: scale(0.98); 
-}
-
-.btn-primary { 
-  background: var(--poke-yellow); 
-  color: var(--bg-deep); 
-}
-
-.btn-action-main { 
-  background: var(--hp-green); 
-  color: var(--text-primary); 
-  padding: 16px; 
-  font-size: 0.95rem; 
-}
-
-.btn-secondary { 
-  background: var(--color-umber); 
-  color: var(--text-primary); 
-  border: 1px solid var(--card-border); 
-}
-
-.btn-equipped { 
-  background: var(--color-olive); 
-  color: var(--text-primary); 
-  font-weight: 700; 
-}
-
-.btn-danger { 
-  background: rgba(217, 107, 67, 0.2); 
-  color: var(--hp-red); 
-  border: 1px solid var(--hp-red); 
-}
-
-.btn-ghost { 
-  background: transparent; 
-  color: var(--text-muted); 
-  font-size: 0.85rem; 
-}
-
-/* HUB DASHBOARD */
-.profile-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.avatar-box.large .character-img { 
-  width: 96px; 
-  height: 96px; 
-  margin-bottom: 6px; 
-}
-
-.user-meta { 
-  flex: 1; 
-}
-
-.user-meta h2 { 
-  font-family: var(--font-heading); 
-  font-size: 1.1rem; 
-  color: var(--text-primary); 
-  margin-bottom: 2px; 
-}
-
-.lvl-tag { 
-  font-size: 0.8rem; 
-  color: var(--poke-yellow); 
-  font-weight: 600; 
-}
-
-.settings-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-.stats-grid { 
-  display: flex; 
-  gap: 12px; 
-  margin: 16px 0; 
-}
-
-.stat-card {
-  flex: 1;
-  background: var(--card-surface);
-  border: 2px solid var(--card-border);
-  border-radius: 10px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-label { 
-  font-size: 0.75rem; 
-  color: var(--text-muted); 
-}
-
-.stat-val { 
-  font-family: var(--font-heading); 
-  font-size: 1.1rem; 
-  color: var(--poke-yellow); 
-  font-weight: 700; 
-}
-
-.hub-actions { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 4px; 
-}
-
-/* BATTLE STAGE & HUD */
-.top-bar { 
-  display: flex; 
-  align-items: center; 
-  gap: 16px; 
-  margin-bottom: 12px; 
-}
-
-.back-btn { 
-  background: none; 
-  border: none; 
-  color: var(--poke-yellow); 
-  font-family: var(--font-heading); 
-  font-weight: 600; 
-  font-size: 0.85rem; 
-  cursor: pointer; 
-}
-
-.screen-title { 
-  font-size: 0.85rem; 
-  color: var(--text-muted); 
-}
-
-.unit-row { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-}
-
-.hud-plate {
-  background: var(--card-surface);
-  border: 2px solid var(--card-border);
-  border-radius: 10px;
-  padding: 10px;
-  width: 170px;
-}
-
-.plate-top { 
-  display: flex; 
-  justify-content: space-between; 
-  font-size: 0.75rem; 
-  font-weight: 600; 
-  margin-bottom: 6px; 
-}
-
-.unit-name { 
-  color: var(--text-primary); 
-}
-
-.unit-lvl { 
-  color: var(--poke-yellow); 
-}
-
-.hp-bar-bg {
-  width: 100%;
-  height: 10px;
-  background: var(--bg-deep);
-  border: 1px solid var(--card-border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.hp-bar-fill {
-  width: 100%;
-  height: 100%;
-  background: var(--hp-red);
-  transition: width 0.3s ease;
-}
-
-.player-hp { 
-  background: var(--hp-green); 
-}
-
-.arena-stage .sprite-box .character-img {
-  width: 96px;
-  height: 96px;
-}
-
-/* BATTLE CONSOLE & ATTACK MENU */
-.console-box { 
-  margin-top: 12px; 
-}
-
-.terminal-text {
-  background: var(--bg-deep);
-  border: 2px solid var(--card-border);
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 0.85rem;
-  line-height: 1.4;
-  color: var(--poke-yellow);
-  min-height: 56px;
-  margin-bottom: 10px;
-}
-
-.attack-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.attack-btn {
-  background: var(--card-surface);
-  border: 2px solid var(--card-border);
-  border-radius: 10px;
-  color: var(--text-primary);
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.8rem;
-  padding: 12px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.attack-btn small {
-  display: block;
-  font-family: var(--font-main);
-  font-weight: 400;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.attack-btn:hover { 
-  border-color: var(--poke-yellow); 
-  background: rgba(242, 201, 76, 0.15); 
-}
-
-.attack-btn.flee {
-  color: var(--hp-red);
-  border-color: var(--hp-red);
-}
-
-.hidden { 
-  display: none !important; 
-}
-
-/* VAULT & LOGS */
-.timer-display {
-  font-family: var(--font-heading);
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--poke-yellow);
-  margin: 12px 0;
-}
-
-.history-box {
-  margin: 12px 0;
-  max-height: 240px;
-  display: flex;
-  flex-direction: column;
-}
-
-.history-title {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-  display: block;
-}
-
-.history-list {
-  overflow-y: auto;
-  max-height: 180px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.empty-log {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  text-align: center;
-  padding: 10px;
-}
-
-.log-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--bg-deep);
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--card-border);
-  font-size: 0.8rem;
-}
-
-.log-item.saved { 
-  border-left: 4px solid var(--hp-green); 
-}
-
-.log-item.spent { 
-  border-left: 4px solid var(--hp-red); 
-}
-
-.log-name { 
-  font-weight: 600; 
-  color: var(--text-primary); 
-}
-
-.log-val.saved { 
-  color: var(--poke-blue); 
-  font-weight: 700; 
-}
-
-.log-val.spent { 
-  color: var(--hp-red); 
-  font-weight: 700; 
-}
-
-/* SHOP & WARDROBE */
-.mb-12 { 
-  margin-bottom: 12px; 
-}
-
-.gold-badge {
-  display: inline-block;
-  background: rgba(242, 201, 76, 0.15);
-  border: 1px solid var(--poke-yellow);
-  color: var(--poke-yellow);
-  font-weight: 600;
-  font-size: 0.8rem;
-  padding: 4px 12px;
-  border-radius: 12px;
-  margin-top: 8px;
-}
-
-.shop-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 380px;
-  overflow-y: auto;
-}
-
-.shop-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--card-surface);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 10px 12px;
-}
-
-.item-info { 
-  flex: 1; 
-  margin-left: 12px; 
-  text-align: left; 
-}
-
-.item-name { 
-  display: block; 
-  font-size: 0.85rem; 
-  font-weight: 600; 
-  color: var(--text-primary); 
-}
-
-.item-cost { 
-  font-size: 0.75rem; 
-  color: var(--poke-yellow); 
-}
-
-.btn-sm { 
-  width: auto; 
-  padding: 8px 14px; 
-  font-size: 0.75rem; 
-  margin-top: 0; 
-}
-
-.custom-select {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--card-surface);
-  border: 2px solid var(--card-border);
-  color: var(--text-primary);
-  border-radius: 8px;
-  font-size: 1rem;
-  outline: none;
-  cursor: pointer;
-}
-
-.custom-select option {
-  background-color: var(--bg-deep);
-  color: var(--text-primary);
+
+  /* SCREEN LAYOUTS */
+  .screen {
+    display: none;
+    height: 100%;
+    padding: 24px 20px;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-y: auto;
+
+    &.active { 
+      display: flex; 
+    }
+  }
+
+  /* BACKGROUND INTEGRATION */
+  .onboarding-screen {
+    background: url('assets/background/login-bg.png') center/cover no-repeat;
+  }
+
+  #screen-hub,
+  #screen-quest,
+  #screen-settings,
+  #screen-shop,
+  #screen-vault {
+    background: url('assets/background/hub-bg.png') center/cover no-repeat;
+  }
+
+  .arena-stage {
+    flex: 1;
+    background: url('assets/background/battle-bg.png') center/cover no-repeat;
+    border: 2px solid var(--card-border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .sprite-box .character-img {
+      width: 96px;
+      height: 96px;
+    }
+  }
+
+  /* STACKING MULTIPLE COSTUME LAYERS */
+  .avatar-box,
+  .sprite-box,
+  #shop-preview-avatar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.large .character-img { 
+      width: 96px; 
+      height: 96px; 
+      margin-bottom: 6px; 
+    }
+  }
+
+  .base-layer {
+    position: relative;
+    z-index: 1;
+  }
+
+  .costume-overlay-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .character-img {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+  }
+
+  /* DRAWING PLACEHOLDERS */
+  .img-placeholder {
+    border: 2px dashed var(--card-border);
+    background: rgba(24, 15, 18, 0.8);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    color: var(--poke-yellow);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .icon-ph {
+    width: 36px;
+    height: 36px;
+    font-size: 0.55rem;
+    padding: 2px;
+  }
+
+  .monster-ph {
+    width: 96px;
+    height: 96px;
+  }
+
+  .item-ph {
+    width: 48px;
+    height: 48px;
+    font-size: 0.6rem;
+  }
+
+  /* TYPOGRAPHY & CARDS */
+  .logo-tag {
+    font-size: 0.75rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    background: rgba(122, 154, 72, 0.15);
+    color: var(--poke-blue);
+    border: 1px solid var(--poke-blue);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 12px;
+
+    &.success {
+      background: rgba(65, 82, 31, 0.25);
+      color: var(--poke-yellow);
+      border-color: var(--hp-green);
+    }
+  }
+
+  .main-title {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--poke-yellow);
+    margin-bottom: 6px;
+  }
+
+  .sub-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .glass-card {
+    background: var(--card-surface);
+    border: 2px solid var(--card-border);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .scrollable-card {
+    max-height: 520px;
+    overflow-y: auto;
+  }
+
+  .auth-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid var(--card-border);
+    padding-bottom: 0;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 10px 8px;
+    cursor: pointer;
+    margin-bottom: -2px;
+    transition: color 0.2s, border-color 0.2s;
+
+    &:hover:not(.active) {
+      color: var(--text-primary);
+      border-bottom-color: var(--card-border);
+    }
+
+    &.active {
+      color: var(--poke-yellow);
+      border-bottom: 2px solid var(--poke-yellow);
+    }
+  }
+
+  .input-field {
+    margin-bottom: 14px;
+    text-align: left;
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--poke-yellow);
+      margin-bottom: 6px;
+    }
+  }
+
+  input {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    font-size: 0.9rem;
+    outline: none;
+
+    &:focus { 
+      border-color: var(--poke-yellow); 
+    }
+  }
+
+  .custom-select {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--card-surface);
+    border: 2px solid var(--card-border);
+    color: var(--text-primary);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    cursor: pointer;
+
+    option {
+      background-color: var(--bg-deep);
+      color: var(--text-primary);
+    }
+  }
+
+  .divider {
+    border: 0;
+    height: 1px;
+    background: var(--card-border);
+    margin: 16px 0;
+  }
+
+  /* SPRITE SELECTOR GRID */
+  .sprite-selector-grid.binary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+
+  .sprite-option {
+    background: var(--card-surface);
+    border: 2px solid var(--card-border);
+    border-radius: 12px;
+    padding: 20px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover { 
+      border-color: var(--poke-yellow);
+      transform: translateY(-2px);
+    }
+
+    &.active {
+      border-color: var(--poke-yellow);
+      background: rgba(242, 201, 76, 0.15);
+    }
+  }
+
+  .sprite-icon { 
+    margin-bottom: 8px; 
+  }
+
+  .sprite-label { 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    color: var(--text-primary); 
+  }
+
+  /* BUTTONS */
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: transform 0.1s ease, background-color 0.2s;
+
+    &:active { 
+      transform: scale(0.98); 
+    }
+  }
+
+  .btn-primary { 
+    background: var(--poke-yellow); 
+    color: var(--bg-deep); 
+  }
+
+  .btn-action-main { 
+    background: var(--hp-green); 
+    color: var(--text-primary); 
+    padding: 16px; 
+    font-size: 0.95rem; 
+  }
+
+  .btn-secondary { 
+    background: var(--color-umber); 
+    color: var(--text-primary); 
+    border: 1px solid var(--card-border); 
+  }
+
+  .btn-equipped { 
+    background: var(--color-olive); 
+    color: var(--text-primary); 
+    font-weight: 700; 
+  }
+
+  .btn-danger { 
+    background: rgba(217, 107, 67, 0.2); 
+    color: var(--hp-red); 
+    border: 1px solid var(--hp-red); 
+  }
+
+  .btn-ghost { 
+    background: transparent; 
+    color: var(--text-muted); 
+    font-size: 0.85rem; 
+  }
+
+  .btn-sm { 
+    width: auto; 
+    padding: 8px 14px; 
+    font-size: 0.75rem; 
+    margin-top: 0; 
+  }
+
+  /* HUB DASHBOARD */
+  .profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .user-meta { 
+    flex: 1; 
+
+    h2 { 
+      font-family: var(--font-heading); 
+      font-size: 1.1rem; 
+      color: var(--text-primary); 
+      margin-bottom: 2px; 
+    }
+  }
+
+  .lvl-tag { 
+    font-size: 0.8rem; 
+    color: var(--poke-yellow); 
+    font-weight: 600; 
+  }
+
+  .settings-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  .stats-grid { 
+    display: flex; 
+    gap: 12px; 
+    margin: 16px 0; 
+  }
+
+  .stat-card {
+    flex: 1;
+    background: var(--card-surface);
+    border: 2px solid var(--card-border);
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label { 
+    font-size: 0.75rem; 
+    color: var(--text-muted); 
+  }
+
+  .stat-val { 
+    font-family: var(--font-heading); 
+    font-size: 1.1rem; 
+    color: var(--poke-yellow); 
+    font-weight: 700; 
+  }
+
+  .hub-actions { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; 
+  }
+
+  /* BATTLE STAGE & HUD */
+  .top-bar { 
+    display: flex; 
+    align-items: center; 
+    gap: 16px; 
+    margin-bottom: 12px; 
+  }
+
+  .back-btn { 
+    background: none; 
+    border: none; 
+    color: var(--poke-yellow); 
+    font-family: var(--font-heading); 
+    font-weight: 600; 
+    font-size: 0.85rem; 
+    cursor: pointer; 
+  }
+
+  .screen-title { 
+    font-size: 0.85rem; 
+    color: var(--text-muted); 
+  }
+
+  .unit-row { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+  }
+
+  .hud-plate {
+    background: var(--card-surface);
+    border: 2px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px;
+    width: 170px;
+  }
+
+  .plate-top { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 0.75rem; 
+    font-weight: 600; 
+    margin-bottom: 6px; 
+  }
+
+  .unit-name { 
+    color: var(--text-primary); 
+  }
+
+  .unit-lvl { 
+    color: var(--poke-yellow); 
+  }
+
+  .hp-bar-bg {
+    width: 100%;
+    height: 10px;
+    background: var(--bg-deep);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .hp-bar-fill {
+    width: 100%;
+    height: 100%;
+    background: var(--hp-red);
+    transition: width 0.3s ease;
+
+    &.player-hp { 
+      background: var(--hp-green); 
+    }
+  }
+
+  /* BATTLE CONSOLE & ATTACK MENU */
+  .console-box { 
+    margin-top: 12px; 
+  }
+
+  .terminal-text {
+    background: var(--bg-deep);
+    border: 2px solid var(--card-border);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: var(--poke-yellow);
+    min-height: 56px;
+    margin-bottom: 10px;
+  }
+
+  .attack-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .attack-btn {
+    background: var(--card-surface);
+    border: 2px solid var(--card-border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 12px;
+    cursor: pointer;
+    text-align: left;
+
+    small {
+      display: block;
+      font-family: var(--font-main);
+      font-weight: 400;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    &:hover { 
+      border-color: var(--poke-yellow); 
+      background: rgba(242, 201, 76, 0.15); 
+    }
+
+    &.flee {
+      color: var(--hp-red);
+      border-color: var(--hp-red);
+    }
+  }
+
+  .hidden { 
+    display: none !important; 
+  }
+
+  /* VAULT & LOGS */
+  .timer-display {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--poke-yellow);
+    margin: 12px 0;
+  }
+
+  .history-box {
+    margin: 12px 0;
+    max-height: 240px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .history-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .history-list {
+    overflow-y: auto;
+    max-height: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .empty-log {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 10px;
+  }
+
+  .log-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-deep);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    font-size: 0.8rem;
+
+    &.saved { 
+      border-left: 4px solid var(--hp-green); 
+    }
+
+    &.spent { 
+      border-left: 4px solid var(--hp-red); 
+    }
+  }
+
+  .log-name { 
+    font-weight: 600; 
+    color: var(--text-primary); 
+  }
+
+  .log-val {
+    &.saved { 
+      color: var(--poke-blue); 
+      font-weight: 700; 
+    }
+
+    &.spent { 
+      color: var(--hp-red); 
+      font-weight: 700; 
+    }
+  }
+
+  /* SHOP & WARDROBE */
+  .mb-12 { 
+    margin-bottom: 12px; 
+  }
+
+  .gold-badge {
+    display: inline-block;
+    background: rgba(242, 201, 76, 0.15);
+    border: 1px solid var(--poke-yellow);
+    color: var(--poke-yellow);
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin-top: 8px;
+  }
+
+  .shop-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 380px;
+    overflow-y: auto;
+  }
+
+  .shop-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card-surface);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+
+  .item-info { 
+    flex: 1; 
+    margin-left: 12px; 
+    text-align: left; 
+  }
+
+  .item-name { 
+    display: block; 
+    font-size: 0.85rem; 
+    font-weight: 600; 
+    color: var(--text-primary); 
+  }
+
+  .item-cost { 
+    font-size: 0.75rem; 
+    color: var(--poke-yellow); 
+  }
 }
