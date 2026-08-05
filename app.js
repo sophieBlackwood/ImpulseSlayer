@@ -8,10 +8,14 @@ const battleState = {
   maxEnemyHP: 100,
   playerHP: 100,
   maxPlayerHP: 100,
-  timerInterval: null
+  timerInterval: null,
+  lastAnswer1: ''
 };
 
-// UI NAVIGATION
+// ==========================================
+// 1. UI NAVIGATION & SCREEN MANAGEMENT
+// ==========================================
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -44,7 +48,10 @@ function renderCharacterAvatar(containerId, user) {
   container.innerHTML = layersHTML;
 }
 
-// LOCAL AUTHENTICATION
+// ==========================================
+// 2. AUTHENTICATION & PROFILE SETUP
+// ==========================================
+
 function handleLocalSignup(e) {
   e.preventDefault();
   const name = document.getElementById('signup-name').value.trim();
@@ -98,7 +105,6 @@ function handleLocalLogin(e) {
   loadTrainerSession();
 }
 
-// FINANCIAL PROFILE SETUP
 function saveFinancialProfile(e) {
   e.preventDefault();
   const activeEmail = localStorage.getItem('slayer_active_user');
@@ -116,7 +122,6 @@ function saveFinancialProfile(e) {
   showScreen('screen-sprite');
 }
 
-// SPRITE SELECTION
 function selectSprite(staticSrc, idleSrc, element) {
   selectedSpriteStaticTemp = staticSrc;
   selectedSpriteIdleTemp = idleSrc;
@@ -151,7 +156,6 @@ function loadTrainerSession() {
   const user = users[activeEmail];
 
   if (user) {
-    // Migration check: convert single string legacy property to array if needed
     if (!Array.isArray(user.equippedItems)) {
       user.equippedItems = user.equippedSprite && user.equippedSprite !== 'BASE' 
         ? [user.equippedSprite] 
@@ -194,14 +198,17 @@ function checkBossAvailability() {
   const user = users[activeEmail];
 
   if (user && user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
-    alert("Battles are temporarily paused during your 15-minute cooling period. Check your vault timer for details.");
+    alert("Battles are temporarily paused during your cooling period. Check your vault timer!");
     checkVaultDirect();
   } else {
     showScreen('screen-quest');
   }
 }
 
-// COMBAT SYSTEM
+// ==========================================
+// 3. COMBAT & MINDFUL REFLECTION SYSTEM
+// ==========================================
+
 function startBattle() {
   const name = document.getElementById('target-name').value.trim();
   const price = parseFloat(document.getElementById('target-price').value);
@@ -232,7 +239,7 @@ function startBattle() {
   document.getElementById('player-battle-lvl').textContent = `Lv ${user.lvl}`;
 
   updateHPUI();
-  setDialogue(`An impulse item appears! Choose your move to stay on track.`);
+  setDialogue(`An impulse purchase appears! Choose a reflection tactic to fight back.`);
   
   showAttackMenu();
   showScreen('screen-battle');
@@ -254,59 +261,132 @@ function showAttackMenu() {
   const container = document.getElementById('quiz-answers');
   container.innerHTML = `
     <div class="attack-grid">
-      <button class="attack-btn" onclick="executeAttack('logic')">Logic Slash<small>30-40 damage</small></button>
-      <button class="attack-btn" onclick="executeAttack('delay')">Delay Strike<small>20 damage + Stun</small></button>
-      <button class="attack-btn" onclick="executeAttack('heal')">Mindful Shield<small>Restore 25 HP</small></button>
-      <button class="attack-btn flee" onclick="giveInAndSpend()">Give In & Buy<small>Resign and purchase</small></button>
+      <button class="attack-btn" onclick="startQuestionFlow('necessity')">
+        Necessity Check<small>Evaluate need vs. want</small>
+      </button>
+      <button class="attack-btn" onclick="startQuestionFlow('utility')">
+        Utility Rate<small>Calculate cost-per-use</small>
+      </button>
+      <button class="attack-btn" onclick="startQuestionFlow('wait')">
+        Opportunity Cost<small>Explore alternative uses</small>
+      </button>
+      <button class="attack-btn flee" onclick="giveInAndSpend()">
+        Give In & Buy<small>Resign and purchase</small>
+      </button>
     </div>
   `;
 }
 
-function executeAttack(type) {
-  let playerMsg = "";
-  let enemyStunned = false;
+function startQuestionFlow(attackType) {
+  const container = document.getElementById('quiz-answers');
 
-  if (type === 'logic') {
-    const dmg = Math.floor(Math.random() * 15) + 30;
-    battleState.enemyHP -= dmg;
-    playerMsg = `You used Logic Slash! Dealt ${dmg} damage to the impulse.`;
-  } else if (type === 'delay') {
-    battleState.enemyHP -= 20;
-    enemyStunned = true;
-    playerMsg = `You used Delay Strike! Dealt 20 damage and stunned the target.`;
-  } else if (type === 'heal') {
-    battleState.playerHP = Math.min(100, battleState.playerHP + 25);
-    playerMsg = `You used Mindful Shield and regained 25 HP.`;
-  }
-
-  updateHPUI();
-  setDialogue(playerMsg);
-
-  if (battleState.enemyHP <= 0) {
-    setTimeout(victorySavedMoney, 1000);
-  } else if (!enemyStunned) {
-    setTimeout(enemyTurn, 1200);
-  } else {
-    setTimeout(() => setDialogue("The impulse is stunned! Pick your next action."), 1500);
+  if (attackType === 'necessity') {
+    setDialogue("Question 1/2: Why do you want this item right now?");
+    container.innerHTML = `
+      <div class="input-field">
+        <input type="text" id="user-reflection-1" placeholder="e.g., I saw an ad and it looks cool..." autofocus />
+      </div>
+      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
+    `;
+  } else if (attackType === 'utility') {
+    setDialogue("Question 1/2: How many times do you realistically expect to use this?");
+    container.innerHTML = `
+      <div class="input-field">
+        <input type="number" id="user-reflection-1" placeholder="e.g., 5" autofocus />
+      </div>
+      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
+    `;
+  } else if (attackType === 'wait') {
+    setDialogue("Question 1/2: What else could you do with this money instead?");
+    container.innerHTML = `
+      <div class="input-field">
+        <input type="text" id="user-reflection-1" placeholder="e.g., Save for vacation or gifts..." autofocus />
+      </div>
+      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
+    `;
   }
 }
 
-function enemyTurn() {
-  const dmg = Math.floor(Math.random() * 15) + 12;
-  battleState.playerHP -= dmg;
+function submitQuestionTwo(attackType) {
+  const ans1 = document.getElementById('user-reflection-1').value.trim();
+  if (!ans1) return alert("Please type an answer first!");
+
+  battleState.lastAnswer1 = ans1;
+  const container = document.getElementById('quiz-answers');
+
+  if (attackType === 'necessity') {
+    setDialogue("Question 2/2: Will you still care about owning this 30 days from now?");
+  } else if (attackType === 'utility') {
+    setDialogue("Question 2/2: On a scale of 1 to 10, how much will this improve your daily life?");
+  } else {
+    setDialogue("Question 2/2: On a scale of 1 to 10, how strong is the urge right now?");
+  }
+
+  container.innerHTML = `
+    <div class="input-field">
+      <input type="text" id="user-reflection-2" placeholder="Your answer..." autofocus />
+    </div>
+    <button class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">Submit Reflection</button>
+  `;
+}
+
+function processPlayerAttack(attackType) {
+  const ans2 = document.getElementById('user-reflection-2').value.trim();
+  if (!ans2) return alert("Please enter an answer!");
+
+  const dmg = Math.floor(Math.random() * 15) + 35;
+  battleState.enemyHP -= dmg;
   updateHPUI();
 
-  if (battleState.playerHP <= 0) {
-    alert("You ran out of energy and decided to make the purchase.");
-    giveInAndSpend();
+  setDialogue(`Your mindful reflection hit the impulse for ${dmg} damage!`);
+
+  if (battleState.enemyHP <= 0) {
+    setTimeout(victorySavedMoney, 1200);
   } else {
-    setDialogue(`The impulse countered and dealt ${dmg} damage.`);
+    setTimeout(() => monsterRealityCounter(attackType), 1500);
+  }
+}
+
+function monsterRealityCounter(attackType) {
+  const activeEmail = localStorage.getItem('slayer_active_user');
+  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const user = users[activeEmail] || { wage: 15.00, foodPrice: 7.50, eventPrice: 25.00 };
+
+  const price = battleState.price;
+
+  const hoursWorked = (price / (user.wage || 15)).toFixed(1);
+  const mealsCount = Math.floor(price / (user.foodPrice || 7.50));
+  const outingsCount = (price / (user.eventPrice || 25)).toFixed(1);
+
+  const counterAttacks = [
+    `The Monster strikes back! "This costs $${price.toFixed(2)}—that is ${hoursWorked} hours of work at your wage!"`,
+    `The Monster counters! "That $${price.toFixed(2)} equals ${mealsCount} full meals you could buy!"`,
+    `The Monster resists! "This purchase equals ${outingsCount} fun social outings with friends!"`
+  ];
+
+  const chosenCounter = counterAttacks[Math.floor(Math.random() * counterAttacks.length)];
+
+  const playerDmg = Math.floor(Math.random() * 10) + 15;
+  battleState.playerHP -= playerDmg;
+  updateHPUI();
+
+  setDialogue(chosenCounter);
+
+  if (battleState.playerHP <= 0) {
+    setTimeout(() => {
+      alert("You were overwhelmed by the purchase impulse!");
+      giveInAndSpend();
+    }, 1500);
+  } else {
+    setTimeout(showAttackMenu, 2500);
   }
 }
 
 // BATTLE OUTCOMES
 function victorySavedMoney() {
-  confetti({ particleCount: 80, spread: 70 });
+  if (typeof confetti === 'function') {
+    confetti({ particleCount: 80, spread: 70 });
+  }
   alert(`Great job! You beat the impulse and saved $${battleState.price.toFixed(2)}.`);
 
   const activeEmail = localStorage.getItem('slayer_active_user');
@@ -341,7 +421,10 @@ function giveInAndSpend() {
   checkVaultDirect();
 }
 
-// SETTINGS & ACCOUNT ACTIONS
+// ==========================================
+// 4. SETTINGS & ACCOUNT ACTIONS
+// ==========================================
+
 function updateTrainerName() {
   const activeEmail = localStorage.getItem('slayer_active_user');
   const newName = document.getElementById('settings-name').value.trim();
@@ -415,7 +498,10 @@ function logoutTrainer() {
   showScreen('screen-login');
 }
 
-// VAULT LOGIC
+// ==========================================
+// 5. VAULT & HISTORY LOGS
+// ==========================================
+
 function startVaultTimer(unlockTimestamp) {
   if (battleState.timerInterval) clearInterval(battleState.timerInterval);
 
@@ -488,7 +574,10 @@ function renderHistoryLogs(logs) {
   });
 }
 
-// SHOP SYSTEM (MULTI-EQUIP CAPABLE)
+// ==========================================
+// 6. SHOP & MULTI-EQUIP SYSTEM
+// ==========================================
+
 function openShop() {
   const activeEmail = localStorage.getItem('slayer_active_user');
   const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
