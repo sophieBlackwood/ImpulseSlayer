@@ -25,6 +25,25 @@ function switchAuthTab(tab) {
   document.getElementById('tab-signup').classList.toggle('active', isLogin);
 }
 
+// MULTI-ITEM AVATAR RENDERER
+function renderCharacterAvatar(containerId, user) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const baseSprite = user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif';
+  const equippedList = user.equippedItems || [];
+
+  let layersHTML = `<img src="${baseSprite}" alt="Base Hero" class="character-img base-layer" />`;
+
+  equippedList.forEach(path => {
+    if (path && path !== 'BASE') {
+      layersHTML += `<img src="${path}" alt="Costume Layer" class="character-img costume-overlay-layer" />`;
+    }
+  });
+
+  container.innerHTML = layersHTML;
+}
+
 // LOCAL AUTHENTICATION
 function handleLocalSignup(e) {
   e.preventDefault();
@@ -47,7 +66,7 @@ function handleLocalSignup(e) {
     eventPrice: 25.00,
     baseSpriteStatic: 'assets/characters/hero-male.png',
     baseSpriteIdle: 'assets/characters/hero-male-idle.gif',
-    equippedSprite: 'assets/characters/hero-male-idle.gif',
+    equippedItems: [],
     inventory: ['hat_default'],
     lvl: 1,
     xp: 0,
@@ -114,7 +133,6 @@ function confirmSpriteSelection() {
   if (users[activeEmail]) {
     users[activeEmail].baseSpriteStatic = selectedSpriteStaticTemp;
     users[activeEmail].baseSpriteIdle = selectedSpriteIdleTemp;
-    users[activeEmail].equippedSprite = selectedSpriteIdleTemp;
     localStorage.setItem('slayer_users', JSON.stringify(users));
   }
 
@@ -133,20 +151,21 @@ function loadTrainerSession() {
   const user = users[activeEmail];
 
   if (user) {
+    // Migration check: convert single string legacy property to array if needed
+    if (!Array.isArray(user.equippedItems)) {
+      user.equippedItems = user.equippedSprite && user.equippedSprite !== 'BASE' 
+        ? [user.equippedSprite] 
+        : [];
+    }
+
     document.getElementById('hub-trainer-name').textContent = user.trainerName;
     document.getElementById('hub-trainer-lvl').textContent = `Level ${user.lvl}`;
     document.getElementById('hub-saved').textContent = `$${user.savedTotal.toFixed(2)}`;
     document.getElementById('hub-exp').textContent = `${user.xp} / 100`;
-    
-    const activeSprite = user.equippedSprite || user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif';
-    
-    const hubImg = document.getElementById('hub-avatar-img');
-    const battleImg = document.getElementById('battle-avatar-img');
-    const shopImg = document.getElementById('shop-preview-img');
 
-    if (hubImg && !activeSprite.startsWith('[')) hubImg.src = activeSprite;
-    if (battleImg && !activeSprite.startsWith('[')) battleImg.src = activeSprite;
-    if (shopImg && !activeSprite.startsWith('[')) shopImg.src = activeSprite;
+    renderCharacterAvatar('hub-avatar', user);
+    renderCharacterAvatar('player-sprite', user);
+    renderCharacterAvatar('shop-preview-avatar', user);
 
     document.getElementById('settings-name').value = user.trainerName || '';
     document.getElementById('settings-wage').value = user.wage || 15.00;
@@ -200,7 +219,15 @@ function startBattle() {
   battleState.maxPlayerHP = 100;
   battleState.playerHP = 100;
 
-  document.getElementById('enemy-name').textContent = price > 100 ? "Big Impulse Monster" : "Impulse Monster";
+  const enemySpriteContainer = document.getElementById('enemy-sprite');
+  if (price > 100) {
+    document.getElementById('enemy-name').textContent = "Big Impulse Monster";
+    enemySpriteContainer.innerHTML = `<img src="assets/monsters/monster-dragon.png" alt="Big Impulse Monster" class="character-img" />`;
+  } else {
+    document.getElementById('enemy-name').textContent = "Impulse Monster";
+    enemySpriteContainer.innerHTML = `<img src="assets/monsters/monster-beast.png" alt="Impulse Monster" class="character-img" />`;
+  }
+
   document.getElementById('player-battle-name').textContent = user.trainerName;
   document.getElementById('player-battle-lvl').textContent = `Lv ${user.lvl}`;
 
@@ -461,7 +488,7 @@ function renderHistoryLogs(logs) {
   });
 }
 
-// SHOP SYSTEM
+// SHOP SYSTEM (MULTI-EQUIP CAPABLE)
 function openShop() {
   const activeEmail = localStorage.getItem('slayer_active_user');
   const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
@@ -470,35 +497,56 @@ function openShop() {
   if (!user) return;
 
   if (!user.inventory) user.inventory = ['hat_default'];
-  if (!user.equippedSprite) user.equippedSprite = user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif';
+  if (!Array.isArray(user.equippedItems)) user.equippedItems = [];
 
   document.getElementById('shop-gold-val').textContent = user.savedTotal.toFixed(2);
-  
-  const shopPreview = document.getElementById('shop-preview-img');
-  if (shopPreview && !user.equippedSprite.startsWith('[')) {
-    shopPreview.src = user.equippedSprite;
-  }
+  renderCharacterAvatar('shop-preview-avatar', user);
 
   updateShopButtons(user);
   showScreen('screen-shop');
 }
 
 function updateShopButtons(user) {
-  const items = ['hat_crown', 'hat_party', 'hat_sunglasses', 'hat_default'];
+  const items = [
+    'hat_crown', 'hat_wizard', 'hat_ninja', 'hat_party', 'hat_helmet',
+    'face_sunglasses', 'face_eyepatch', 'face_visor',
+    'item_sword', 'item_staff', 'item_shield', 'item_laser',
+    'hat_default'
+  ];
+
+  const itemPathMap = {
+    'hat_crown': 'assets/costumes/overlay-crown.png',
+    'hat_wizard': 'assets/costumes/overlay-wizard-hat.png',
+    'hat_ninja': 'assets/costumes/overlay-ninja-headband.png',
+    'hat_party': 'assets/costumes/overlay-party-hat.png',
+    'hat_helmet': 'assets/costumes/overlay-helmet.png',
+    'face_sunglasses': 'assets/costumes/overlay-sunglasses.png',
+    'face_eyepatch': 'assets/costumes/overlay-eyepatch.png',
+    'face_visor': 'assets/costumes/overlay-visor.png',
+    'item_sword': 'assets/costumes/overlay-wooden-sword.png',
+    'item_staff': 'assets/costumes/overlay-magic-staff.png',
+    'item_shield': 'assets/costumes/overlay-shield.png',
+    'item_laser': 'assets/costumes/overlay-laser-blaster.png'
+  };
+
+  const equipped = user.equippedItems || [];
 
   items.forEach(itemId => {
     const btn = document.getElementById(`btn-${itemId}`);
     if (!btn) return;
 
+    if (itemId === 'hat_default') {
+      btn.textContent = equipped.length === 0 ? "Equipped" : "Unequip All";
+      btn.className = equipped.length === 0 ? "btn btn-sm btn-equipped" : "btn btn-secondary btn-sm";
+      return;
+    }
+
     const isOwned = user.inventory.includes(itemId);
-    const baseSprite = user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif';
-    const isEquipped = (itemId === 'hat_default' && user.equippedSprite === baseSprite) ||
-                       (itemId === 'hat_crown' && user.equippedSprite === 'Crown') ||
-                       (itemId === 'hat_party' && user.equippedSprite === 'Party Hat') ||
-                       (itemId === 'hat_sunglasses' && user.equippedSprite === 'Glasses');
+    const targetPath = itemPathMap[itemId];
+    const isEquipped = equipped.includes(targetPath);
 
     if (isEquipped) {
-      btn.textContent = "Equipped";
+      btn.textContent = "Unequip";
       btn.className = "btn btn-sm btn-equipped";
     } else if (isOwned) {
       btn.textContent = "Equip";
@@ -510,7 +558,7 @@ function updateShopButtons(user) {
   });
 }
 
-function buyOrEquip(itemId, price, spriteName) {
+function buyOrEquip(itemId, price, spritePath) {
   const activeEmail = localStorage.getItem('slayer_active_user');
   const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
   const user = users[activeEmail];
@@ -518,12 +566,25 @@ function buyOrEquip(itemId, price, spriteName) {
   if (!user) return;
 
   if (!user.inventory) user.inventory = ['hat_default'];
+  if (!Array.isArray(user.equippedItems)) user.equippedItems = [];
+
+  if (itemId === 'hat_default') {
+    user.equippedItems = [];
+    localStorage.setItem('slayer_users', JSON.stringify(users));
+    loadTrainerSession();
+    openShop();
+    return;
+  }
 
   const isOwned = user.inventory.includes(itemId);
-  const targetSprite = spriteName === 'BASE' ? (user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif') : spriteName;
 
   if (isOwned) {
-    user.equippedSprite = targetSprite;
+    const index = user.equippedItems.indexOf(spritePath);
+    if (index > -1) {
+      user.equippedItems.splice(index, 1);
+    } else {
+      user.equippedItems.push(spritePath);
+    }
   } else {
     if (user.savedTotal < price) {
       alert("You need more saved money to unlock this item!");
@@ -531,7 +592,7 @@ function buyOrEquip(itemId, price, spriteName) {
     }
     user.savedTotal -= price;
     user.inventory.push(itemId);
-    user.equippedSprite = targetSprite;
+    user.equippedItems.push(spritePath);
     alert("Item unlocked and equipped!");
   }
 
