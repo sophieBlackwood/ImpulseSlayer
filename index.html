@@ -6,11 +6,9 @@
   <title>Impulse Slayer</title>
   <link rel="stylesheet" href="style.css">
   
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
   
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
@@ -20,186 +18,188 @@
 
     <section id="screen-login" class="screen active onboarding-screen">
       <div class="brand-header">
-        <span class="logo-tag">HUB v2.0</span>
-        <h1 class="main-title">IMPULSE<br>SLAYER</h1>
-        <p class="sub-text">Anti-Impulse System & Vault</p>
+        <span class="logo-tag">Version 2.0</span>
+        <h1 class="main-title">Impulse Slayer</h1>
+        <p class="sub-text">Your personal savings shield and tracker.</p>
       </div>
 
       <div class="glass-card">
         <div class="auth-toggle">
-          <button id="tab-login" class="toggle-btn active" onclick="switchAuthTab('login')">LOGIN</button>
-          <button id="tab-signup" class="toggle-btn" onclick="switchAuthTab('signup')">SIGN UP</button>
+          <button id="tab-login" class="toggle-btn active" onclick="switchAuthTab('login')">Log In</button>
+          <button id="tab-signup" class="toggle-btn" onclick="switchAuthTab('signup')">Sign Up</button>
         </div>
 
         <form id="form-login" onsubmit="handleLocalLogin(event)">
           <div class="input-field">
-            <label>EMAIL</label>
-            <input type="email" id="login-email" placeholder="trainer@slayer.com" required />
+            <label>Email Address</label>
+            <input type="email" id="login-email" placeholder="hero@example.com" required />
           </div>
           <div class="input-field">
-            <label>PASSWORD</label>
+            <label>Password</label>
             <input type="password" id="login-pass" placeholder="••••••••" required />
           </div>
-          <button type="submit" class="btn btn-primary">ENTER HUB</button>
+          <button type="submit" class="btn btn-primary">Enter Hub</button>
         </form>
 
         <form id="form-signup" class="hidden" onsubmit="handleLocalSignup(event)">
           <div class="input-field">
-            <label>TRAINER NAME</label>
-            <input type="text" id="signup-name" placeholder="Red" required />
+            <label>Trainer Name</label>
+            <input type="text" id="signup-name" placeholder="Alex" required />
           </div>
           <div class="input-field">
-            <label>EMAIL</label>
-            <input type="email" id="signup-email" placeholder="trainer@slayer.com" required />
+            <label>Email Address</label>
+            <input type="email" id="signup-email" placeholder="hero@example.com" required />
           </div>
           <div class="input-field">
-            <label>PASSWORD</label>
+            <label>Password</label>
             <input type="password" id="signup-pass" placeholder="••••••••" required />
           </div>
-          <button type="submit" class="btn btn-primary">NEXT: FINANCIAL PROFILE</button>
+          <button type="submit" class="btn btn-primary">Next: Financial Setup</button>
         </form>
       </div>
     </section>
 
     <section id="screen-survey" class="screen onboarding-screen">
       <div class="brand-header">
-        <span class="logo-tag">METRIC SETUP</span>
-        <h2 class="main-title">FINANCIAL<br>PROFILE</h2>
-        <p class="sub-text">Used to calculate boss damage & micro-metrics.</p>
+        <span class="logo-tag">Personal Metrics</span>
+        <h2 class="main-title">Financial Setup</h2>
+        <p class="sub-text">These numbers help personalize your battle challenges.</p>
       </div>
 
       <div class="glass-card">
         <form id="form-survey" onsubmit="saveFinancialProfile(event)">
           <div class="input-field">
-            <label>HOURLY WAGE / ALLOWANCE ($/HR)</label>
+            <label>Hourly Wage or Allowance ($/hr)</label>
             <input type="number" id="survey-wage" placeholder="15.00" step="0.50" required />
           </div>
           <div class="input-field">
-            <label>FAVORITE FOOD / DRINK COST ($)</label>
+            <label>Favorite Snack or Drink Price ($)</label>
             <input type="number" id="survey-food" placeholder="7.50" step="0.50" required />
           </div>
           <div class="input-field">
-            <label>FAVORITE EVENT / RECURRING COST ($)</label>
+            <label>Favorite Weekend Activity Price ($)</label>
             <input type="number" id="survey-event" placeholder="25.00" step="1.00" required />
           </div>
-          <button type="submit" class="btn btn-primary">NEXT: CHOOSE SPRITE</button>
+          <button type="submit" class="btn btn-primary">Next: Choose Character</button>
         </form>
       </div>
     </section>
 
     <section id="screen-sprite" class="screen onboarding-screen">
       <div class="brand-header">
-        <span class="logo-tag">CHARACTER SETUP</span>
-        <h2 class="main-title">CHOOSE YOUR<br>HERO</h2>
-        <p class="sub-text">Select your base character sprite.</p>
+        <span class="logo-tag">Avatar Setup</span>
+        <h2 class="main-title">Choose Your Hero</h2>
+        <p class="sub-text">Select your base character image below.</p>
       </div>
 
       <div class="sprite-selector-grid binary-grid">
-        <div class="sprite-option active" onclick="selectSprite('assets/character/hero-male.png', 'assets/character/hero-male-idle.gif', this)">
+        <div class="sprite-option active" onclick="selectSprite('assets/characters/hero-male.png', 'assets/characters/hero-male-idle.gif', this)">
           <div class="sprite-icon">
-            <img src="assets/character/hero-male.png" alt="Male Hero" class="character-img" />
+            <img src="assets/characters/hero-male.png" alt="Male Hero" class="character-img" />
           </div>
-          <span class="sprite-label">MALE</span>
+          <span class="sprite-label">Style A</span>
         </div>
-        <div class="sprite-option" onclick="selectSprite('assets/character/hero-female.png', 'assets/character/hero-female-idle.gif', this)">
+        <div class="sprite-option" onclick="selectSprite('assets/characters/hero-female.png', 'assets/characters/hero-female-idle.gif', this)">
           <div class="sprite-icon">
-            <img src="assets/character/hero-female.png" alt="Female Hero" class="character-img" />
+            <img src="assets/characters/hero-female.png" alt="Female Hero" class="character-img" />
           </div>
-          <span class="sprite-label">FEMALE</span>
+          <span class="sprite-label">Style B</span>
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="confirmSpriteSelection()">LOCK IN HERO</button>
+      <button class="btn btn-primary" onclick="confirmSpriteSelection()">Confirm Character</button>
     </section>
 
     <section id="screen-hub" class="screen">
       <div class="profile-header glass-card">
         <div id="hub-avatar" class="avatar-box">
-          <img id="hub-avatar-img" src="assets/character/hero-male-idle.gif" alt="Hero Avatar" class="character-img" />
+          <img id="hub-avatar-img" src="assets/characters/hero-male-idle.gif" alt="Hero Avatar" class="character-img" />
         </div>
         <div class="user-meta">
-          <h2 id="hub-trainer-name">TRAINER RED</h2>
-          <span id="hub-trainer-lvl" class="lvl-tag">LVL 01</span>
+          <h2 id="hub-trainer-name">Hero Alex</h2>
+          <span id="hub-trainer-lvl" class="lvl-tag">Level 1</span>
         </div>
         <button class="settings-btn" onclick="showScreen('screen-settings')" aria-label="Settings">
-          <i class="fa-solid fa-gear settings-icon"></i>
+          <div class="img-placeholder icon-ph">
+            <span>[Settings Icon]</span>
+          </div>
         </button>
       </div>
 
       <div class="stats-grid">
         <div class="stat-card">
-          <span class="stat-label">TOTAL SAVED</span>
+          <span class="stat-label">Total Saved</span>
           <span id="hub-saved" class="stat-val">$0.00</span>
         </div>
         <div class="stat-card">
-          <span class="stat-label">EXP PROGRESS</span>
+          <span class="stat-label">Experience</span>
           <span id="hub-exp" class="stat-val">0 / 100</span>
         </div>
       </div>
 
       <div class="hub-actions">
-        <button id="btn-engage-boss" class="btn btn-action-main" onclick="checkBossAvailability()"> ENGAGE BOSS</button>
-        <button class="btn btn-secondary" onclick="openShop()"> WARDROBE & SHOP</button>
-        <button class="btn btn-secondary" onclick="checkVaultDirect()">INSPECT VAULT</button>
-        <button class="btn btn-ghost" onclick="logoutTrainer()">DISCONNECT</button>
+        <button id="btn-engage-boss" class="btn btn-action-main" onclick="checkBossAvailability()">Start Impulse Battle</button>
+        <button class="btn btn-secondary" onclick="openShop()">Wardrobe & Shop</button>
+        <button class="btn btn-secondary" onclick="checkVaultDirect()">View Vault & Logs</button>
+        <button class="btn btn-ghost" onclick="logoutTrainer()">Log Out</button>
       </div>
     </section>
 
     <section id="screen-settings" class="screen">
       <div class="top-bar">
-        <button class="back-btn" onclick="showScreen('screen-hub')">← BACK</button>
-        <span class="screen-title">SYSTEM SETTINGS</span>
+        <button class="back-btn" onclick="showScreen('screen-hub')">&larr; Back</button>
+        <span class="screen-title">Settings</span>
       </div>
 
       <div class="glass-card scrollable-card">
         <div class="input-field">
-          <label>TRAINER NAME</label>
-          <input type="text" id="settings-name" placeholder="Red" />
+          <label>Trainer Name</label>
+          <input type="text" id="settings-name" placeholder="Alex" />
         </div>
-        <button class="btn btn-secondary" onclick="updateTrainerName()">UPDATE NAME</button>
+        <button class="btn btn-secondary" onclick="updateTrainerName()">Save Name</button>
         
         <hr class="divider" />
 
         <div class="input-field">
-          <label>HOURLY WAGE ($/HR)</label>
+          <label>Hourly Wage ($/hr)</label>
           <input type="number" id="settings-wage" step="0.50" />
         </div>
         <div class="input-field">
-          <label>FAVORITE FOOD/DRINK COST ($)</label>
+          <label>Favorite Snack Price ($)</label>
           <input type="number" id="settings-food" step="0.50" />
         </div>
         <div class="input-field">
-          <label>FAVORITE EVENT COST ($)</label>
+          <label>Favorite Activity Price ($)</label>
           <input type="number" id="settings-event" step="1.00" />
         </div>
-        <button class="btn btn-secondary" onclick="updateMetricsSettings()">UPDATE METRICS</button>
+        <button class="btn btn-secondary" onclick="updateMetricsSettings()">Save Metrics</button>
 
         <hr class="divider" />
 
-        <button class="btn btn-secondary" onclick="showScreen('screen-sprite')"> CHANGE HERO SPRITE</button>
+        <button class="btn btn-secondary" onclick="showScreen('screen-sprite')">Change Character Artwork</button>
 
         <hr class="divider" />
 
-        <button class="btn btn-danger" onclick="deleteAccount()">🗑️ DELETE ACCOUNT</button>
+        <button class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
       </div>
     </section>
 
     <section id="screen-quest" class="screen">
       <div class="top-bar">
-        <button class="back-btn" onclick="showScreen('screen-hub')">← BACK</button>
-        <span class="screen-title">TARGET ENTRY</span>
+        <button class="back-btn" onclick="showScreen('screen-hub')">&larr; Back</button>
+        <span class="screen-title">Target Purchase</span>
       </div>
 
       <div class="glass-card">
         <div class="input-field">
-          <label for="target-name">TARGET ITEM</label>
-          <input type="text" id="target-name" placeholder="Wireless Earbuds" />
+          <label for="target-name">Item Name</label>
+          <input type="text" id="target-name" placeholder="Wireless Headphones" />
         </div>
         <div class="input-field">
-          <label for="target-price">PRICE ($)</label>
+          <label for="target-price">Item Cost ($)</label>
           <input type="number" id="target-price" placeholder="120.00" step="0.01" />
         </div>
-        <button class="btn btn-primary" onclick="startBattle()">INITIATE BATTLE</button>
+        <button class="btn btn-primary" onclick="startBattle()">Start Battle</button>
       </div>
     </section>
 
@@ -208,22 +208,27 @@
         <div class="unit-row enemy-side">
           <div class="hud-plate">
             <div class="plate-top">
-              <span id="enemy-name" class="unit-name">FOMO MONSTER</span>
-              <span id="enemy-lvl" class="unit-lvl">Lv5</span>
+              <span id="enemy-name" class="unit-name">Impulse Monster</span>
+              <span id="enemy-lvl" class="unit-lvl">Lv 5</span>
             </div>
             <div class="hp-bar-bg"><div id="enemy-hp" class="hp-bar-fill"></div></div>
           </div>
-          <div id="enemy-sprite" class="sprite-box">👹</div>
+          
+          <div id="enemy-sprite" class="sprite-box">
+            <div class="img-placeholder monster-ph">
+              <span>[Monster Drawing]</span>
+            </div>
+          </div>
         </div>
 
         <div class="unit-row player-side">
           <div id="player-sprite" class="sprite-box">
-            <img id="battle-avatar-img" src="assets/character/hero-male-idle.gif" alt="Hero Battle Sprite" class="character-img" />
+            <img id="battle-avatar-img" src="assets/characters/hero-male-idle.gif" alt="Hero Sprite" class="character-img" />
           </div>
           <div class="hud-plate">
             <div class="plate-top">
-              <span id="player-battle-name" class="unit-name">RED</span>
-              <span id="player-battle-lvl" class="unit-lvl">Lv1</span>
+              <span id="player-battle-name" class="unit-name">Hero</span>
+              <span id="player-battle-lvl" class="unit-lvl">Lv 1</span>
             </div>
             <div class="hp-bar-bg"><div id="player-hp" class="hp-bar-fill player-hp"></div></div>
           </div>
@@ -231,17 +236,9 @@
       </div>
 
       <div class="console-box">
-        <div id="battle-text" class="terminal-text">A wild impulse monster blocks your path!</div>
+        <div id="battle-text" class="terminal-text">An impulse item appears! Select an action to stay focused.</div>
         
-        <div id="battle-commands" class="cmd-grid">
-          <button class="cmd-btn" onclick="triggerQuiz()">FIGHT</button>
-          <button class="cmd-btn" onclick="showMetrics()">METRICS</button>
-          <button class="cmd-btn" onclick="restTurn()"> REST</button>
-          <button class="cmd-btn flee" onclick="runAway()"> RUN</button>
-        </div>
-
-        <div id="quiz-deck" class="quiz-deck hidden">
-          <p id="quiz-q" class="quiz-q">Loading prompt...</p>
+        <div id="quiz-deck" class="quiz-deck">
           <div id="quiz-answers" class="answers-stack"></div>
         </div>
       </div>
@@ -249,76 +246,84 @@
 
     <section id="screen-vault" class="screen">
       <div class="top-bar">
-        <button class="back-btn" onclick="showScreen('screen-hub')">← BACK</button>
-        <span class="screen-title">VAULT & LOGS</span>
+        <button class="back-btn" onclick="showScreen('screen-hub')">&larr; Back</button>
+        <span class="screen-title">Vault & Savings</span>
       </div>
 
       <div class="glass-card text-center vault-card">
-        <span class="logo-tag success">LOCK STATUS</span>
-        <h2>COOLING PERIOD</h2>
-        <div id="vault-timer" class="timer-display">15:00</div>
-        <p class="sub-text">Boss battles locked during active cooldown.</p>
+        <span class="logo-tag success">Cooling Period</span>
+        <h2>Cooldown Timer</h2>
+        <div id="vault-timer" class="timer-display">Ready</div>
+        <p class="sub-text">New battles are paused during your active cooling period.</p>
       </div>
 
       <div class="glass-card history-box">
-        <span class="history-title">SAVINGS & SPENDING LOG</span>
+        <span class="history-title">Saved & Spent Log</span>
         <div id="history-list" class="history-list">
-          <p class="empty-log">No transactions logged yet.</p>
+          <p class="empty-log">No transactions recorded yet.</p>
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="showScreen('screen-hub')">RETURN TO HUB</button>
+      <button class="btn btn-primary" onclick="showScreen('screen-hub')">Return to Hub</button>
     </section>
 
     <section id="screen-shop" class="screen">
       <div class="top-bar">
-        <button class="back-btn" onclick="showScreen('screen-hub')">← BACK</button>
-        <span class="screen-title">WARDROBE & SHOP</span>
+        <button class="back-btn" onclick="showScreen('screen-hub')">&larr; Back</button>
+        <span class="screen-title">Wardrobe & Shop</span>
       </div>
 
       <div class="glass-card text-center mb-12">
         <div id="shop-preview-avatar" class="avatar-box large">
-          <img id="shop-preview-img" src="assets/character/hero-male-idle.gif" alt="Hero Wardrobe Preview" class="character-img" />
+          <img id="shop-preview-img" src="assets/characters/hero-male-idle.gif" alt="Hero Preview" class="character-img" />
         </div>
-        <p class="sub-text">CURRENT OUTFIT</p>
-        <div class="gold-badge">🪙 <span id="shop-gold-val">0.00</span> GOLD</div>
+        <p class="sub-text">Current Outfit</p>
+        <div class="gold-badge">Saved Gold: $<span id="shop-gold-val">0.00</span></div>
       </div>
 
       <div class="shop-grid">
         <div class="shop-item">
-          <div class="item-icon">👑</div>
-          <div class="item-info">
-            <span class="item-name">ROYAL CROWN</span>
-            <span class="item-cost">🪙 50.00</span>
+          <div class="img-placeholder item-ph">
+            <span>[Crown Image]</span>
           </div>
-          <button id="btn-hat_crown" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_crown', 50, '👑')">BUY</button>
+          <div class="item-info">
+            <span class="item-name">Royal Crown</span>
+            <span class="item-cost">$50.00 Saved</span>
+          </div>
+          <button id="btn-hat_crown" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_crown', 50, 'Crown')">Unlock</button>
         </div>
 
         <div class="shop-item">
-          <div class="item-icon">🥳</div>
-          <div class="item-info">
-            <span class="item-name">PARTY HAT</span>
-            <span class="item-cost">🪙 25.00</span>
+          <div class="img-placeholder item-ph">
+            <span>[Hat Image]</span>
           </div>
-          <button id="btn-hat_party" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_party', 25, '🥳')">BUY</button>
+          <div class="item-info">
+            <span class="item-name">Party Hat</span>
+            <span class="item-cost">$25.00 Saved</span>
+          </div>
+          <button id="btn-hat_party" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_party', 25, 'Party Hat')">Unlock</button>
         </div>
 
         <div class="shop-item">
-          <div class="item-icon">😎</div>
-          <div class="item-info">
-            <span class="item-name">COOL SHADES</span>
-            <span class="item-cost">🪙 35.00</span>
+          <div class="img-placeholder item-ph">
+            <span>[Shades Image]</span>
           </div>
-          <button id="btn-hat_sunglasses" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_sunglasses', 35, '😎')">BUY</button>
+          <div class="item-info">
+            <span class="item-name">Cool Glasses</span>
+            <span class="item-cost">$35.00 Saved</span>
+          </div>
+          <button id="btn-hat_sunglasses" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_sunglasses', 35, 'Glasses')">Unlock</button>
         </div>
 
         <div class="shop-item">
-          <div class="item-icon">🛡️</div>
-          <div class="item-info">
-            <span class="item-name">DEFAULT STARTER</span>
-            <span class="item-cost">FREE</span>
+          <div class="img-placeholder item-ph">
+            <span>[Hero Image]</span>
           </div>
-          <button id="btn-hat_default" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_default', 0, 'BASE')">EQUIP</button>
+          <div class="item-info">
+            <span class="item-name">Starter Outfit</span>
+            <span class="item-cost">Free</span>
+          </div>
+          <button id="btn-hat_default" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_default', 0, 'BASE')">Equip</button>
         </div>
       </div>
     </section>
