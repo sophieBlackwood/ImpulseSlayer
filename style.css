@@ -76,7 +76,7 @@ body {
 
   /* BACKGROUND INTEGRATION (Updated with absolute root paths) */
   .onboarding-screen {
-    background: linear-gradient(180deg, rgba(7, 12, 20, 0.85) 0%, rgba(7, 12, 20, 0.95) 100%), url('/assets/background/login-bg.png') center/cover no-repeat;
+    background: url('/assets/background/login-bg.png') center/cover no-repeat;
   }
 
   #screen-hub,
@@ -84,12 +84,12 @@ body {
   #screen-settings,
   #screen-shop,
   #screen-vault {
-    background: linear-gradient(180deg, rgba(7, 12, 20, 0.88) 0%, rgba(7, 12, 20, 0.96) 100%), url('/assets/background/hub-bg.png') center/cover no-repeat;
+    background: url('/assets/background/hub-bg.png') center/cover no-repeat;
   }
 
   .arena-stage {
     flex: 1;
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.7) 0%, rgba(7, 12, 20, 0.9) 100%), url('/assets/background/battle-bg.png') center/cover no-repeat;
+    background: url('/assets/background/battle-bg.png') center/cover no-repeat;
     border: 1px solid var(--card-border);
     border-radius: 14px;
     padding: 16px;
