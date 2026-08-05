@@ -1,10 +1,14 @@
+// ==========================================
+// CONFIG & INITIALIZATION
+// ==========================================
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
 const SUPABASE_URL = 'https://impulse-slayer.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvanFsdGFhbHpvdWtvcG5td3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NDA0OTUsImV4cCI6MjEwMTUxNjQ5NX0.kKUXuQS-cAzRkALyXg2XMqlxa4DXbCNBaC5khRITULQ';
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Use window.supabase to avoid variable shadowing
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const battleState = {
   price: 0,
@@ -24,7 +28,8 @@ const battleState = {
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
 }
 
 function switchAuthTab(tab) {
@@ -60,11 +65,18 @@ function renderCharacterAvatar(containerId, user) {
 
 async function handleLocalSignup(e) {
   e.preventDefault();
+  if (!supabaseClient) return alert("Supabase library is not loaded properly.");
+
   const name = document.getElementById('signup-name').value.trim();
   const email = document.getElementById('signup-email').value.trim().toLowerCase();
   const pass = document.getElementById('signup-pass').value;
 
-  const { data: authData, error: authError } = await supabase.auth.signUp({
+  if (pass.length < 6) {
+    alert("Password must be at least 6 characters long.");
+    return;
+  }
+
+  const { data: authData, error: authError } = await supabaseClient.auth.signUp({
     email: email,
     password: pass
   });
@@ -74,9 +86,14 @@ async function handleLocalSignup(e) {
     return;
   }
 
+  if (!authData.user) {
+    alert("Signup initiated. Please check your email for a confirmation link if required.");
+    return;
+  }
+
   const userId = authData.user.id;
 
-  const { error: dbError } = await supabase
+  const { error: dbError } = await supabaseClient
     .from('profiles')
     .insert([{
       id: userId,
@@ -103,10 +120,12 @@ async function handleLocalSignup(e) {
 
 async function handleLocalLogin(e) {
   e.preventDefault();
+  if (!supabaseClient) return alert("Supabase library is not loaded properly.");
+
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const pass = document.getElementById('login-pass').value;
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
     email: email,
     password: pass
   });
@@ -120,15 +139,15 @@ async function handleLocalLogin(e) {
 }
 
 async function saveFinancialProfile(e) {
-  e.preventDefault();
-  const { data: { session } } = await supabase.auth.getSession();
+  if (e) e.preventDefault();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) return showScreen('screen-login');
 
   const wage = parseFloat(document.getElementById('survey-wage').value) || 15.00;
   const food = parseFloat(document.getElementById('survey-food').value) || 7.50;
   const eventVal = parseFloat(document.getElementById('survey-event').value) || 25.00;
 
-  await supabase
+  await supabaseClient
     .from('profiles')
     .update({ wage: wage, food_price: food, event_price: eventVal })
     .eq('id', session.user.id);
@@ -145,10 +164,10 @@ function selectSprite(staticSrc, idleSrc, element) {
 }
 
 async function confirmSpriteSelection() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) return showScreen('screen-login');
 
-  await supabase
+  await supabaseClient
     .from('profiles')
     .update({
       base_sprite_static: selectedSpriteStaticTemp,
@@ -160,14 +179,15 @@ async function confirmSpriteSelection() {
 }
 
 async function loadTrainerSession() {
-  const { data: { session } } = await supabase.auth.getSession();
+  if (!supabaseClient) return;
+  const { data: { session } } = await supabaseClient.auth.getSession();
 
   if (!session) {
     showScreen('screen-login');
     return;
   }
 
-  const { data: user, error } = await supabase
+  const { data: user, error } = await supabaseClient
     .from('profiles')
     .select('*')
     .eq('id', session.user.id)
@@ -178,10 +198,10 @@ async function loadTrainerSession() {
     return;
   }
 
-  document.getElementById('hub-trainer-name').textContent = user.trainer_name || 'Hero';
-  document.getElementById('hub-trainer-lvl').textContent = `Level ${user.lvl || 1}`;
-  document.getElementById('hub-saved').textContent = `$${parseFloat(user.saved_total || 0).toFixed(2)}`;
-  document.getElementById('hub-exp').textContent = `${user.xp || 0} / 100`;
+  if (document.getElementById('hub-trainer-name')) document.getElementById('hub-trainer-name').textContent = user.trainer_name || 'Hero';
+  if (document.getElementById('hub-trainer-lvl')) document.getElementById('hub-trainer-lvl').textContent = `Level ${user.lvl || 1}`;
+  if (document.getElementById('hub-saved')) document.getElementById('hub-saved').textContent = `$${parseFloat(user.saved_total || 0).toFixed(2)}`;
+  if (document.getElementById('hub-exp')) document.getElementById('hub-exp').textContent = `${user.xp || 0} / 100`;
 
   renderCharacterAvatar('hub-avatar', user);
   renderCharacterAvatar('player-sprite', user);
@@ -209,10 +229,10 @@ function checkLockStatus(user) {
 }
 
 async function checkBossAvailability() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) return showScreen('screen-login');
 
-  const { data: user } = await supabase.from('profiles').select('vault_unlock_time').eq('id', session.user.id).single();
+  const { data: user } = await supabaseClient.from('profiles').select('vault_unlock_time').eq('id', session.user.id).single();
 
   if (user && user.vault_unlock_time && user.vault_unlock_time > Date.now()) {
     alert("Battles are temporarily paused during your cooling period. Check your vault timer!");
