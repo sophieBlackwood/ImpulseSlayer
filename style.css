@@ -1,17 +1,22 @@
 :root {
-  /* Dark Modern Pokémon UI (Sleek Slate, Crisp Flat Borders, Rich Accents) */
-  --bg-deep: #121824;                 /* Dark Navy / Charcoal */
-  --card-surface: #1e293b;            /* Flat Dark Slate */
-  --card-border: #334155;             /* Modern Muted Border */
+  /* Dark Modern Pokémon UI (Updated Earthy Palette) */
+  --bg-deep: #180f12;                 /* Slate Espresso Dark Background */
+  --card-surface: #2a1a1f;            /* Deep Aubergine Card Surface */
+  --card-border: #ad8350;             /* Golden Amber Border */
   
-  --text-primary: #f8fafc;            /* Clean Off-White */
-  --text-muted: #94a3b8;              /* Soft Slate Text */
+  --text-primary: #f9f6f0;            /* Parchment Off-White Text */
+  --text-muted: #ad8350;              /* Golden Amber Muted Text */
   
   /* Pokémon Style UI Accents */
-  --poke-yellow: #f59e0b;             /* Gold / XP Bar Accent */
-  --poke-blue: #3b82f6;               /* Electric / Water Blue Accent */
-  --hp-green: #22c55e;               /* Health / Savings Green */
-  --hp-red: #ef4444;                 /* Spent / Low HP Red */
+  --poke-yellow: #f2c94c;             /* Electric Gold Accent */
+  --poke-blue: #7a9a48;               /* Bright Sage Accent */
+  --hp-green: #41521f;                /* Forest Moss Health/Savings */
+  --hp-red: #d96b43;                  /* Spiced Copper Low HP/Spent */
+
+  /* Additional Palette Colors */
+  --color-umber: #764134;             /* Warm Umber */
+  --color-olive: #afa060;             /* Muted Olive */
+  --bg-card-light: #eae3d2;           /* Light Warm Cream Container */
 
   /* Modern Readable Clean Typography */
   --font-main: 'Plus Jakarta Sans', sans-serif;
@@ -41,7 +46,7 @@ body {
   max-width: 420px;
   height: 100vh;
   max-height: 840px;
-  background: #0f172a;
+  background: var(--bg-deep);
   border: 3px solid var(--card-border);
   border-radius: 20px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
@@ -122,7 +127,7 @@ body {
 /* DRAWING PLACEHOLDERS */
 .img-placeholder {
   border: 2px dashed var(--card-border);
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(24, 15, 18, 0.8);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -157,7 +162,7 @@ body {
   font-size: 0.75rem;
   font-family: var(--font-heading);
   font-weight: 700;
-  background: rgba(59, 130, 246, 0.15);
+  background: rgba(122, 154, 72, 0.15);
   color: var(--poke-blue);
   border: 1px solid var(--poke-blue);
   padding: 4px 10px;
@@ -167,8 +172,8 @@ body {
 }
 
 .logo-tag.success {
-  background: rgba(34, 197, 94, 0.15);
-  color: var(--hp-green);
+  background: rgba(65, 82, 31, 0.25);
+  color: var(--poke-yellow);
   border-color: var(--hp-green);
 }
 
@@ -204,31 +209,29 @@ body {
   gap: 8px;
   margin-bottom: 16px;
   border-bottom: 2px solid var(--card-border);
-  padding-bottom: 0; /* Remove extra padding so active borders align flush */
+  padding-bottom: 0;
 }
 
 .toggle-btn {
   flex: 1;
   background: transparent;
   border: none;
-  border-bottom: 2px solid transparent; /* Reserve space for active/hover line */
+  border-bottom: 2px solid transparent;
   color: var(--text-muted);
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 0.9rem;
   padding: 10px 8px;
   cursor: pointer;
-  margin-bottom: -2px; /* Pull down to overlap wrapper border */
+  margin-bottom: -2px;
   transition: color 0.2s, border-color 0.2s;
 }
 
-/* Hover effect on inactive tab */
 .toggle-btn:hover:not(.active) {
   color: var(--text-primary);
   border-bottom-color: var(--card-border);
 }
 
-/* Active selected tab state */
 .toggle-btn.active {
   color: var(--poke-yellow);
   border-bottom: 2px solid var(--poke-yellow);
@@ -250,7 +253,7 @@ body {
 input {
   width: 100%;
   padding: 12px;
-  background: #0f172a;
+  background: var(--bg-deep);
   border: 1px solid var(--card-border);
   border-radius: 8px;
   color: var(--text-primary);
@@ -295,7 +298,7 @@ input:focus {
 
 .sprite-option.active {
   border-color: var(--poke-yellow);
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(242, 201, 76, 0.15);
 }
 
 .sprite-icon { 
@@ -328,30 +331,30 @@ input:focus {
 
 .btn-primary { 
   background: var(--poke-yellow); 
-  color: #000; 
+  color: var(--bg-deep); 
 }
 
 .btn-action-main { 
-  background: var(--poke-blue); 
-  color: #fff; 
+  background: var(--hp-green); 
+  color: var(--text-primary); 
   padding: 16px; 
   font-size: 0.95rem; 
 }
 
 .btn-secondary { 
-  background: #334155; 
+  background: var(--color-umber); 
   color: var(--text-primary); 
-  border: 1px solid #475569; 
+  border: 1px solid var(--card-border); 
 }
 
 .btn-equipped { 
-  background: var(--hp-green); 
-  color: #000; 
+  background: var(--color-olive); 
+  color: var(--text-primary); 
   font-weight: 700; 
 }
 
 .btn-danger { 
-  background: rgba(239, 68, 68, 0.2); 
+  background: rgba(217, 107, 67, 0.2); 
   color: var(--hp-red); 
   border: 1px solid var(--hp-red); 
 }
@@ -424,7 +427,7 @@ input:focus {
 .stat-val { 
   font-family: var(--font-heading); 
   font-size: 1.1rem; 
-  color: var(--hp-green); 
+  color: var(--poke-yellow); 
   font-weight: 700; 
 }
 
@@ -490,7 +493,7 @@ input:focus {
 .hp-bar-bg {
   width: 100%;
   height: 10px;
-  background: #090d16;
+  background: var(--bg-deep);
   border: 1px solid var(--card-border);
   border-radius: 6px;
   overflow: hidden;
@@ -518,7 +521,7 @@ input:focus {
 }
 
 .terminal-text {
-  background: #0f172a;
+  background: var(--bg-deep);
   border: 2px solid var(--card-border);
   border-radius: 10px;
   padding: 12px;
@@ -559,7 +562,7 @@ input:focus {
 
 .attack-btn:hover { 
   border-color: var(--poke-yellow); 
-  background: rgba(245, 158, 11, 0.15); 
+  background: rgba(242, 201, 76, 0.15); 
 }
 
 .attack-btn.flee {
@@ -576,7 +579,7 @@ input:focus {
   font-family: var(--font-heading);
   font-size: 2.2rem;
   font-weight: 700;
-  color: var(--hp-green);
+  color: var(--poke-yellow);
   margin: 12px 0;
 }
 
@@ -614,7 +617,7 @@ input:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #0f172a;
+  background: var(--bg-deep);
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid var(--card-border);
@@ -635,7 +638,7 @@ input:focus {
 }
 
 .log-val.saved { 
-  color: var(--hp-green); 
+  color: var(--poke-blue); 
   font-weight: 700; 
 }
 
@@ -651,7 +654,7 @@ input:focus {
 
 .gold-badge {
   display: inline-block;
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(242, 201, 76, 0.15);
   border: 1px solid var(--poke-yellow);
   color: var(--poke-yellow);
   font-weight: 600;
