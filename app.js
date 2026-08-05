@@ -4,10 +4,9 @@
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
-const SUPABASE_URL = 'https://impulse-slayer.supabase.co';
+const SUPABASE_URL = 'https://jojqltaalzoukopmwwu.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvanFsdGFhbHpvdWtvcG5td3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NDA0OTUsImV4cCI6MjEwMTUxNjQ5NX0.kKUXuQS-cAzRkALyXg2XMqlxa4DXbCNBaC5khRITULQ';
 
-// Use window.supabase to avoid variable shadowing
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const battleState = {
@@ -34,11 +33,17 @@ function showScreen(id) {
 
 function switchAuthTab(tab) {
   const isLogin = tab === 'login';
-  document.getElementById('form-login').classList.toggle('hidden', !isLogin);
-  document.getElementById('form-signup').classList.toggle('hidden', isLogin);
+  const loginForm = document.getElementById('form-login');
+  const signupForm = document.getElementById('form-signup');
   
-  document.getElementById('tab-login').classList.toggle('active', isLogin);
-  document.getElementById('tab-signup').classList.toggle('active', !isLogin);
+  if (loginForm) loginForm.classList.toggle('hidden', !isLogin);
+  if (signupForm) signupForm.classList.toggle('hidden', isLogin);
+  
+  const tabLogin = document.getElementById('tab-login');
+  const tabSignup = document.getElementById('tab-signup');
+
+  if (tabLogin) tabLogin.classList.toggle('active', isLogin);
+  if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
 }
 
 function renderCharacterAvatar(containerId, user) {
@@ -87,7 +92,7 @@ async function handleLocalSignup(e) {
   }
 
   if (!authData.user) {
-    alert("Signup initiated. Please check your email for a confirmation link if required.");
+    alert("Signup initiated. Please check your email for a confirmation link.");
     return;
   }
 
@@ -276,8 +281,8 @@ async function startBattle() {
 
   if (!name || isNaN(price) || price <= 0) return alert("Please enter a valid item name and price.");
 
-  const { data: { session } } = await supabase.auth.getSession();
-  const { data: user } = await supabase.from('profiles').select('trainer_name, lvl').eq('id', session.user.id).single();
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const { data: user } = await supabaseClient.from('profiles').select('trainer_name, lvl').eq('id', session.user.id).single();
 
   battleState.itemName = name;
   battleState.price = price;
@@ -404,8 +409,8 @@ function processPlayerAttack(attackType) {
 }
 
 async function monsterRealityCounter(attackType) {
-  const { data: { session } } = await supabase.auth.getSession();
-  const { data: user } = await supabase.from('profiles').select('wage, food_price, event_price').eq('id', session.user.id).single();
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  const { data: user } = await supabaseClient.from('profiles').select('wage, food_price, event_price').eq('id', session.user.id).single();
 
   const price = battleState.price;
   const wage = user ? user.wage : 15.00;
@@ -444,10 +449,10 @@ async function victorySavedMoney() {
   if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
   alert(`Great job! You beat the impulse and saved $${battleState.price.toFixed(2)}.`);
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   const unlockTime = Date.now() + (15 * 60 * 1000);
 
-  await supabase.from('profiles').update({ vault_unlock_time: unlockTime }).eq('id', session.user.id);
+  await supabaseClient.from('profiles').update({ vault_unlock_time: unlockTime }).eq('id', session.user.id);
 
   updateTrainerStats(50, battleState.price, {
     name: battleState.itemName,
@@ -480,8 +485,8 @@ async function updateTrainerName() {
   const newName = document.getElementById('settings-name').value.trim();
   if (!newName) return alert("Please enter a valid name.");
 
-  const { data: { session } } = await supabase.auth.getSession();
-  await supabase.from('profiles').update({ trainer_name: newName }).eq('id', session.user.id);
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  await supabaseClient.from('profiles').update({ trainer_name: newName }).eq('id', session.user.id);
 
   alert("Trainer name saved.");
   loadTrainerSession();
@@ -492,8 +497,8 @@ async function updateMetricsSettings() {
   const food = parseFloat(document.getElementById('settings-food').value);
   const eventVal = parseFloat(document.getElementById('settings-event').value);
 
-  const { data: { session } } = await supabase.auth.getSession();
-  await supabase.from('profiles').update({
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  await supabaseClient.from('profiles').update({
     wage: wage || 15.00,
     food_price: food || 7.50,
     event_price: eventVal || 25.00
@@ -505,19 +510,19 @@ async function updateMetricsSettings() {
 
 async function deleteAccount() {
   if (confirm("Are you sure you want to delete your account? This will erase all your progress.")) {
-    const { data: { session } } = await supabase.auth.getSession();
-    await supabase.from('profiles').delete().eq('id', session.user.id);
-    await supabase.auth.signOut();
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    await supabaseClient.from('profiles').delete().eq('id', session.user.id);
+    await supabaseClient.auth.signOut();
     alert("Account deleted.");
     showScreen('screen-login');
   }
 }
 
 async function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) return;
 
-  const { data: user } = await supabase.from('profiles').select('xp, lvl, saved_total, logs').eq('id', session.user.id).single();
+  const { data: user } = await supabaseClient.from('profiles').select('xp, lvl, saved_total, logs').eq('id', session.user.id).single();
   if (!user) return;
 
   let newXp = (user.xp || 0) + xpGained;
@@ -533,7 +538,7 @@ async function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
     alert(`Level Up! You reached Level ${newLvl}.`);
   }
 
-  await supabase.from('profiles').update({
+  await supabaseClient.from('profiles').update({
     xp: newXp,
     lvl: newLvl,
     saved_total: newSaved,
@@ -544,7 +549,7 @@ async function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
 }
 
 async function logoutTrainer() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   showScreen('screen-login');
 }
 
@@ -562,9 +567,9 @@ function startVaultTimer(unlockTimestamp) {
       clearInterval(battleState.timerInterval);
       document.getElementById('vault-timer').textContent = "Ready";
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
-        await supabase.from('profiles').update({ vault_unlock_time: null }).eq('id', session.user.id);
+        await supabaseClient.from('profiles').update({ vault_unlock_time: null }).eq('id', session.user.id);
         loadTrainerSession();
       }
       return;
@@ -582,10 +587,10 @@ function startVaultTimer(unlockTimestamp) {
 }
 
 async function checkVaultDirect() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) return showScreen('screen-login');
 
-  const { data: user } = await supabase.from('profiles').select('vault_unlock_time, logs').eq('id', session.user.id).single();
+  const { data: user } = await supabaseClient.from('profiles').select('vault_unlock_time, logs').eq('id', session.user.id).single();
 
   if (user && user.vault_unlock_time && user.vault_unlock_time > Date.now()) {
     startVaultTimer(user.vault_unlock_time);
@@ -599,6 +604,7 @@ async function checkVaultDirect() {
 
 function renderHistoryLogs(logs) {
   const container = document.getElementById('history-list');
+  if (!container) return;
   container.innerHTML = '';
 
   if (!logs || logs.length === 0) {
@@ -628,13 +634,15 @@ function renderHistoryLogs(logs) {
 // ==========================================
 
 async function openShop() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) return showScreen('screen-login');
 
-  const { data: user } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+  const { data: user } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
   if (!user) return;
 
-  document.getElementById('shop-gold-val').textContent = parseFloat(user.saved_total || 0).toFixed(2);
+  if (document.getElementById('shop-gold-val')) {
+    document.getElementById('shop-gold-val').textContent = parseFloat(user.saved_total || 0).toFixed(2);
+  }
   renderCharacterAvatar('shop-preview-avatar', user);
 
   updateShopButtons(user);
@@ -695,10 +703,10 @@ function updateShopButtons(user) {
 }
 
 async function buyOrEquip(itemId, price, spritePath) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) return showScreen('screen-login');
 
-  const { data: user } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+  const { data: user } = await supabaseClient.from('profiles').select('*').eq('id', session.user.id).single();
   if (!user) return;
 
   let equipped = user.equipped_items || [];
@@ -729,7 +737,7 @@ async function buyOrEquip(itemId, price, spritePath) {
     }
   }
 
-  await supabase.from('profiles').update({
+  await supabaseClient.from('profiles').update({
     equipped_items: equipped,
     inventory: inventory,
     saved_total: savedTotal
@@ -739,6 +747,29 @@ async function buyOrEquip(itemId, price, spritePath) {
   openShop();
 }
 
+// ==========================================
+// 7. INITIALIZATION & EVENT BINDING
+// ==========================================
 window.addEventListener('DOMContentLoaded', () => {
+  const signupForm = document.getElementById('form-signup');
+  if (signupForm) {
+    signupForm.addEventListener('submit', handleLocalSignup);
+  }
+
+  const loginForm = document.getElementById('form-login');
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLocalLogin);
+  }
+
+  const tabLogin = document.getElementById('tab-login');
+  const tabSignup = document.getElementById('tab-signup');
+
+  if (tabLogin) {
+    tabLogin.addEventListener('click', () => switchAuthTab('login'));
+  }
+  if (tabSignup) {
+    tabSignup.addEventListener('click', () => switchAuthTab('signup'));
+  }
+
   loadTrainerSession();
 });
