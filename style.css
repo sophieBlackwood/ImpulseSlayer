@@ -1,25 +1,23 @@
 :root {
- :root {
-  /* Core Dark Canvas & Card Surfaces */
-  --bg-deep: #080e14;                 /* Midnight Forest Void */
-  --card-surface: #101c26;            /* Deep Indigo Spruce Surface */
-  --card-border: #d4af37;             /* Cold Starlight Gold Border */
+  /* Core Dark Canvas & Card Surfaces (Deep Pine Obsidian & Ancient Spruce) */
+  --bg-deep: #0a120c;                 /* Deep Pine Canopy Void */
+  --card-surface: #142419;            /* Weathered Spruce Card Surface */
+  --card-border: #e2b740;             /* Ancient Brass & Parchment Gold */
 
-  /* Typography */
-  --text-primary: #ffffff;            /* Crisp Starlight White Text */
-  --text-muted: #e5be65;              /* Radiant Gold Muted Text */
+  /* Typography (High-Contrast Starlight & Amber) */
+  --text-primary: #ffffff;            /* Pure Crisp Starlight Text */
+  --text-muted: #f3ca69;              /* Luminous Gold Muted Text */
 
-  /* Pokémon Style UI Accents */
-  --poke-yellow: #ffe600;             /* Supernova Yellow Accent */
-  --poke-blue: #00d2ff;               /* Astral Cyan Accent */
-  --hp-green: #39ff14;                /* Bioluminescent Moss HP/Savings */
-  --hp-red: #ff453a;                  /* Nova Crimson Low HP/Spent */
+  /* Pokémon Style UI Accents (D&D Rune & Arcane Magic) */
+  --poke-yellow: #ffcc00;             /* Radiant Sunstone Yellow */
+  --poke-blue: #38bdf8;               /* Arcane Mana Sky Blue */
+  --hp-green: #28e070;                /* Bioluminescent Forest Moss HP */
+  --hp-red: #ff4d4d;                  /* Ruby Potion Crimson Spent */
 
-  /* Additional Palette Colors */
-  --color-umber: #8a4838;             /* Dark Copper Bark */
-  --color-olive: #6b8e23;             /* Pine Needle Shadow */
-  --bg-card-light: #d6e2e9;           /* Pale Moonlight Container */
-}
+  /* Additional Palette Colors (Woodland & Canopy Elements) */
+  --color-umber: #9a5332;             /* Weathered Leather Bark */
+  --color-olive: #70b32d;             /* Ancient Canopy Leaves */
+  --bg-card-light: #e6ede8;           /* Forest Mist Light Container */
 
   /* Modern Readable Clean Typography */
   --font-main: 'Plus Jakarta Sans', sans-serif;
