@@ -1,23 +1,23 @@
 :root {
-  /* Core Dark Canvas & Card Surfaces (Deep Pine Obsidian & Ancient Spruce) */
-  --bg-deep: #0a120c;                 /* Deep Pine Canopy Void */
-  --card-surface: #142419;            /* Weathered Spruce Card Surface */
-  --card-border: #e2b740;             /* Ancient Brass & Parchment Gold */
+  /* Core Dark Canvas & Card Surfaces (Sleek Dark Obsidian & Charcoal Spruce) */
+  --bg-deep: #070a08;                 /* Deep Obsidian Void */
+  --card-surface: #101712;            /* Sleek Charcoal Card Surface */
+  --card-border: #3a483c;             /* Muted Slate / Steel-Green Border */
 
-  /* Typography (High-Contrast Starlight & Amber) */
-  --text-primary: #ffffff;            /* Pure Crisp Starlight Text */
-  --text-muted: #f3ca69;              /* Luminous Gold Muted Text */
+  /* Typography (High-Contrast Clean White & Light Gold) */
+  --text-primary: #f8fafc;            /* Crisp Modern White Text */
+  --text-muted: #e2b765;              /* Elegant Warm Amber/Gold Muted Text */
 
-  /* Pokémon Style UI Accents (D&D Rune & Arcane Magic) */
-  --poke-yellow: #ffcc00;             /* Radiant Sunstone Yellow */
-  --poke-blue: #38bdf8;               /* Arcane Mana Sky Blue */
-  --hp-green: #28e070;                /* Bioluminescent Forest Moss HP */
-  --hp-red: #ff4d4d;                  /* Ruby Potion Crimson Spent */
+  /* Modern High-Contrast Accents */
+  --poke-yellow: #facc15;             /* Modern Neon Gold Accent */
+  --poke-blue: #38bdf8;               /* Electric Mana Cyan Accent */
+  --hp-green: #22c55e;                /* Modern Vibrant Emerald Moss HP */
+  --hp-red: #ef4444;                  /* Vibrant Crimson Red */
 
-  /* Additional Palette Colors (Woodland & Canopy Elements) */
-  --color-umber: #9a5332;             /* Weathered Leather Bark */
-  --color-olive: #70b32d;             /* Ancient Canopy Leaves */
-  --bg-card-light: #e6ede8;           /* Forest Mist Light Container */
+  /* Additional Palette Colors */
+  --color-umber: #27272a;             /* Dark Matte Steel */
+  --color-olive: #15803d;             /* Emerald Leaf Accent */
+  --bg-card-light: #1e293b;           /* Dark Slate Container */
 
   /* Modern Readable Clean Typography */
   --font-main: 'Plus Jakarta Sans', sans-serif;
@@ -52,9 +52,9 @@ body {
   height: 100vh;
   max-height: 840px;
   background: var(--bg-deep);
-  border: 3px solid var(--card-border);
+  border: 1px solid var(--card-border);
   border-radius: 20px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8), 0 0 15px rgba(250, 204, 21, 0.05);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -76,7 +76,7 @@ body {
 
   /* BACKGROUND INTEGRATION */
   .onboarding-screen {
-    background: url('assets/background/login-bg.png') center/cover no-repeat;
+    background: linear-gradient(180deg, rgba(7, 10, 8, 0.85) 0%, rgba(7, 10, 8, 0.95) 100%), url('assets/background/login-bg.png') center/cover no-repeat;
   }
 
   #screen-hub,
@@ -84,13 +84,13 @@ body {
   #screen-settings,
   #screen-shop,
   #screen-vault {
-    background: url('assets/background/hub-bg.png') center/cover no-repeat;
+    background: linear-gradient(180deg, rgba(7, 10, 8, 0.88) 0%, rgba(7, 10, 8, 0.96) 100%), url('assets/background/hub-bg.png') center/cover no-repeat;
   }
 
   .arena-stage {
     flex: 1;
-    background: url('assets/background/battle-bg.png') center/cover no-repeat;
-    border: 2px solid var(--card-border);
+    background: linear-gradient(180deg, rgba(16, 23, 18, 0.7) 0%, rgba(7, 10, 8, 0.9) 100%), url('assets/background/battle-bg.png') center/cover no-repeat;
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     padding: 16px;
     display: flex;
@@ -142,8 +142,8 @@ body {
 
   /* DRAWING PLACEHOLDERS */
   .img-placeholder {
-    border: 2px dashed var(--card-border);
-    background: rgba(24, 15, 18, 0.8);
+    border: 1px dashed var(--card-border);
+    background: rgba(16, 23, 18, 0.9);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -178,18 +178,18 @@ body {
     font-size: 0.75rem;
     font-family: var(--font-heading);
     font-weight: 700;
-    background: rgba(122, 154, 72, 0.15);
+    background: rgba(56, 189, 248, 0.1);
     color: var(--poke-blue);
-    border: 1px solid var(--poke-blue);
+    border: 1px solid rgba(56, 189, 248, 0.3);
     padding: 4px 10px;
     border-radius: 20px;
     display: inline-block;
     margin-bottom: 12px;
 
     &.success {
-      background: rgba(65, 82, 31, 0.25);
-      color: var(--poke-yellow);
-      border-color: var(--hp-green);
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--hp-green);
+      border-color: rgba(34, 197, 94, 0.3);
     }
   }
 
@@ -209,10 +209,11 @@ body {
 
   .glass-card {
     background: var(--card-surface);
-    border: 2px solid var(--card-border);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     padding: 18px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
   }
 
   .scrollable-card {
@@ -224,7 +225,7 @@ body {
     display: flex;
     gap: 8px;
     margin-bottom: 16px;
-    border-bottom: 2px solid var(--card-border);
+    border-bottom: 1px solid var(--card-border);
     padding-bottom: 0;
   }
 
@@ -239,8 +240,8 @@ body {
     font-size: 0.9rem;
     padding: 10px 8px;
     cursor: pointer;
-    margin-bottom: -2px;
-    transition: color 0.2s, border-color 0.2s;
+    margin-bottom: -1px;
+    transition: all 0.2s;
 
     &:hover:not(.active) {
       color: var(--text-primary);
@@ -276,6 +277,7 @@ body {
     font-family: var(--font-main);
     font-size: 0.9rem;
     outline: none;
+    transition: border-color 0.2s;
 
     &:focus { 
       border-color: var(--poke-yellow); 
@@ -285,13 +287,18 @@ body {
   .custom-select {
     width: 100%;
     padding: 12px;
-    background-color: var(--card-surface);
-    border: 2px solid var(--card-border);
+    background-color: var(--bg-deep);
+    border: 1px solid var(--card-border);
     color: var(--text-primary);
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 0.9rem;
     outline: none;
     cursor: pointer;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: var(--poke-yellow);
+    }
 
     option {
       background-color: var(--bg-deep);
@@ -316,7 +323,7 @@ body {
 
   .sprite-option {
     background: var(--card-surface);
-    border: 2px solid var(--card-border);
+    border: 1px solid var(--card-border);
     border-radius: 12px;
     padding: 20px 12px;
     text-align: center;
@@ -330,7 +337,7 @@ body {
 
     &.active {
       border-color: var(--poke-yellow);
-      background: rgba(242, 201, 76, 0.15);
+      background: rgba(250, 204, 21, 0.08);
     }
   }
 
@@ -355,7 +362,7 @@ body {
     font-size: 0.9rem;
     cursor: pointer;
     margin-top: 8px;
-    transition: transform 0.1s ease, background-color 0.2s;
+    transition: transform 0.1s ease, background-color 0.2s, box-shadow 0.2s;
 
     &:active { 
       transform: scale(0.98); 
@@ -365,19 +372,33 @@ body {
   .btn-primary { 
     background: var(--poke-yellow); 
     color: var(--bg-deep); 
+    box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2);
+
+    &:hover {
+      background: #eab308;
+    }
   }
 
   .btn-action-main { 
     background: var(--hp-green); 
-    color: var(--text-primary); 
+    color: #ffffff; 
     padding: 16px; 
     font-size: 0.95rem; 
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+
+    &:hover {
+      background: #16a34a;
+    }
   }
 
   .btn-secondary { 
     background: var(--color-umber); 
     color: var(--text-primary); 
     border: 1px solid var(--card-border); 
+
+    &:hover {
+      background: #3f3f46;
+    }
   }
 
   .btn-equipped { 
@@ -387,15 +408,23 @@ body {
   }
 
   .btn-danger { 
-    background: rgba(217, 107, 67, 0.2); 
+    background: rgba(239, 68, 68, 0.15); 
     color: var(--hp-red); 
-    border: 1px solid var(--hp-red); 
+    border: 1px solid rgba(239, 68, 68, 0.4); 
+
+    &:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
   }
 
   .btn-ghost { 
     background: transparent; 
     color: var(--text-muted); 
     font-size: 0.85rem; 
+
+    &:hover {
+      color: var(--text-primary);
+    }
   }
 
   .btn-sm { 
@@ -434,6 +463,12 @@ body {
     background: transparent;
     border: none;
     cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 
   .stats-grid { 
@@ -445,7 +480,7 @@ body {
   .stat-card {
     flex: 1;
     background: var(--card-surface);
-    border: 2px solid var(--card-border);
+    border: 1px solid var(--card-border);
     border-radius: 10px;
     padding: 14px;
     display: flex;
@@ -501,11 +536,12 @@ body {
   }
 
   .hud-plate {
-    background: var(--card-surface);
-    border: 2px solid var(--card-border);
+    background: rgba(16, 23, 18, 0.85);
+    border: 1px solid var(--card-border);
     border-radius: 10px;
     padding: 10px;
     width: 170px;
+    backdrop-filter: blur(4px);
   }
 
   .plate-top { 
@@ -551,7 +587,7 @@ body {
 
   .terminal-text {
     background: var(--bg-deep);
-    border: 2px solid var(--card-border);
+    border: 1px solid var(--card-border);
     border-radius: 10px;
     padding: 12px;
     font-size: 0.85rem;
@@ -569,7 +605,7 @@ body {
 
   .attack-btn {
     background: var(--card-surface);
-    border: 2px solid var(--card-border);
+    border: 1px solid var(--card-border);
     border-radius: 10px;
     color: var(--text-primary);
     font-family: var(--font-heading);
@@ -578,6 +614,7 @@ body {
     padding: 12px;
     cursor: pointer;
     text-align: left;
+    transition: all 0.2s;
 
     small {
       display: block;
@@ -590,12 +627,16 @@ body {
 
     &:hover { 
       border-color: var(--poke-yellow); 
-      background: rgba(242, 201, 76, 0.15); 
+      background: rgba(250, 204, 21, 0.08); 
     }
 
     &.flee {
       color: var(--hp-red);
-      border-color: var(--hp-red);
+      border-color: rgba(239, 68, 68, 0.4);
+
+      &:hover {
+        background: rgba(239, 68, 68, 0.1);
+      }
     }
   }
 
@@ -653,11 +694,11 @@ body {
     font-size: 0.8rem;
 
     &.saved { 
-      border-left: 4px solid var(--hp-green); 
+      border-left: 3px solid var(--hp-green); 
     }
 
     &.spent { 
-      border-left: 4px solid var(--hp-red); 
+      border-left: 3px solid var(--hp-red); 
     }
   }
 
@@ -685,8 +726,8 @@ body {
 
   .gold-badge {
     display: inline-block;
-    background: rgba(242, 201, 76, 0.15);
-    border: 1px solid var(--poke-yellow);
+    background: rgba(250, 204, 21, 0.1);
+    border: 1px solid rgba(250, 204, 21, 0.3);
     color: var(--poke-yellow);
     font-weight: 600;
     font-size: 0.8rem;
