@@ -1,6 +1,11 @@
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
+const SUPABASE_URL = 'https://impulse-slayer.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvanFsdGFhbHpvdWtvcG5td3d1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NDA0OTUsImV4cCI6MjEwMTUxNjQ5NX0.kKUXuQS-cAzRkALyXg2XMqlxa4DXbCNBaC5khRITULQ';
+
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const battleState = {
   price: 0,
   itemName: '',
@@ -27,18 +32,16 @@ function switchAuthTab(tab) {
   document.getElementById('form-login').classList.toggle('hidden', !isLogin);
   document.getElementById('form-signup').classList.toggle('hidden', isLogin);
   
-  // Directly set active class based on tab
   document.getElementById('tab-login').classList.toggle('active', isLogin);
   document.getElementById('tab-signup').classList.toggle('active', !isLogin);
 }
 
-// MULTI-ITEM AVATAR RENDERER
 function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const baseSprite = user.baseSpriteIdle || 'assets/characters/hero-male-idle.gif';
-  const equippedList = user.equippedItems || [];
+  const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
+  const equippedList = user.equipped_items || [];
 
   let layersHTML = `<img src="${baseSprite}" alt="Base Hero" class="character-img base-layer" />`;
 
@@ -55,72 +58,80 @@ function renderCharacterAvatar(containerId, user) {
 // 2. AUTHENTICATION & PROFILE SETUP
 // ==========================================
 
-function handleLocalSignup(e) {
+async function handleLocalSignup(e) {
   e.preventDefault();
   const name = document.getElementById('signup-name').value.trim();
   const email = document.getElementById('signup-email').value.trim().toLowerCase();
   const pass = document.getElementById('signup-pass').value;
 
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: email,
+    password: pass
+  });
 
-  if (users[email]) {
-    alert("An account with this email already exists!");
+  if (authError) {
+    alert("Signup failed: " + authError.message);
     return;
   }
 
-  users[email] = {
-    password: pass,
-    trainerName: name || 'Hero',
-    wage: 15.00,
-    foodPrice: 7.50,
-    eventPrice: 25.00,
-    baseSpriteStatic: 'assets/characters/hero-male.png',
-    baseSpriteIdle: 'assets/characters/hero-male-idle.gif',
-    equippedItems: [],
-    inventory: ['hat_default'],
-    lvl: 1,
-    xp: 0,
-    savedTotal: 0,
-    vaultUnlockTime: null,
-    logs: []
-  };
+  const userId = authData.user.id;
 
-  localStorage.setItem('slayer_users', JSON.stringify(users));
-  localStorage.setItem('slayer_active_user', email);
+  const { error: dbError } = await supabase
+    .from('profiles')
+    .insert([{
+      id: userId,
+      email: email,
+      trainer_name: name || 'Hero',
+      wage: 15.00,
+      food_price: 7.50,
+      event_price: 25.00,
+      lvl: 1,
+      xp: 0,
+      saved_total: 0,
+      equipped_items: [],
+      inventory: ['hat_default'],
+      logs: []
+    }]);
+
+  if (dbError) {
+    alert("Profile creation failed: " + dbError.message);
+    return;
+  }
 
   showScreen('screen-survey');
 }
 
-function handleLocalLogin(e) {
+async function handleLocalLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const pass = document.getElementById('login-pass').value;
 
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[email];
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: pass
+  });
 
-  if (!user || user.password !== pass) {
-    alert("Incorrect email or password.");
+  if (error) {
+    alert("Login failed: " + error.message);
     return;
   }
 
-  localStorage.setItem('slayer_active_user', email);
   loadTrainerSession();
 }
 
-function saveFinancialProfile(e) {
+async function saveFinancialProfile(e) {
   e.preventDefault();
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  if (!activeEmail) return showScreen('screen-login');
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return showScreen('screen-login');
 
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  if (users[activeEmail]) {
-    users[activeEmail].wage = parseFloat(document.getElementById('survey-wage').value) || 15.00;
-    users[activeEmail].foodPrice = parseFloat(document.getElementById('survey-food').value) || 7.50;
-    users[activeEmail].eventPrice = parseFloat(document.getElementById('survey-event').value) || 25.00;
+  const wage = parseFloat(document.getElementById('survey-wage').value) || 15.00;
+  const food = parseFloat(document.getElementById('survey-food').value) || 7.50;
+  const eventVal = parseFloat(document.getElementById('survey-event').value) || 25.00;
 
-    localStorage.setItem('slayer_users', JSON.stringify(users));
-  }
+  await supabase
+    .from('profiles')
+    .update({ wage: wage, food_price: food, event_price: eventVal })
+    .eq('id', session.user.id);
 
   showScreen('screen-sprite');
 }
@@ -133,59 +144,62 @@ function selectSprite(staticSrc, idleSrc, element) {
   element.classList.add('active');
 }
 
-function confirmSpriteSelection() {
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  if (!activeEmail) return showScreen('screen-login');
+async function confirmSpriteSelection() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return showScreen('screen-login');
 
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  if (users[activeEmail]) {
-    users[activeEmail].baseSpriteStatic = selectedSpriteStaticTemp;
-    users[activeEmail].baseSpriteIdle = selectedSpriteIdleTemp;
-    localStorage.setItem('slayer_users', JSON.stringify(users));
-  }
+  await supabase
+    .from('profiles')
+    .update({
+      base_sprite_static: selectedSpriteStaticTemp,
+      base_sprite_idle: selectedSpriteIdleTemp
+    })
+    .eq('id', session.user.id);
 
   loadTrainerSession();
 }
 
-function loadTrainerSession() {
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  if (!activeEmail) {
+async function loadTrainerSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
     showScreen('screen-login');
     return;
   }
 
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail];
+  const { data: user, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', session.user.id)
+    .single();
 
-  if (user) {
-    if (!Array.isArray(user.equippedItems)) {
-      user.equippedItems = user.equippedSprite && user.equippedSprite !== 'BASE' 
-        ? [user.equippedSprite] 
-        : [];
-    }
-
-    document.getElementById('hub-trainer-name').textContent = user.trainerName;
-    document.getElementById('hub-trainer-lvl').textContent = `Level ${user.lvl}`;
-    document.getElementById('hub-saved').textContent = `$${user.savedTotal.toFixed(2)}`;
-    document.getElementById('hub-exp').textContent = `${user.xp} / 100`;
-
-    renderCharacterAvatar('hub-avatar', user);
-    renderCharacterAvatar('player-sprite', user);
-    renderCharacterAvatar('shop-preview-avatar', user);
-
-    document.getElementById('settings-name').value = user.trainerName || '';
-    document.getElementById('settings-wage').value = user.wage || 15.00;
-    document.getElementById('settings-food').value = user.foodPrice || 7.50;
-    document.getElementById('settings-event').value = user.eventPrice || 25.00;
-
-    checkLockStatus(user);
-    showScreen('screen-hub');
+  if (error || !user) {
+    console.error("Error fetching profile:", error);
+    return;
   }
+
+  document.getElementById('hub-trainer-name').textContent = user.trainer_name || 'Hero';
+  document.getElementById('hub-trainer-lvl').textContent = `Level ${user.lvl || 1}`;
+  document.getElementById('hub-saved').textContent = `$${parseFloat(user.saved_total || 0).toFixed(2)}`;
+  document.getElementById('hub-exp').textContent = `${user.xp || 0} / 100`;
+
+  renderCharacterAvatar('hub-avatar', user);
+  renderCharacterAvatar('player-sprite', user);
+  renderCharacterAvatar('shop-preview-avatar', user);
+
+  if (document.getElementById('settings-name')) document.getElementById('settings-name').value = user.trainer_name || '';
+  if (document.getElementById('settings-wage')) document.getElementById('settings-wage').value = user.wage || 15.00;
+  if (document.getElementById('settings-food')) document.getElementById('settings-food').value = user.food_price || 7.50;
+  if (document.getElementById('settings-event')) document.getElementById('settings-event').value = user.event_price || 25.00;
+
+  checkLockStatus(user);
+  showScreen('screen-hub');
 }
 
 function checkLockStatus(user) {
   const btn = document.getElementById('btn-engage-boss');
-  if (user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
+  if (!btn) return;
+  if (user.vault_unlock_time && user.vault_unlock_time > Date.now()) {
     btn.textContent = "Cooldown Active";
     btn.style.opacity = "0.6";
   } else {
@@ -194,12 +208,13 @@ function checkLockStatus(user) {
   }
 }
 
-function checkBossAvailability() {
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail];
+async function checkBossAvailability() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return showScreen('screen-login');
 
-  if (user && user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
+  const { data: user } = await supabase.from('profiles').select('vault_unlock_time').eq('id', session.user.id).single();
+
+  if (user && user.vault_unlock_time && user.vault_unlock_time > Date.now()) {
     alert("Battles are temporarily paused during your cooling period. Check your vault timer!");
     checkVaultDirect();
   } else {
@@ -214,52 +229,26 @@ function checkBossAvailability() {
 function getMonsterData(itemName, price, category) {
   const lowerName = itemName.toLowerCase();
 
-  // Price-based override for major purchases
   if (price >= 150) {
-    return {
-      name: "Buyer's Remorse Titan",
-      sprite: "assets/monsters/monster-dragon-fomo.png"
-    };
+    return { name: "Buyer's Remorse Titan", sprite: "assets/monsters/monster-dragon-fomo.png" };
   }
 
-  // Category & Keyword matching
-  if (category === 'tech' || lowerName.includes('phone') || lowerName.includes('headphone') || lowerName.includes('gadget')) {
-    return {
-      name: "Upgrade Overlord",
-      sprite: "assets/monsters/monster-beast-impulse.png"
-    };
-  } else if (category === 'fashion' || lowerName.includes('shoes') || lowerName.includes('shirt') || lowerName.includes('clothes')) {
-    return {
-      name: "Fast-Fashion Phantom",
-      sprite: "assets/monsters/monster-phantom-subscription.png"
-    };
-  } else if (category === 'food' || lowerName.includes('snack') || lowerName.includes('coffee') || lowerName.includes('takeout')) {
-    return {
-      name: "Snack-Attack Slime",
-      sprite: "assets/monsters/monster-gremlin-splurge.png"
-    };
-  } else if (category === 'sub' || lowerName.includes('subscription') || lowerName.includes('pass')) {
-    return {
-      name: "Recurring Subscription Imp",
-      sprite: "assets/monsters/monster-phantom-subscription.png"
-    };
+  if (category === 'tech' || lowerName.includes('phone') || lowerName.includes('headphone')) {
+    return { name: "Upgrade Overlord", sprite: "assets/monsters/monster-beast-impulse.png" };
+  } else if (category === 'fashion' || lowerName.includes('shoes') || lowerName.includes('clothes')) {
+    return { name: "Fast-Fashion Phantom", sprite: "assets/monsters/monster-phantom-subscription.png" };
+  } else if (category === 'food' || lowerName.includes('snack') || lowerName.includes('coffee')) {
+    return { name: "Snack-Attack Slime", sprite: "assets/monsters/monster-gremlin-splurge.png" };
+  } else if (category === 'sub' || lowerName.includes('subscription')) {
+    return { name: "Recurring Subscription Imp", sprite: "assets/monsters/monster-phantom-subscription.png" };
   }
 
-  // Fallback defaults by price tier
-  if (price < 30) {
-    return {
-      name: "Splurge Gremlin",
-      sprite: "assets/monsters/monster-gremlin-splurge.png"
-    };
-  }
-
-  return {
-    name: "FOMO Beast",
-    sprite: "assets/monsters/monster-beast-impulse.png"
-  };
+  return price < 30 
+    ? { name: "Splurge Gremlin", sprite: "assets/monsters/monster-gremlin-splurge.png" }
+    : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
 }
 
-function startBattle() {
+async function startBattle() {
   const name = document.getElementById('target-name').value.trim();
   const price = parseFloat(document.getElementById('target-price').value);
   const categorySelect = document.getElementById('target-category');
@@ -267,9 +256,8 @@ function startBattle() {
 
   if (!name || isNaN(price) || price <= 0) return alert("Please enter a valid item name and price.");
 
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail] || { trainerName: 'Hero', lvl: 1 };
+  const { data: { session } } = await supabase.auth.getSession();
+  const { data: user } = await supabase.from('profiles').select('trainer_name, lvl').eq('id', session.user.id).single();
 
   battleState.itemName = name;
   battleState.price = price;
@@ -279,15 +267,12 @@ function startBattle() {
   battleState.maxPlayerHP = 100;
   battleState.playerHP = 100;
 
-  // Retrieve dynamic monster based on item attributes
   const monster = getMonsterData(name, price, category);
-  const enemySpriteContainer = document.getElementById('enemy-sprite');
-
   document.getElementById('enemy-name').textContent = monster.name;
-  enemySpriteContainer.innerHTML = `<img src="${monster.sprite}" alt="${monster.name}" class="character-img" />`;
+  document.getElementById('enemy-sprite').innerHTML = `<img src="${monster.sprite}" alt="${monster.name}" class="character-img" />`;
 
-  document.getElementById('player-battle-name').textContent = user.trainerName;
-  document.getElementById('player-battle-lvl').textContent = `Lv ${user.lvl}`;
+  document.getElementById('player-battle-name').textContent = user ? user.trainer_name : 'Hero';
+  document.getElementById('player-battle-lvl').textContent = `Lv ${user ? user.lvl : 1}`;
 
   updateHPUI();
   setDialogue(`A wild ${monster.name} appears! Choose a reflection tactic to fight back.`);
@@ -335,7 +320,7 @@ function startQuestionFlow(attackType) {
     setDialogue("Question 1/2: Why do you want this item right now?");
     container.innerHTML = `
       <div class="input-field">
-        <input type="text" id="user-reflection-1" placeholder="e.g., I saw an ad and it looks cool..." autofocus />
+        <input type="text" id="user-reflection-1" placeholder="e.g., I saw an ad..." autofocus />
       </div>
       <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
     `;
@@ -351,7 +336,7 @@ function startQuestionFlow(attackType) {
     setDialogue("Question 1/2: What else could you do with this money instead?");
     container.innerHTML = `
       <div class="input-field">
-        <input type="text" id="user-reflection-1" placeholder="e.g., Save for vacation or gifts..." autofocus />
+        <input type="text" id="user-reflection-1" placeholder="e.g., Save for vacation..." autofocus />
       </div>
       <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
     `;
@@ -398,16 +383,18 @@ function processPlayerAttack(attackType) {
   }
 }
 
-function monsterRealityCounter(attackType) {
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail] || { wage: 15.00, foodPrice: 7.50, eventPrice: 25.00 };
+async function monsterRealityCounter(attackType) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const { data: user } = await supabase.from('profiles').select('wage, food_price, event_price').eq('id', session.user.id).single();
 
   const price = battleState.price;
+  const wage = user ? user.wage : 15.00;
+  const food = user ? user.food_price : 7.50;
+  const eventVal = user ? user.event_price : 25.00;
 
-  const hoursWorked = (price / (user.wage || 15)).toFixed(1);
-  const mealsCount = Math.floor(price / (user.foodPrice || 7.50));
-  const outingsCount = (price / (user.eventPrice || 25)).toFixed(1);
+  const hoursWorked = (price / wage).toFixed(1);
+  const mealsCount = Math.floor(price / food);
+  const outingsCount = (price / eventVal).toFixed(1);
 
   const counterAttacks = [
     `The Monster strikes back! "This costs $${price.toFixed(2)}—that is ${hoursWorked} hours of work at your wage!"`,
@@ -433,21 +420,14 @@ function monsterRealityCounter(attackType) {
   }
 }
 
-// BATTLE OUTCOMES
-function victorySavedMoney() {
-  if (typeof confetti === 'function') {
-    confetti({ particleCount: 80, spread: 70 });
-  }
+async function victorySavedMoney() {
+  if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
   alert(`Great job! You beat the impulse and saved $${battleState.price.toFixed(2)}.`);
 
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  
-  if (users[activeEmail]) {
-    const unlockTime = Date.now() + (15 * 60 * 1000);
-    users[activeEmail].vaultUnlockTime = unlockTime;
-    localStorage.setItem('slayer_users', JSON.stringify(users));
-  }
+  const { data: { session } } = await supabase.auth.getSession();
+  const unlockTime = Date.now() + (15 * 60 * 1000);
+
+  await supabase.from('profiles').update({ vault_unlock_time: unlockTime }).eq('id', session.user.id);
 
   updateTrainerStats(50, battleState.price, {
     name: battleState.itemName,
@@ -476,76 +456,75 @@ function giveInAndSpend() {
 // 4. SETTINGS & ACCOUNT ACTIONS
 // ==========================================
 
-function updateTrainerName() {
-  const activeEmail = localStorage.getItem('slayer_active_user');
+async function updateTrainerName() {
   const newName = document.getElementById('settings-name').value.trim();
   if (!newName) return alert("Please enter a valid name.");
 
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  if (users[activeEmail]) {
-    users[activeEmail].trainerName = newName;
-    localStorage.setItem('slayer_users', JSON.stringify(users));
-    alert("Trainer name saved.");
-    loadTrainerSession();
-  }
+  const { data: { session } } = await supabase.auth.getSession();
+  await supabase.from('profiles').update({ trainer_name: newName }).eq('id', session.user.id);
+
+  alert("Trainer name saved.");
+  loadTrainerSession();
 }
 
-function updateMetricsSettings() {
-  const activeEmail = localStorage.getItem('slayer_active_user');
+async function updateMetricsSettings() {
   const wage = parseFloat(document.getElementById('settings-wage').value);
   const food = parseFloat(document.getElementById('settings-food').value);
   const eventVal = parseFloat(document.getElementById('settings-event').value);
 
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  if (users[activeEmail]) {
-    users[activeEmail].wage = wage || 15.00;
-    users[activeEmail].foodPrice = food || 7.50;
-    users[activeEmail].eventPrice = eventVal || 25.00;
-    localStorage.setItem('slayer_users', JSON.stringify(users));
-    alert("Financial metrics saved.");
-    loadTrainerSession();
-  }
+  const { data: { session } } = await supabase.auth.getSession();
+  await supabase.from('profiles').update({
+    wage: wage || 15.00,
+    food_price: food || 7.50,
+    event_price: eventVal || 25.00
+  }).eq('id', session.user.id);
+
+  alert("Financial metrics saved.");
+  loadTrainerSession();
 }
 
-function deleteAccount() {
+async function deleteAccount() {
   if (confirm("Are you sure you want to delete your account? This will erase all your progress.")) {
-    const activeEmail = localStorage.getItem('slayer_active_user');
-    const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-    delete users[activeEmail];
-    localStorage.setItem('slayer_users', JSON.stringify(users));
-    localStorage.removeItem('slayer_active_user');
+    const { data: { session } } = await supabase.auth.getSession();
+    await supabase.from('profiles').delete().eq('id', session.user.id);
+    await supabase.auth.signOut();
     alert("Account deleted.");
     showScreen('screen-login');
   }
 }
 
-function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  if (!activeEmail) return;
+async function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
 
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail];
+  const { data: user } = await supabase.from('profiles').select('xp, lvl, saved_total, logs').eq('id', session.user.id).single();
+  if (!user) return;
 
-  if (user) {
-    user.xp += xpGained;
-    user.savedTotal += goldSaved;
+  let newXp = (user.xp || 0) + xpGained;
+  let newLvl = user.lvl || 1;
+  let newSaved = parseFloat(user.saved_total || 0) + goldSaved;
+  let newLogs = user.logs || [];
 
-    if (!user.logs) user.logs = [];
-    if (logEntry) user.logs.unshift(logEntry);
+  if (logEntry) newLogs.unshift(logEntry);
 
-    if (user.xp >= 100) {
-      user.lvl += 1;
-      user.xp -= 100;
-      alert(`Level Up! You reached Level ${user.lvl}.`);
-    }
-
-    localStorage.setItem('slayer_users', JSON.stringify(users));
-    loadTrainerSession();
+  if (newXp >= 100) {
+    newLvl += 1;
+    newXp -= 100;
+    alert(`Level Up! You reached Level ${newLvl}.`);
   }
+
+  await supabase.from('profiles').update({
+    xp: newXp,
+    lvl: newLvl,
+    saved_total: newSaved,
+    logs: newLogs
+  }).eq('id', session.user.id);
+
+  loadTrainerSession();
 }
 
-function logoutTrainer() {
-  localStorage.removeItem('slayer_active_user');
+async function logoutTrainer() {
+  await supabase.auth.signOut();
   showScreen('screen-login');
 }
 
@@ -556,18 +535,16 @@ function logoutTrainer() {
 function startVaultTimer(unlockTimestamp) {
   if (battleState.timerInterval) clearInterval(battleState.timerInterval);
 
-  function updateDisplay() {
+  async function updateDisplay() {
     const remaining = unlockTimestamp - Date.now();
 
     if (remaining <= 0) {
       clearInterval(battleState.timerInterval);
       document.getElementById('vault-timer').textContent = "Ready";
-      
-      const activeEmail = localStorage.getItem('slayer_active_user');
-      const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-      if (users[activeEmail]) {
-        users[activeEmail].vaultUnlockTime = null;
-        localStorage.setItem('slayer_users', JSON.stringify(users));
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.from('profiles').update({ vault_unlock_time: null }).eq('id', session.user.id);
         loadTrainerSession();
       }
       return;
@@ -584,13 +561,14 @@ function startVaultTimer(unlockTimestamp) {
   battleState.timerInterval = setInterval(updateDisplay, 1000);
 }
 
-function checkVaultDirect() {
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail];
+async function checkVaultDirect() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return showScreen('screen-login');
 
-  if (user && user.vaultUnlockTime && user.vaultUnlockTime > Date.now()) {
-    startVaultTimer(user.vaultUnlockTime);
+  const { data: user } = await supabase.from('profiles').select('vault_unlock_time, logs').eq('id', session.user.id).single();
+
+  if (user && user.vault_unlock_time && user.vault_unlock_time > Date.now()) {
+    startVaultTimer(user.vault_unlock_time);
   } else {
     document.getElementById('vault-timer').textContent = "Ready";
   }
@@ -629,17 +607,14 @@ function renderHistoryLogs(logs) {
 // 6. SHOP & MULTI-EQUIP SYSTEM
 // ==========================================
 
-function openShop() {
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail];
+async function openShop() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return showScreen('screen-login');
 
+  const { data: user } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
   if (!user) return;
 
-  if (!user.inventory) user.inventory = ['hat_default'];
-  if (!Array.isArray(user.equippedItems)) user.equippedItems = [];
-
-  document.getElementById('shop-gold-val').textContent = user.savedTotal.toFixed(2);
+  document.getElementById('shop-gold-val').textContent = parseFloat(user.saved_total || 0).toFixed(2);
   renderCharacterAvatar('shop-preview-avatar', user);
 
   updateShopButtons(user);
@@ -669,7 +644,8 @@ function updateShopButtons(user) {
     'item_laser': 'assets/costumes/overlay-laser-blaster.png'
   };
 
-  const equipped = user.equippedItems || [];
+  const equipped = user.equipped_items || [];
+  const inventory = user.inventory || ['hat_default'];
 
   items.forEach(itemId => {
     const btn = document.getElementById(`btn-${itemId}`);
@@ -681,7 +657,7 @@ function updateShopButtons(user) {
       return;
     }
 
-    const isOwned = user.inventory.includes(itemId);
+    const isOwned = inventory.includes(itemId);
     const targetPath = itemPathMap[itemId];
     const isEquipped = equipped.includes(targetPath);
 
@@ -698,45 +674,47 @@ function updateShopButtons(user) {
   });
 }
 
-function buyOrEquip(itemId, price, spritePath) {
-  const activeEmail = localStorage.getItem('slayer_active_user');
-  const users = JSON.parse(localStorage.getItem('slayer_users')) || {};
-  const user = users[activeEmail];
+async function buyOrEquip(itemId, price, spritePath) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return showScreen('screen-login');
 
+  const { data: user } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
   if (!user) return;
 
-  if (!user.inventory) user.inventory = ['hat_default'];
-  if (!Array.isArray(user.equippedItems)) user.equippedItems = [];
+  let equipped = user.equipped_items || [];
+  let inventory = user.inventory || ['hat_default'];
+  let savedTotal = parseFloat(user.saved_total || 0);
 
   if (itemId === 'hat_default') {
-    user.equippedItems = [];
-    localStorage.setItem('slayer_users', JSON.stringify(users));
-    loadTrainerSession();
-    openShop();
-    return;
-  }
-
-  const isOwned = user.inventory.includes(itemId);
-
-  if (isOwned) {
-    const index = user.equippedItems.indexOf(spritePath);
-    if (index > -1) {
-      user.equippedItems.splice(index, 1);
-    } else {
-      user.equippedItems.push(spritePath);
-    }
+    equipped = [];
   } else {
-    if (user.savedTotal < price) {
-      alert("You need more saved money to unlock this item!");
-      return;
+    const isOwned = inventory.includes(itemId);
+
+    if (isOwned) {
+      const index = equipped.indexOf(spritePath);
+      if (index > -1) {
+        equipped.splice(index, 1);
+      } else {
+        equipped.push(spritePath);
+      }
+    } else {
+      if (savedTotal < price) {
+        alert("You need more saved money to unlock this item!");
+        return;
+      }
+      savedTotal -= price;
+      inventory.push(itemId);
+      equipped.push(spritePath);
+      alert("Item unlocked and equipped!");
     }
-    user.savedTotal -= price;
-    user.inventory.push(itemId);
-    user.equippedItems.push(spritePath);
-    alert("Item unlocked and equipped!");
   }
 
-  localStorage.setItem('slayer_users', JSON.stringify(users));
+  await supabase.from('profiles').update({
+    equipped_items: equipped,
+    inventory: inventory,
+    saved_total: savedTotal
+  }).eq('id', session.user.id);
+
   loadTrainerSession();
   openShop();
 }
