@@ -26,8 +26,10 @@ function switchAuthTab(tab) {
   const isLogin = tab === 'login';
   document.getElementById('form-login').classList.toggle('hidden', !isLogin);
   document.getElementById('form-signup').classList.toggle('hidden', isLogin);
+  
+  // Directly set active class based on tab
   document.getElementById('tab-login').classList.toggle('active', isLogin);
-  document.getElementById('tab-signup').classList.toggle('active', isLogin);
+  document.getElementById('tab-signup').classList.toggle('active', !isLogin);
 }
 
 // MULTI-ITEM AVATAR RENDERER
