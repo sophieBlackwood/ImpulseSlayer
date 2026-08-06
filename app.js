@@ -76,17 +76,20 @@ function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
+  const movementClass = battleState.isMoving ? 'is-moving' : 'is-idle';
+
   const baseSprite = battleState.isMoving 
     ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
     : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
 
   const equippedList = user.equipped_items || [];
 
-  let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${battleState.isMoving ? 'is-moving' : 'is-idle'}" />`;
+  let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${movementClass}" />`;
 
   equippedList.forEach(path => {
     if (path && path !== 'BASE') {
-      layersHTML += `<img src="${path}" alt="Costume Layer" class="character-img costume-overlay-layer" />`;
+      // Added movementClass here so overlays inherit the same idle/moving state
+      layersHTML += `<img src="${path}" alt="Costume Layer" class="character-img costume-overlay-layer ${movementClass}" />`;
     }
   });
 
