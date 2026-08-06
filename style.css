@@ -133,7 +133,15 @@ body {
     z-index: 2;
     pointer-events: none;
   }
+.costume-overlay-layer.is-idle {
+  /* Ensure idle animation playing or matching transform rules */
+  animation-play-state: running;
+}
 
+.costume-overlay-layer.is-moving {
+  /* Match walking movement CSS if applicable */
+  animation-play-state: running;
+}
   .character-img {
     width: 64px;
     height: 64px;
