@@ -19,6 +19,24 @@ const battleState = {
   isMoving: false
 };
 
+// Item Catalog with Categories & Paths
+const ITEM_CATALOG = {
+  'hat_crown': { name: 'Royal Crown', path: 'assets/costumes/overlay-crown.png', category: 'hat' },
+  'hat_wizard': { name: 'Wizard Hat', path: 'assets/costumes/overlay-wizard-hat.png', category: 'hat' },
+  'hat_ninja': { name: 'Ninja Headband', path: 'assets/costumes/overlay-ninja-headband.png', category: 'hat' },
+  'hat_party': { name: 'Party Hat', path: 'assets/costumes/overlay-party-hat.png', category: 'hat' },
+  'hat_helmet': { name: 'Knight Helmet', path: 'assets/costumes/overlay-helmet.png', category: 'hat' },
+  
+  'face_sunglasses': { name: 'Cool Sunglasses', path: 'assets/costumes/overlay-sunglasses.png', category: 'face' },
+  'face_eyepatch': { name: 'Pirate Eyepatch', path: 'assets/costumes/overlay-eyepatch.png', category: 'face' },
+  'face_visor': { name: 'Cyber Visor', path: 'assets/costumes/overlay-visor.png', category: 'face' },
+  
+  'item_sword': { name: 'Wooden Sword', path: 'assets/costumes/overlay-wooden-sword.png', category: 'weapon' },
+  'item_staff': { name: 'Magic Staff', path: 'assets/costumes/overlay-magic-staff.png', category: 'weapon' },
+  'item_shield': { name: 'Wooden Shield', path: 'assets/costumes/overlay-shield.png', category: 'weapon' },
+  'item_laser': { name: 'Laser Blaster', path: 'assets/costumes/overlay-laser-blaster.png', category: 'weapon' }
+};
+
 // Helper function to persist state
 function saveUserData() {
   if (currentUser && currentUser.email) {
@@ -612,7 +630,7 @@ function renderHistoryLogs(logs) {
 }
 
 // ==========================================
-// 6. SHOP & MULTI-EQUIP SYSTEM
+// 6. SHOP & STRICT 1-PER-CATEGORY EQUIP SYSTEM
 // ==========================================
 
 function openShop() {
@@ -628,44 +646,24 @@ function openShop() {
 }
 
 function updateShopButtons(user) {
-  const items = [
-    'hat_crown', 'hat_wizard', 'hat_ninja', 'hat_party', 'hat_helmet',
-    'face_sunglasses', 'face_eyepatch', 'face_visor',
-    'item_sword', 'item_staff', 'item_shield', 'item_laser',
-    'hat_default'
-  ];
-
-  const itemPathMap = {
-    'hat_crown': 'assets/costumes/overlay-crown.png',
-    'hat_wizard': 'assets/costumes/overlay-wizard-hat.png',
-    'hat_ninja': 'assets/costumes/overlay-ninja-headband.png',
-    'hat_party': 'assets/costumes/overlay-party-hat.png',
-    'hat_helmet': 'assets/costumes/overlay-helmet.png',
-    'face_sunglasses': 'assets/costumes/overlay-sunglasses.png',
-    'face_eyepatch': 'assets/costumes/overlay-eyepatch.png',
-    'face_visor': 'assets/costumes/overlay-visor.png',
-    'item_sword': 'assets/costumes/overlay-wooden-sword.png',
-    'item_staff': 'assets/costumes/overlay-magic-staff.png',
-    'item_shield': 'assets/costumes/overlay-shield.png',
-    'item_laser': 'assets/costumes/overlay-laser-blaster.png'
-  };
-
   const equipped = user.equipped_items || [];
   const inventory = user.inventory || ['hat_default'];
 
-  items.forEach(itemId => {
+  // Update starter button
+  const starterBtn = document.getElementById('btn-hat_default');
+  if (starterBtn) {
+    starterBtn.textContent = equipped.length === 0 ? "Equipped" : "Unequip All";
+    starterBtn.className = equipped.length === 0 ? "btn btn-sm btn-equipped" : "btn btn-secondary btn-sm";
+  }
+
+  // Update catalog buttons
+  Object.keys(ITEM_CATALOG).forEach(itemId => {
     const btn = document.getElementById(`btn-${itemId}`);
     if (!btn) return;
 
-    if (itemId === 'hat_default') {
-      btn.textContent = equipped.length === 0 ? "Equipped" : "Unequip All";
-      btn.className = equipped.length === 0 ? "btn btn-sm btn-equipped" : "btn btn-secondary btn-sm";
-      return;
-    }
-
+    const itemData = ITEM_CATALOG[itemId];
     const isOwned = inventory.includes(itemId);
-    const targetPath = itemPathMap[itemId];
-    const isEquipped = equipped.includes(targetPath);
+    const isEquipped = equipped.includes(itemData.path);
 
     if (isEquipped) {
       btn.textContent = "Unequip";
@@ -687,28 +685,54 @@ function buyOrEquip(itemId, price, spritePath) {
   let inventory = currentUser.inventory || ['hat_default'];
   let savedTotal = parseFloat(currentUser.saved_total || 0);
 
+  // Reset all equipped items if clicking Default / Starter
   if (itemId === 'hat_default') {
-    equipped = [];
-  } else {
-    const isOwned = inventory.includes(itemId);
+    currentUser.equipped_items = [];
+    saveUserData();
+    loadTrainerSession();
+    openShop();
+    return;
+  }
 
-    if (isOwned) {
-      const index = equipped.indexOf(spritePath);
-      if (index > -1) {
-        equipped.splice(index, 1);
-      } else {
-        equipped.push(spritePath);
-      }
+  const targetItem = ITEM_CATALOG[itemId];
+  if (!targetItem) return;
+
+  const isOwned = inventory.includes(itemId);
+
+  if (isOwned) {
+    const isEquipped = equipped.includes(spritePath);
+
+    if (isEquipped) {
+      // Unequip item
+      equipped = equipped.filter(path => path !== spritePath);
     } else {
-      if (savedTotal < price) {
-        alert("You need more saved money to unlock this item!");
-        return;
-      }
-      savedTotal -= price;
-      inventory.push(itemId);
+      // 1-PER-CATEGORY FILTER: Remove any item already equipped in the same category
+      equipped = equipped.filter(equippedPath => {
+        const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath);
+        return !catalogItem || catalogItem.category !== targetItem.category;
+      });
+
+      // Equip new item
       equipped.push(spritePath);
-      alert("Item unlocked and equipped!");
     }
+  } else {
+    // Unlock and auto-equip item
+    if (savedTotal < price) {
+      alert("You need more saved money to unlock this item!");
+      return;
+    }
+
+    savedTotal -= price;
+    inventory.push(itemId);
+
+    // Filter category before equipping newly bought item
+    equipped = equipped.filter(equippedPath => {
+      const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath);
+      return !catalogItem || catalogItem.category !== targetItem.category;
+    });
+
+    equipped.push(spritePath);
+    alert(`${targetItem.name} unlocked and equipped!`);
   }
 
   currentUser.equipped_items = equipped;
