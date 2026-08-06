@@ -104,6 +104,18 @@ function saveUserData() {
   }
 }
 
+// Helper function to compute level-based stat boosts
+function getPlayerMaxHP(level) {
+  const baseHP = 100;
+  const hpBonusPerLevel = 15;
+  return baseHP + ((level - 1) * hpBonusPerLevel);
+}
+
+function getPlayerDamageMultiplier(level) {
+  const bonusPerLevel = 0.10; // +10% damage boost per level
+  return 1 + ((level - 1) * bonusPerLevel);
+}
+
 // ==========================================
 // 1. UI NAVIGATION & AVATAR RENDERING
 // ==========================================
@@ -129,7 +141,7 @@ function switchAuthTab(tab) {
   const tabSignup = document.getElementById('tab-signup');
 
   if (tabLogin) tabLogin.classList.toggle('active', isLogin);
-  if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
+  if (tabSignup) tabSignup.classList.toggle('active', isLogin);
 }
 
 function renderCharacterAvatar(containerId, user, forceStationary = false) {
@@ -339,7 +351,7 @@ function checkBossAvailability() {
 }
 
 // ==========================================
-// 3. COMBAT & DYNAMIC MONSTER SYSTEM
+// 3. COMBAT & STAT BOOST SYSTEM
 // ==========================================
 
 function getMonsterData(itemName, price, category) {
@@ -376,20 +388,24 @@ function startBattle() {
 
   if (!name || isNaN(price) || price <= 0) return alert("Please enter a valid item name and price.");
 
+  const playerLvl = currentUser ? (currentUser.lvl || 1) : 1;
+
   battleState.itemName = name;
   battleState.price = price;
   battleState.category = category;
   battleState.maxEnemyHP = price > 100 ? 150 : 100;
   battleState.enemyHP = battleState.maxEnemyHP;
-  battleState.maxPlayerHP = 100;
-  battleState.playerHP = 100;
+
+  // Stat Boost Applied: Max HP scales with Level
+  battleState.maxPlayerHP = getPlayerMaxHP(playerLvl);
+  battleState.playerHP = battleState.maxPlayerHP;
 
   const monster = getMonsterData(name, price, category);
   document.getElementById('enemy-name').textContent = monster.name;
   document.getElementById('enemy-sprite').innerHTML = `<img src="${monster.sprite}" alt="${monster.name}" class="character-img" />`;
 
   document.getElementById('player-battle-name').textContent = currentUser ? currentUser.trainer_name : 'Hero';
-  document.getElementById('player-battle-lvl').textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
+  document.getElementById('player-battle-lvl').textContent = `Lv ${playerLvl}`;
 
   updateHPUI();
   setDialogue(`A wild ${monster.name} appears! Choose a reflection tactic to fight back.`);
@@ -487,7 +503,13 @@ function processPlayerAttack(attackType) {
   const ans2 = document.getElementById('user-reflection-2').value.trim();
   if (!ans2) return alert("Please enter an answer!");
 
-  const dmg = Math.floor(Math.random() * 15) + 35;
+  const playerLvl = currentUser ? (currentUser.lvl || 1) : 1;
+  const baseDmg = Math.floor(Math.random() * 15) + 35;
+  
+  // Stat Boost Applied: Damage scales up with Level (+10% per level)
+  const dmgMultiplier = getPlayerDamageMultiplier(playerLvl);
+  const dmg = Math.floor(baseDmg * dmgMultiplier);
+
   battleState.enemyHP -= dmg;
   updateHPUI();
 
@@ -622,7 +644,8 @@ function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
   if (newXp >= 100) {
     newLvl += 1;
     newXp -= 100;
-    alert(`Level Up! You reached Level ${newLvl}.`);
+    const newMaxHP = getPlayerMaxHP(newLvl);
+    alert(`Level Up! You reached Level ${newLvl}! Your Max HP increased to ${newMaxHP} and attack power increased by 10%!`);
   }
 
   currentUser.xp = newXp;
