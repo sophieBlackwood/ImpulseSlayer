@@ -2,7 +2,59 @@
 // LOCAL STORAGE AUTH & GAME STATE
 // ==========================================
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
-let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
+let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';function renderCharacterAvatar(containerId, user, forceStationary = false) {
+  const container = document.getElementById(containerId);
+  if (!container || !user) return;
+
+  const isMoving = forceStationary ? false : battleState.isMoving;
+  const movementClass = isMoving ? 'is-moving' : 'is-idle';
+
+  // 1. Determine Base Sprite
+  let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
+  if (!forceStationary) {
+    baseSprite = isMoving 
+      ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
+      : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
+  }
+
+  const equippedList = user.equipped_items || [];
+  
+  // 2. Build explicit overlay image elements
+  let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${movementClass}" />`;
+
+  equippedList.forEach((path, index) => {
+    if (path && path !== 'BASE') {
+      let activeOverlayPath = path;
+
+      // Match item against catalog using either static path or idle path
+      const catalogItem = Object.values(ITEM_CATALOG).find(item => 
+        item.path === path || item.idlePath === path
+      );
+
+      if (catalogItem) {
+        if (forceStationary) {
+          activeOverlayPath = catalogItem.path; // Strictly static PNG in shop preview
+        } else {
+          // Swap between animated idle GIF and walk/static PNG based on movement state
+          if (!isMoving && catalogItem.idlePath) {
+            // Append timestamp to prevent browser cache from freezing the GIF
+            activeOverlayPath = `${catalogItem.idlePath}?t=${Date.now()}`;
+          } else {
+            activeOverlayPath = catalogItem.path;
+          }
+        }
+      }
+
+      layersHTML += `<img src="${activeOverlayPath}" alt="Costume Layer" class="character-img costume-overlay-layer ${movementClass}" style="z-index: ${index + 2};" />`;
+    }
+  });
+
+  // 3. Update DOM only if content has changed to avoid killing active GIF renders
+  if (container.dataset.lastState !== `${isMoving}-${equippedList.join(',')}-${baseSprite}`) {
+    container.innerHTML = layersHTML;
+    container.dataset.lastState = `${isMoving}-${equippedList.join(',')}-${baseSprite}`;
+  }
+}
 
 let currentUser = null;
 
@@ -208,7 +260,7 @@ function renderCharacterAvatar(containerId, user, forceStationary = false) {
   const isMoving = forceStationary ? false : battleState.isMoving;
   const movementClass = isMoving ? 'is-moving' : 'is-idle';
 
-  // Base Sprite Logic
+  // 1. Determine Base Sprite
   let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
   if (!forceStationary) {
     baseSprite = isMoving 
@@ -217,30 +269,42 @@ function renderCharacterAvatar(containerId, user, forceStationary = false) {
   }
 
   const equippedList = user.equipped_items || [];
+  
+  // 2. Build explicit overlay image elements
   let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${movementClass}" />`;
 
-  // Render Costume Layers
-  equippedList.forEach(path => {
+  equippedList.forEach((path, index) => {
     if (path && path !== 'BASE') {
       let activeOverlayPath = path;
 
-      // Find item in catalog to check for custom idle path variant
-      const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === path || item.idlePath === path);
+      // Match item against catalog using either static path or idle path
+      const catalogItem = Object.values(ITEM_CATALOG).find(item => 
+        item.path === path || item.idlePath === path
+      );
 
       if (catalogItem) {
         if (forceStationary) {
-          activeOverlayPath = catalogItem.path; // Strictly static PNG in shop
+          activeOverlayPath = catalogItem.path; // Strictly static PNG in shop preview
         } else {
-          // Swap between animated idle GIF and walk PNG based on movement state
-          activeOverlayPath = (!isMoving && catalogItem.idlePath) ? catalogItem.idlePath : catalogItem.path;
+          // Swap between animated idle GIF and walk/static PNG based on movement state
+          if (!isMoving && catalogItem.idlePath) {
+            // Append timestamp to prevent browser cache from freezing the GIF
+            activeOverlayPath = `${catalogItem.idlePath}?t=${Date.now()}`;
+          } else {
+            activeOverlayPath = catalogItem.path;
+          }
         }
       }
 
-      layersHTML += `<img src="${activeOverlayPath}" alt="Costume Layer" class="character-img costume-overlay-layer ${movementClass}" />`;
+      layersHTML += `<img src="${activeOverlayPath}" alt="Costume Layer" class="character-img costume-overlay-layer ${movementClass}" style="z-index: ${index + 2};" />`;
     }
   });
 
-  container.innerHTML = layersHTML;
+  // 3. Update DOM only if content has changed to avoid killing active GIF renders
+  if (container.dataset.lastState !== `${isMoving}-${equippedList.join(',')}-${baseSprite}`) {
+    container.innerHTML = layersHTML;
+    container.dataset.lastState = `${isMoving}-${equippedList.join(',')}-${baseSprite}`;
+  }
 }
 
 /* Movement State Controller */
