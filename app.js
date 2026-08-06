@@ -1,4 +1,4 @@
-
+// ==========================================
 // LOCAL STORAGE AUTH & GAME STATE
 // ==========================================
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
@@ -19,22 +19,82 @@ const battleState = {
   isMoving: false
 };
 
-// Item Catalog with Categories & Paths
+// Item Catalog with Categories, Static/Walk Paths, and Animated Idle Paths
 const ITEM_CATALOG = {
-  'hat_crown': { name: 'Royal Crown', path: 'assets/costumes/overlay-crown.png', category: 'hat' },
-  'hat_wizard': { name: 'Wizard Hat', path: 'assets/costumes/overlay-wizard-hat.png', category: 'hat' },
-  'hat_ninja': { name: 'Ninja Headband', path: 'assets/costumes/overlay-ninja-headband.png', category: 'hat' },
-  'hat_party': { name: 'Party Hat', path: 'assets/costumes/overlay-party-hat.png', category: 'hat' },
-  'hat_helmet': { name: 'Knight Helmet', path: 'assets/costumes/overlay-helmet.png', category: 'hat' },
+  'hat_crown': { 
+    name: 'Royal Crown', 
+    path: 'assets/costumes/overlay-crown.png', 
+    idlePath: 'assets/costumes/overlay-crown-idle.gif',
+    category: 'hat' 
+  },
+  'hat_wizard': { 
+    name: 'Wizard Hat', 
+    path: 'assets/costumes/overlay-wizard-hat.png', 
+    idlePath: 'assets/costumes/overlay-wizard-hat-idle.gif',
+    category: 'hat' 
+  },
+  'hat_ninja': { 
+    name: 'Ninja Headband', 
+    path: 'assets/costumes/overlay-ninja-headband.png', 
+    idlePath: 'assets/costumes/overlay-ninja-headband-idle.gif',
+    category: 'hat' 
+  },
+  'hat_party': { 
+    name: 'Party Hat', 
+    path: 'assets/costumes/overlay-party-hat.png', 
+    idlePath: 'assets/costumes/overlay-party-hat-idle.gif',
+    category: 'hat' 
+  },
+  'hat_helmet': { 
+    name: 'Knight Helmet', 
+    path: 'assets/costumes/overlay-helmet.png', 
+    idlePath: 'assets/costumes/overlay-helmet-idle.gif',
+    category: 'hat' 
+  },
   
-  'face_sunglasses': { name: 'Cool Sunglasses', path: 'assets/costumes/overlay-sunglasses.png', category: 'face' },
-  'face_eyepatch': { name: 'Pirate Eyepatch', path: 'assets/costumes/overlay-eyepatch.png', category: 'face' },
-  'face_visor': { name: 'Cyber Visor', path: 'assets/costumes/overlay-visor.png', category: 'face' },
+  'face_sunglasses': { 
+    name: 'Cool Sunglasses', 
+    path: 'assets/costumes/overlay-sunglasses.png', 
+    idlePath: 'assets/costumes/overlay-sunglasses-idle.gif',
+    category: 'face' 
+  },
+  'face_eyepatch': { 
+    name: 'Pirate Eyepatch', 
+    path: 'assets/costumes/overlay-eyepatch.png', 
+    idlePath: 'assets/costumes/overlay-eyepatch-idle.gif',
+    category: 'face' 
+  },
+  'face_visor': { 
+    name: 'Cyber Visor', 
+    path: 'assets/costumes/overlay-visor.png', 
+    idlePath: 'assets/costumes/overlay-visor-idle.gif',
+    category: 'face' 
+  },
   
-  'item_sword': { name: 'Wooden Sword', path: 'assets/costumes/overlay-wooden-sword.png', category: 'weapon' },
-  'item_staff': { name: 'Magic Staff', path: 'assets/costumes/overlay-magic-staff.png', category: 'weapon' },
-  'item_shield': { name: 'Wooden Shield', path: 'assets/costumes/overlay-shield.png', category: 'weapon' },
-  'item_laser': { name: 'Laser Blaster', path: 'assets/costumes/overlay-laser-blaster.png', category: 'weapon' }
+  'item_sword': { 
+    name: 'Wooden Sword', 
+    path: 'assets/costumes/overlay-wooden-sword.png', 
+    idlePath: 'assets/costumes/overlay-wooden-sword-idle.gif',
+    category: 'weapon' 
+  },
+  'item_staff': { 
+    name: 'Magic Staff', 
+    path: 'assets/costumes/overlay-magic-staff.png', 
+    idlePath: 'assets/costumes/overlay-magic-staff-idle.gif',
+    category: 'weapon' 
+  },
+  'item_shield': { 
+    name: 'Wooden Shield', 
+    path: 'assets/costumes/overlay-shield.png', 
+    idlePath: 'assets/costumes/overlay-shield-idle.gif',
+    category: 'weapon' 
+  },
+  'item_laser': { 
+    name: 'Laser Blaster', 
+    path: 'assets/costumes/overlay-laser-blaster.png', 
+    idlePath: 'assets/costumes/overlay-laser-blaster-idle.gif',
+    category: 'weapon' 
+  }
 };
 
 // Helper function to persist state
@@ -45,7 +105,7 @@ function saveUserData() {
 }
 
 // ==========================================
-// 1. UI NAVIGATION & SCREEN MANAGEMENT
+// 1. UI NAVIGATION & AVATAR RENDERING
 // ==========================================
 
 function showScreen(id) {
@@ -53,7 +113,7 @@ function showScreen(id) {
   const target = document.getElementById(id);
   if (target) target.classList.add('active');
 
-  // Stop moving state when switching screens
+  // Reset movement state on screen transition
   setMovementState(false);
 }
 
@@ -72,31 +132,49 @@ function switchAuthTab(tab) {
   if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
 }
 
-function renderCharacterAvatar(containerId, user) {
+function renderCharacterAvatar(containerId, user, forceStationary = false) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
-  const movementClass = battleState.isMoving ? 'is-moving' : 'is-idle';
+  const isMoving = forceStationary ? false : battleState.isMoving;
+  const movementClass = isMoving ? 'is-moving' : 'is-idle';
 
-  const baseSprite = battleState.isMoving 
-    ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
-    : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
+  // Base Sprite Logic
+  let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
+  if (!forceStationary) {
+    baseSprite = isMoving 
+      ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
+      : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
+  }
 
   const equippedList = user.equipped_items || [];
-
   let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${movementClass}" />`;
 
+  // Render Costume Layers
   equippedList.forEach(path => {
     if (path && path !== 'BASE') {
-      // Added movementClass here so overlays inherit the same idle/moving state
-      layersHTML += `<img src="${path}" alt="Costume Layer" class="character-img costume-overlay-layer ${movementClass}" />`;
+      let activeOverlayPath = path;
+
+      // Find item in catalog to check for custom idle path variant
+      const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === path || item.idlePath === path);
+
+      if (catalogItem) {
+        if (forceStationary) {
+          activeOverlayPath = catalogItem.path; // Strictly static PNG in shop
+        } else {
+          // Swap between animated idle GIF and walk PNG based on movement state
+          activeOverlayPath = (!isMoving && catalogItem.idlePath) ? catalogItem.idlePath : catalogItem.path;
+        }
+      }
+
+      layersHTML += `<img src="${activeOverlayPath}" alt="Costume Layer" class="character-img costume-overlay-layer ${movementClass}" />`;
     }
   });
 
   container.innerHTML = layersHTML;
 }
 
-/* Dynamic Sprite Movement State Handler */
+/* Movement State Controller */
 function setMovementState(moving) {
   if (battleState.isMoving === moving) return;
   battleState.isMoving = moving;
@@ -104,7 +182,9 @@ function setMovementState(moving) {
   if (currentUser) {
     renderCharacterAvatar('hub-avatar', currentUser);
     renderCharacterAvatar('player-sprite', currentUser);
-    renderCharacterAvatar('shop-preview-avatar', currentUser);
+    
+    // Shop avatar stays force-stationary
+    renderCharacterAvatar('shop-preview-avatar', currentUser, true);
   }
 }
 
@@ -138,6 +218,7 @@ function handleLocalSignup(e) {
     inventory: ['hat_default'],
     logs: [],
     vault_unlock_time: null,
+    base_sprite_static: 'assets/characters/hero-male.png',
     base_sprite_idle: 'assets/characters/hero-male-idle.gif',
     base_sprite_walk: 'assets/characters/hero-male-walk.gif'
   };
@@ -223,7 +304,7 @@ function loadTrainerSession() {
 
   renderCharacterAvatar('hub-avatar', currentUser);
   renderCharacterAvatar('player-sprite', currentUser);
-  renderCharacterAvatar('shop-preview-avatar', currentUser);
+  renderCharacterAvatar('shop-preview-avatar', currentUser, true);
 
   if (document.getElementById('settings-name')) document.getElementById('settings-name').value = currentUser.trainer_name || '';
   if (document.getElementById('settings-wage')) document.getElementById('settings-wage').value = currentUser.wage || 15.00;
@@ -633,7 +714,7 @@ function renderHistoryLogs(logs) {
 }
 
 // ==========================================
-// 6. SHOP & STRICT 1-PER-CATEGORY EQUIP SYSTEM
+// 6. SHOP & STRICT 1-PER-SLOT EQUIP SYSTEM
 // ==========================================
 
 function openShop() {
@@ -642,7 +723,9 @@ function openShop() {
   if (document.getElementById('shop-gold-val')) {
     document.getElementById('shop-gold-val').textContent = parseFloat(currentUser.saved_total || 0).toFixed(2);
   }
-  renderCharacterAvatar('shop-preview-avatar', currentUser);
+
+  // Force stationary preview inside the shop window
+  renderCharacterAvatar('shop-preview-avatar', currentUser, true);
 
   updateShopButtons(currentUser);
   showScreen('screen-shop');
@@ -652,21 +735,21 @@ function updateShopButtons(user) {
   const equipped = user.equipped_items || [];
   const inventory = user.inventory || ['hat_default'];
 
-  // Update starter button
+  // Reset/Unequip All Button
   const starterBtn = document.getElementById('btn-hat_default');
   if (starterBtn) {
     starterBtn.textContent = equipped.length === 0 ? "Equipped" : "Unequip All";
     starterBtn.className = equipped.length === 0 ? "btn btn-sm btn-equipped" : "btn btn-secondary btn-sm";
   }
 
-  // Update catalog buttons
+  // Catalog Item Buttons
   Object.keys(ITEM_CATALOG).forEach(itemId => {
     const btn = document.getElementById(`btn-${itemId}`);
     if (!btn) return;
 
     const itemData = ITEM_CATALOG[itemId];
     const isOwned = inventory.includes(itemId);
-    const isEquipped = equipped.includes(itemData.path);
+    const isEquipped = equipped.includes(itemData.path) || equipped.includes(itemData.idlePath);
 
     if (isEquipped) {
       btn.textContent = "Unequip";
@@ -688,7 +771,7 @@ function buyOrEquip(itemId, price, spritePath) {
   let inventory = currentUser.inventory || ['hat_default'];
   let savedTotal = parseFloat(currentUser.saved_total || 0);
 
-  // Reset all equipped items if clicking Default / Starter
+  // Clear all overlays if equipping default starter
   if (itemId === 'hat_default') {
     currentUser.equipped_items = [];
     saveUserData();
@@ -703,23 +786,23 @@ function buyOrEquip(itemId, price, spritePath) {
   const isOwned = inventory.includes(itemId);
 
   if (isOwned) {
-    const isEquipped = equipped.includes(spritePath);
+    const isEquipped = equipped.includes(targetItem.path) || equipped.includes(targetItem.idlePath);
 
     if (isEquipped) {
       // Unequip item
-      equipped = equipped.filter(path => path !== spritePath);
+      equipped = equipped.filter(p => p !== targetItem.path && p !== targetItem.idlePath);
     } else {
-      // 1-PER-CATEGORY FILTER: Remove any item already equipped in the same category
+      // Slot Check: Filter out any existing item in the same slot
       equipped = equipped.filter(equippedPath => {
-        const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath);
+        const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath || item.idlePath === equippedPath);
         return !catalogItem || catalogItem.category !== targetItem.category;
       });
 
-      // Equip new item
+      // Equip new item path
       equipped.push(spritePath);
     }
   } else {
-    // Unlock and auto-equip item
+    // Unlock new item and auto-equip
     if (savedTotal < price) {
       alert("You need more saved money to unlock this item!");
       return;
@@ -728,9 +811,9 @@ function buyOrEquip(itemId, price, spritePath) {
     savedTotal -= price;
     inventory.push(itemId);
 
-    // Filter category before equipping newly bought item
+    // Slot Check: Filter out existing items in the same slot
     equipped = equipped.filter(equippedPath => {
-      const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath);
+      const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath || item.idlePath === equippedPath);
       return !catalogItem || catalogItem.category !== targetItem.category;
     });
 
@@ -748,8 +831,9 @@ function buyOrEquip(itemId, price, spritePath) {
 }
 
 // ==========================================
-// 7. INITIALIZATION & KEYBOARD LISTENERS
+// 7. INITIALIZATION & LISTENERS
 // ==========================================
+
 window.addEventListener('DOMContentLoaded', () => {
   const signupForm = document.getElementById('form-signup');
   if (signupForm) signupForm.addEventListener('submit', handleLocalSignup);
@@ -763,7 +847,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
   if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
 
-  // Global WASD / Arrow Key Listener for character movement animation toggling
+  // Movement key handlers for keyboard controls
   const moveKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
   const activeKeys = new Set();
 
