@@ -33,27 +33,27 @@
         <form id="form-login" onsubmit="handleLocalLogin(event)">
           <div class="input-field">
             <label>Email Address</label>
-            <input type="email" id="login-email" placeholder="hero@example.com" required />
+            <input type="email" id="login-email" placeholder="hero@example.com" required maxlength="50" />
           </div>
           <div class="input-field">
             <label>Password</label>
-            <input type="password" id="login-pass" placeholder="••••••••" required />
+            <input type="password" id="login-pass" placeholder="••••••••" required maxlength="50" />
           </div>
           <button type="submit" class="btn btn-primary">Enter Hub</button>
         </form>
 
         <form id="form-signup" class="hidden" onsubmit="handleLocalSignup(event)">
           <div class="input-field">
-            <label>Trainer Name</label>
-            <input type="text" id="signup-name" placeholder="Alex" required />
+            <label>Trainer Name (max 20 chars)</label>
+            <input type="text" id="signup-name" placeholder="Alex" required maxlength="20" />
           </div>
           <div class="input-field">
             <label>Email Address</label>
-            <input type="email" id="signup-email" placeholder="hero@example.com" required />
+            <input type="email" id="signup-email" placeholder="hero@example.com" required maxlength="50" />
           </div>
           <div class="input-field">
             <label>Password</label>
-            <input type="password" id="signup-pass" placeholder="••••••••" required />
+            <input type="password" id="signup-pass" placeholder="••••••••" required maxlength="50" />
           </div>
           <button type="submit" class="btn btn-primary">Next: Financial Setup</button>
         </form>
@@ -152,8 +152,8 @@
 
       <div class="glass-card scrollable-card">
         <div class="input-field">
-          <label>Trainer Name</label>
-          <input type="text" id="settings-name" placeholder="Alex" />
+          <label>Trainer Name (max 20 chars)</label>
+          <input type="text" id="settings-name" placeholder="Alex" maxlength="20" />
         </div>
         <button class="btn btn-secondary" onclick="updateTrainerName()">Save Name</button>
         
@@ -191,8 +191,8 @@
 
       <div class="glass-card">
         <div class="input-field">
-          <label for="target-name">Item Name</label>
-          <input type="text" id="target-name" placeholder="Wireless Headphones" />
+          <label for="target-name">Item Name (max 30 chars)</label>
+          <input type="text" id="target-name" placeholder="Wireless Headphones" maxlength="30" />
         </div>
         <div class="input-field">
           <label for="target-price">Item Cost ($)</label>
@@ -286,7 +286,7 @@
 
       <div class="glass-card text-center mb-12">
         <div id="shop-preview-avatar" class="avatar-box large">
-          <img id="shop-preview-img" src="assets/characters/hero-male-idle.gif" alt="Hero Preview" class="character-img is-idle" />
+          <img id="shop-preview-img" src="assets/characters/hero-male-idle.gif" alt="Hero Preview" class="character-img" />
           <div id="shop-costume-layer" class="costume-overlay-layer"></div>
         </div>
         <p class="sub-text">Current Outfit</p>
@@ -445,4 +445,4 @@
 
   <script src="app.js"></script>
 </body>
-</html>
+</html>s
