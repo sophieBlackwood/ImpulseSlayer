@@ -14,8 +14,7 @@ const battleState = {
   maxEnemyHP: 100,
   playerHP: 100,
   maxPlayerHP: 100,
-  timerInterval: null,
-  lastAnswer1: ''
+  timerInterval: null
 };
 
 // ==========================================
@@ -47,7 +46,6 @@ window.alert = function(msg) {
   showNotification(msg, 'info');
 };
 
-// Helper function to persist state
 function saveUserData() {
   if (currentUser && currentUser.email) {
     localStorage.setItem(`user_${currentUser.email}`, JSON.stringify(currentUser));
@@ -103,7 +101,7 @@ function renderCharacterAvatar(containerId, user) {
 
 function handleLocalSignup(e) {
   e.preventDefault();
-  const name = document.getElementById('signup-name').value.trim();
+  let name = document.getElementById('signup-name').value.trim().slice(0, 20);
   const email = document.getElementById('signup-email').value.trim().toLowerCase();
   const pass = document.getElementById('signup-pass').value;
 
@@ -275,7 +273,7 @@ function startBattle() {
   const priceInput = document.getElementById('target-price');
   if (!nameInput || !priceInput) return;
 
-  const name = nameInput.value.trim();
+  const name = nameInput.value.trim().slice(0, 30);
   const price = parseFloat(priceInput.value);
   const categorySelect = document.getElementById('target-category');
   const category = categorySelect ? categorySelect.value : 'general';
@@ -285,8 +283,8 @@ function startBattle() {
   battleState.itemName = name;
   battleState.price = price;
   battleState.category = category;
-  battleState.maxEnemyHP = price > 100 ? 150 : 100;
-  battleState.enemyHP = battleState.maxEnemyHP;
+  battleState.maxEnemyHP = 100;
+  battleState.enemyHP = 100;
   battleState.maxPlayerHP = 100;
   battleState.playerHP = 100;
 
@@ -298,7 +296,7 @@ function startBattle() {
   document.getElementById('player-battle-lvl').textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
 
   updateHPUI();
-  setDialogue(`A wild ${monster.name} appears! Choose a reflection tactic to fight back.`);
+  setDialogue(`A wild ${monster.name} appears! Choose a single reflection tactic to finish this battle.`);
   
   showAttackMenu();
   showScreen('screen-battle');
@@ -336,113 +334,65 @@ function showAttackMenu() {
   `;
 }
 
+// ONE QUESTION PER BATTLE FLOW
 function startQuestionFlow(attackType) {
   const container = document.getElementById('quiz-answers');
 
   if (attackType === 'necessity') {
-    setDialogue("Question 1/2: Why do you want this item right now?");
-    container.innerHTML = `
-      <div class="input-field">
-        <input type="text" id="user-reflection-1" placeholder="e.g., I saw an ad..." autofocus />
-      </div>
-      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
-    `;
+    setDialogue("Reflection Question: Why do you want this item right now, and will it matter in 30 days?");
   } else if (attackType === 'utility') {
-    setDialogue("Question 1/2: How many times do you realistically expect to use this?");
-    container.innerHTML = `
-      <div class="input-field">
-        <input type="number" id="user-reflection-1" placeholder="e.g., 5" autofocus />
-      </div>
-      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
-    `;
+    setDialogue("Reflection Question: How many times will you use this, and is it worth the price tag?");
   } else if (attackType === 'wait') {
-    setDialogue("Question 1/2: What else could you do with this money instead?");
-    container.innerHTML = `
-      <div class="input-field">
-        <input type="text" id="user-reflection-1" placeholder="e.g., Save for vacation..." autofocus />
-      </div>
-      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
-    `;
-  }
-}
-
-function submitQuestionTwo(attackType) {
-  const ans1 = document.getElementById('user-reflection-1').value.trim();
-  if (!ans1) return showNotification("Please type an answer first!", "error");
-
-  battleState.lastAnswer1 = ans1;
-  const container = document.getElementById('quiz-answers');
-
-  if (attackType === 'necessity') {
-    setDialogue("Question 2/2: Will you still care about owning this 30 days from now?");
-  } else if (attackType === 'utility') {
-    setDialogue("Question 2/2: On a scale of 1 to 10, how much will this improve your daily life?");
-  } else {
-    setDialogue("Question 2/2: On a scale of 1 to 10, how strong is the urge right now?");
+    setDialogue("Reflection Question: What important goal or item could you put this money toward instead?");
   }
 
   container.innerHTML = `
     <div class="input-field">
-      <input type="text" id="user-reflection-2" placeholder="Your answer..." autofocus />
+      <input type="text" id="user-reflection" placeholder="Type your reflection answer (max 80 chars)..." maxlength="80" autofocus />
     </div>
     <button class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">Submit Reflection</button>
   `;
 }
 
 function processPlayerAttack(attackType) {
-  const ans2 = document.getElementById('user-reflection-2').value.trim();
-  if (!ans2) return showNotification("Please enter an answer!", "error");
+  const answerInput = document.getElementById('user-reflection');
+  const ans = answerInput ? answerInput.value.trim().slice(0, 80) : '';
 
-  const dmg = Math.floor(Math.random() * 15) + 35;
-  battleState.enemyHP -= dmg;
+  if (!ans) return showNotification("Please type a reflection answer first!", "error");
+
+  // Single decisive hit to defeat the monster in one round
+  battleState.enemyHP = 0;
   updateHPUI();
 
-  setDialogue(`Your mindful reflection hit the impulse for ${dmg} damage!`);
+  setDialogue(`Your mindful reflection landed a critical strike on the impulse monster!`);
 
-  if (battleState.enemyHP <= 0) {
-    setTimeout(victorySavedMoney, 1200);
-  } else {
-    setTimeout(() => monsterRealityCounter(attackType), 1500);
-  }
+  setTimeout(victorySavedMoney, 1200);
 }
 
 function monsterRealityCounter(attackType) {
   const price = battleState.price;
   const wage = currentUser ? currentUser.wage : 15.00;
   const food = currentUser ? currentUser.food_price : 7.50;
-  const eventVal = currentUser ? currentUser.event_price : 25.00;
 
   const hoursWorked = (price / wage).toFixed(1);
   const mealsCount = Math.floor(price / food);
-  const outingsCount = (price / eventVal).toFixed(1);
 
   const counterAttacks = [
     `The Monster strikes back! "This costs $${price.toFixed(2)}—that is ${hoursWorked} hours of work at your wage!"`,
-    `The Monster counters! "That $${price.toFixed(2)} equals ${mealsCount} full meals you could buy!"`,
-    `The Monster resists! "This purchase equals ${outingsCount} fun social outings with friends!"`
+    `The Monster counters! "That $${price.toFixed(2)} equals ${mealsCount} full meals you could buy!"`
   ];
 
   const chosenCounter = counterAttacks[Math.floor(Math.random() * counterAttacks.length)];
 
-  const playerDmg = Math.floor(Math.random() * 10) + 15;
-  battleState.playerHP -= playerDmg;
+  battleState.playerHP -= 20;
   updateHPUI();
 
   setDialogue(chosenCounter);
-
-  if (battleState.playerHP <= 0) {
-    setTimeout(() => {
-      showNotification("You were overwhelmed by the purchase impulse!", "error");
-      giveInAndSpend();
-    }, 1500);
-  } else {
-    setTimeout(showAttackMenu, 2500);
-  }
 }
 
 function victorySavedMoney() {
   if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
-  showNotification(`Great job! You beat the impulse and saved $${battleState.price.toFixed(2)}.`, "success");
+  showNotification(`Victory! You beat the impulse and saved $${battleState.price.toFixed(2)}.`, "success");
 
   if (currentUser) {
     currentUser.vault_unlock_time = Date.now() + (15 * 60 * 1000);
@@ -476,8 +426,10 @@ function giveInAndSpend() {
 // ==========================================
 
 function updateTrainerName() {
-  const newName = document.getElementById('settings-name').value.trim();
-  if (!newName) return showNotification("Please enter a valid name.", "error");
+  const nameInput = document.getElementById('settings-name');
+  const newName = nameInput ? nameInput.value.trim().slice(0, 20) : '';
+
+  if (!newName) return showNotification("Please enter a valid name (1-20 characters).", "error");
 
   if (currentUser) {
     currentUser.trainer_name = newName;
