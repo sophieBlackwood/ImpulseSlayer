@@ -115,10 +115,11 @@ const REFLECTION_QUESTIONS = {
   ]
 };
 
-// Cache images in memory
+// Image Preloader & Cache Store
 const imageCache = {};
 
 function getCachedImage(src) {
+  if (!src) return null;
   if (!imageCache[src]) {
     const img = new Image();
     img.src = src;
@@ -209,6 +210,7 @@ function renderCharacterAvatar(canvasId, user, forceStationary = false) {
   const ctx = canvas.getContext('2d');
   const isMoving = forceStationary ? false : battleState.isMoving;
 
+  // 1. Pick Base Sprite Path
   let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
   if (!forceStationary) {
     baseSprite = isMoving 
@@ -219,6 +221,7 @@ function renderCharacterAvatar(canvasId, user, forceStationary = false) {
   const layers = [baseSprite];
   const equippedList = user.equipped_items || [];
 
+  // 2. Resolve Equipped Costume Overlays
   equippedList.forEach(path => {
     if (path && path !== 'BASE') {
       let activeOverlayPath = path;
@@ -239,17 +242,16 @@ function renderCharacterAvatar(canvasId, user, forceStationary = false) {
     }
   });
 
-  // Clear canvas & render layers synchronously
+  // 3. Clear Canvas & Draw Preloaded Layers
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   layers.forEach(src => {
     const img = getCachedImage(src);
-    if (img.complete && img.naturalWidth !== 0) {
+    if (img && img.complete && img.naturalWidth !== 0) {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     }
   });
 }
 
-// Unified Canvas Refresh Loop
 function startGlobalAvatarLoop() {
   function loop() {
     if (currentUser) {
@@ -387,7 +389,9 @@ function selectSprite(staticSrc, idleSrc, element) {
   selectedSpriteIdleTemp = idleSrc;
 
   document.querySelectorAll('.sprite-option').forEach(opt => opt.classList.remove('active'));
-  element.classList.add('active');
+  if (element) {
+    element.classList.add('active');
+  }
 }
 
 function confirmSpriteSelection() {
@@ -395,6 +399,12 @@ function confirmSpriteSelection() {
 
   currentUser.base_sprite_static = selectedSpriteStaticTemp;
   currentUser.base_sprite_idle = selectedSpriteIdleTemp;
+
+  if (selectedSpriteStaticTemp.includes('hero-female')) {
+    currentUser.base_sprite_walk = 'assets/characters/hero-female-walk.gif';
+  } else {
+    currentUser.base_sprite_walk = 'assets/characters/hero-male-walk.gif';
+  }
 
   saveUserData();
   loadTrainerSession();
