@@ -19,80 +19,68 @@ const battleState = {
   isSubmitting: false
 };
 
-// Item Catalog
+// Item Catalog (Uses .png as reliable primary path)
 const ITEM_CATALOG = {
   'hat_crown': { 
     name: 'Royal Crown', 
     path: 'assets/costumes/overlay-crown.png', 
-    idlePath: 'assets/costumes/overlay-crown-idle.gif',
     category: 'hat' 
   },
   'hat_wizard': { 
     name: 'Wizard Hat', 
     path: 'assets/costumes/overlay-wizard-hat.png', 
-    idlePath: 'assets/costumes/overlay-wizard-hat-idle.gif',
     category: 'hat' 
   },
   'hat_ninja': { 
     name: 'Ninja Headband', 
     path: 'assets/costumes/overlay-ninja-headband.png', 
-    idlePath: 'assets/costumes/overlay-ninja-headband-idle.gif',
     category: 'hat' 
   },
   'hat_party': { 
     name: 'Party Hat', 
     path: 'assets/costumes/overlay-party-hat.png', 
-    idlePath: 'assets/costumes/overlay-party-hat-idle.gif',
     category: 'hat' 
   },
   'hat_helmet': { 
     name: 'Knight Helmet', 
     path: 'assets/costumes/overlay-helmet.png', 
-    idlePath: 'assets/costumes/overlay-helmet-idle.gif',
     category: 'hat' 
   },
   
   'face_sunglasses': { 
     name: 'Cool Sunglasses', 
     path: 'assets/costumes/overlay-sunglasses.png', 
-    idlePath: 'assets/costumes/overlay-sunglasses-idle.gif',
     category: 'face' 
   },
   'face_eyepatch': { 
     name: 'Pirate Eyepatch', 
     path: 'assets/costumes/overlay-eyepatch.png', 
-    idlePath: 'assets/costumes/overlay-eyepatch-idle.gif',
     category: 'face' 
   },
   'face_visor': { 
     name: 'Cyber Visor', 
     path: 'assets/costumes/overlay-visor.png', 
-    idlePath: 'assets/costumes/overlay-visor-idle.gif',
     category: 'face' 
   },
   
   'item_sword': { 
     name: 'Wooden Sword', 
     path: 'assets/costumes/overlay-wooden-sword.png', 
-    idlePath: 'assets/costumes/overlay-wooden-sword-idle.gif',
     category: 'weapon' 
   },
   'item_staff': { 
     name: 'Magic Staff', 
     path: 'assets/costumes/overlay-magic-staff.png', 
-    idlePath: 'assets/costumes/overlay-magic-staff-idle.gif',
     category: 'weapon' 
   },
   'item_shield': { 
     name: 'Wooden Shield', 
     path: 'assets/costumes/overlay-shield.png', 
-    idlePath: 'assets/costumes/overlay-shield-idle.gif',
     category: 'weapon' 
   },
   'item_laser': { 
     name: 'Laser Blaster', 
     path: 'assets/costumes/overlay-laser-blaster.png', 
-    idlePath: 'assets/costumes/overlay-laser-blaster-idle.gif',
     category: 'weapon' 
   }
 };
@@ -115,7 +103,7 @@ const REFLECTION_QUESTIONS = {
   ]
 };
 
-// Image Preloader & Cache Store
+// Cache images safely
 const imageCache = {};
 
 function getCachedImage(src) {
@@ -200,7 +188,7 @@ function getPlayerDamageMultiplier(level) {
 }
 
 // ==========================================
-// SYNCHRONIZED CANVAS RENDERING SYSTEM
+// CANVAS RENDERING SYSTEM
 // ==========================================
 
 function renderCharacterAvatar(canvasId, user, forceStationary = false) {
@@ -210,7 +198,7 @@ function renderCharacterAvatar(canvasId, user, forceStationary = false) {
   const ctx = canvas.getContext('2d');
   const isMoving = forceStationary ? false : battleState.isMoving;
 
-  // 1. Pick Base Sprite Path
+  // 1. Resolve Base Sprite Path
   let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
   if (!forceStationary) {
     baseSprite = isMoving 
@@ -221,27 +209,14 @@ function renderCharacterAvatar(canvasId, user, forceStationary = false) {
   const layers = [baseSprite];
   const equippedList = user.equipped_items || [];
 
-  // 2. Resolve Active Layer Paths
-  equippedList.forEach(equippedPath => {
-    if (!equippedPath || equippedPath === 'BASE') return;
-
-    const catalogItem = Object.values(ITEM_CATALOG).find(item => 
-      item.path === equippedPath || item.idlePath === equippedPath
-    );
-
-    if (catalogItem) {
-      if (forceStationary) {
-        layers.push(catalogItem.path);
-      } else {
-        const overlayPath = (!isMoving && catalogItem.idlePath) ? catalogItem.idlePath : catalogItem.path;
-        layers.push(overlayPath);
-      }
-    } else {
-      layers.push(equippedPath);
+  // 2. Add Equipped Item Paths directly
+  equippedList.forEach(path => {
+    if (path && path !== 'BASE') {
+      layers.push(path);
     }
   });
 
-  // 3. Clear Canvas & Draw Preloaded Layers
+  // 3. Clear and Draw Layers
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   layers.forEach(src => {
@@ -251,7 +226,6 @@ function renderCharacterAvatar(canvasId, user, forceStationary = false) {
     if (img && img.complete && img.naturalWidth !== 0) {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     } else if (img) {
-      // Trigger re-render once the image finishes loading
       img.onload = () => {
         renderCharacterAvatar(canvasId, user, forceStationary);
       };
@@ -304,12 +278,13 @@ function switchAuthTab(tab) {
 }
 
 function handleLocalSignup(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
+
   const nameInput = document.getElementById('signup-name');
   const emailInput = document.getElementById('signup-email');
   const passInput = document.getElementById('signup-pass');
 
-  if (!emailInput || !passInput) return;
+  if (!emailInput || !passInput) return false;
 
   const name = nameInput ? nameInput.value.trim() : 'Hero';
   const email = emailInput.value.trim().toLowerCase();
@@ -317,13 +292,14 @@ function handleLocalSignup(e) {
 
   if (!email || !pass) {
     showAppMessage("Please fill out all fields.", "Signup Error");
-    return;
+    return false;
   }
 
+  // Check if account already exists
   const existingUser = localStorage.getItem(`user_${email}`);
   if (existingUser) {
-    showAppMessage("An account with this email already exists!", "Email Already Exists");
-    return;
+    showAppMessage("An account with this email already exists! Please log in instead.", "Email Already Exists");
+    return false; // STOPS form submission completely
   }
 
   const newUser = {
@@ -350,14 +326,16 @@ function handleLocalSignup(e) {
   currentUser = newUser;
 
   showScreen('screen-survey');
+  return false;
 }
 
 function handleLocalLogin(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
+
   const emailInput = document.getElementById('login-email');
   const passInput = document.getElementById('login-pass');
 
-  if (!emailInput || !passInput) return;
+  if (!emailInput || !passInput) return false;
 
   const email = emailInput.value.trim().toLowerCase();
   const pass = passInput.value;
@@ -365,18 +343,19 @@ function handleLocalLogin(e) {
   const userData = localStorage.getItem(`user_${email}`);
   if (!userData) {
     showAppMessage("User not found!", "Login Error");
-    return;
+    return false;
   }
 
   const user = JSON.parse(userData);
   if (user.password !== pass) {
     showAppMessage("Incorrect password!", "Login Error");
-    return;
+    return false;
   }
 
   localStorage.setItem('session_user', email);
   currentUser = user;
   loadTrainerSession();
+  return false;
 }
 
 function saveFinancialProfile(e) {
@@ -404,6 +383,7 @@ function selectSprite(staticSrc, idleSrc, element) {
 function confirmSpriteSelection() {
   if (!currentUser) return showScreen('screen-login');
 
+  // Assign user's selected choice directly
   currentUser.base_sprite_static = selectedSpriteStaticTemp;
   currentUser.base_sprite_idle = selectedSpriteIdleTemp;
 
@@ -414,7 +394,14 @@ function confirmSpriteSelection() {
   }
 
   saveUserData();
-  loadTrainerSession();
+  
+  // Transition directly to Hub screen
+  if (document.getElementById('hub-trainer-name')) document.getElementById('hub-trainer-name').textContent = currentUser.trainer_name || 'Hero';
+  if (document.getElementById('hub-trainer-lvl')) document.getElementById('hub-trainer-lvl').textContent = `Level ${currentUser.lvl || 1}`;
+  if (document.getElementById('hub-saved')) document.getElementById('hub-saved').textContent = `$${parseFloat(currentUser.saved_total || 0).toFixed(2)}`;
+  if (document.getElementById('hub-exp')) document.getElementById('hub-exp').textContent = `${currentUser.xp || 0} / 100`;
+
+  showScreen('screen-hub');
 }
 
 function loadTrainerSession() {
@@ -875,7 +862,7 @@ function updateShopButtons(user) {
 
     const itemData = ITEM_CATALOG[itemId];
     const isOwned = inventory.includes(itemId);
-    const isEquipped = equipped.includes(itemData.path) || equipped.includes(itemData.idlePath);
+    const isEquipped = equipped.includes(itemData.path);
 
     if (isEquipped) {
       btn.textContent = "Unequip";
@@ -908,20 +895,22 @@ function buyOrEquip(itemId, price, spritePath) {
   const targetItem = ITEM_CATALOG[itemId];
   if (!targetItem) return;
 
+  const activePath = targetItem.path;
   const isOwned = inventory.includes(itemId);
 
   if (isOwned) {
-    const isEquipped = equipped.includes(targetItem.path) || equipped.includes(targetItem.idlePath);
+    const isEquipped = equipped.includes(activePath);
 
     if (isEquipped) {
-      equipped = equipped.filter(p => p !== targetItem.path && p !== targetItem.idlePath);
+      equipped = equipped.filter(p => p !== activePath);
     } else {
+      // Unequip items in the same category first
       equipped = equipped.filter(equippedPath => {
-        const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath || item.idlePath === equippedPath);
+        const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath);
         return !catalogItem || catalogItem.category !== targetItem.category;
       });
 
-      equipped.push(spritePath);
+      equipped.push(activePath);
     }
   } else {
     if (savedTotal < price) {
@@ -933,11 +922,11 @@ function buyOrEquip(itemId, price, spritePath) {
     inventory.push(itemId);
 
     equipped = equipped.filter(equippedPath => {
-      const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath || item.idlePath === equippedPath);
+      const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath);
       return !catalogItem || catalogItem.category !== targetItem.category;
     });
 
-    equipped.push(spritePath);
+    equipped.push(activePath);
     showAppMessage(`${targetItem.name} unlocked and equipped!`, "Shop Success");
   }
 
