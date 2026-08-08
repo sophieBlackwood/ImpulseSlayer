@@ -2,59 +2,7 @@
 // LOCAL STORAGE AUTH & GAME STATE
 // ==========================================
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
-let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';function renderCharacterAvatar(containerId, user, forceStationary = false) {
-  const container = document.getElementById(containerId);
-  if (!container || !user) return;
-
-  const isMoving = forceStationary ? false : battleState.isMoving;
-  const movementClass = isMoving ? 'is-moving' : 'is-idle';
-
-  // 1. Determine Base Sprite
-  let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
-  if (!forceStationary) {
-    baseSprite = isMoving 
-      ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
-      : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
-  }
-
-  const equippedList = user.equipped_items || [];
-  
-  // 2. Build explicit overlay image elements
-  let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${movementClass}" />`;
-
-  equippedList.forEach((path, index) => {
-    if (path && path !== 'BASE') {
-      let activeOverlayPath = path;
-
-      // Match item against catalog using either static path or idle path
-      const catalogItem = Object.values(ITEM_CATALOG).find(item => 
-        item.path === path || item.idlePath === path
-      );
-
-      if (catalogItem) {
-        if (forceStationary) {
-          activeOverlayPath = catalogItem.path; // Strictly static PNG in shop preview
-        } else {
-          // Swap between animated idle GIF and walk/static PNG based on movement state
-          if (!isMoving && catalogItem.idlePath) {
-            // Append timestamp to prevent browser cache from freezing the GIF
-            activeOverlayPath = `${catalogItem.idlePath}?t=${Date.now()}`;
-          } else {
-            activeOverlayPath = catalogItem.path;
-          }
-        }
-      }
-
-      layersHTML += `<img src="${activeOverlayPath}" alt="Costume Layer" class="character-img costume-overlay-layer ${movementClass}" style="z-index: ${index + 2};" />`;
-    }
-  });
-
-  // 3. Update DOM only if content has changed to avoid killing active GIF renders
-  if (container.dataset.lastState !== `${isMoving}-${equippedList.join(',')}-${baseSprite}`) {
-    container.innerHTML = layersHTML;
-    container.dataset.lastState = `${isMoving}-${equippedList.join(',')}-${baseSprite}`;
-  }
-}
+let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
 let currentUser = null;
 
@@ -67,8 +15,8 @@ const battleState = {
   playerHP: 100,
   maxPlayerHP: 100,
   timerInterval: null,
-  lastAnswer1: '',
-  isMoving: false
+  isMoving: false,
+  isSubmitting: false
 };
 
 // Item Catalog with Categories, Static/Walk Paths, and Animated Idle Paths
@@ -147,6 +95,25 @@ const ITEM_CATALOG = {
     idlePath: 'assets/costumes/overlay-laser-blaster-idle.gif',
     category: 'weapon' 
   }
+};
+
+// Pools of unique questions for 1-question battle flows
+const REFLECTION_QUESTIONS = {
+  necessity: [
+    "Why do you want this item right now?",
+    "Will you still care about owning this 30 days from now?",
+    "Is this solving a real problem or just filling a temporary mood?"
+  ],
+  utility: [
+    "How many times do you realistically expect to use this?",
+    "On a scale of 1-10, how much will this improve your daily routine?",
+    "Do you already own something similar that accomplishes this?"
+  ],
+  wait: [
+    "What else could you save this money for instead?",
+    "On a scale of 1-10, how strong is the urge to buy right now?",
+    "If you had to wait 48 hours to buy this, would you still want it?"
+  ]
 };
 
 // ==========================================
@@ -250,7 +217,7 @@ function switchAuthTab(tab) {
   const tabSignup = document.getElementById('tab-signup');
 
   if (tabLogin) tabLogin.classList.toggle('active', isLogin);
-  if (tabSignup) tabSignup.classList.toggle('active', isLogin);
+  if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
 }
 
 function renderCharacterAvatar(containerId, user, forceStationary = false) {
@@ -260,7 +227,6 @@ function renderCharacterAvatar(containerId, user, forceStationary = false) {
   const isMoving = forceStationary ? false : battleState.isMoving;
   const movementClass = isMoving ? 'is-moving' : 'is-idle';
 
-  // 1. Determine Base Sprite
   let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
   if (!forceStationary) {
     baseSprite = isMoving 
@@ -269,26 +235,21 @@ function renderCharacterAvatar(containerId, user, forceStationary = false) {
   }
 
   const equippedList = user.equipped_items || [];
-  
-  // 2. Build explicit overlay image elements
   let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${movementClass}" />`;
 
   equippedList.forEach((path, index) => {
     if (path && path !== 'BASE') {
       let activeOverlayPath = path;
 
-      // Match item against catalog using either static path or idle path
       const catalogItem = Object.values(ITEM_CATALOG).find(item => 
         item.path === path || item.idlePath === path
       );
 
       if (catalogItem) {
         if (forceStationary) {
-          activeOverlayPath = catalogItem.path; // Strictly static PNG in shop preview
+          activeOverlayPath = catalogItem.path;
         } else {
-          // Swap between animated idle GIF and walk/static PNG based on movement state
           if (!isMoving && catalogItem.idlePath) {
-            // Append timestamp to prevent browser cache from freezing the GIF
             activeOverlayPath = `${catalogItem.idlePath}?t=${Date.now()}`;
           } else {
             activeOverlayPath = catalogItem.path;
@@ -300,14 +261,12 @@ function renderCharacterAvatar(containerId, user, forceStationary = false) {
     }
   });
 
-  // 3. Update DOM only if content has changed to avoid killing active GIF renders
   if (container.dataset.lastState !== `${isMoving}-${equippedList.join(',')}-${baseSprite}`) {
     container.innerHTML = layersHTML;
     container.dataset.lastState = `${isMoving}-${equippedList.join(',')}-${baseSprite}`;
   }
 }
 
-/* Movement State Controller */
 function setMovementState(moving) {
   if (battleState.isMoving === moving) return;
   battleState.isMoving = moving;
@@ -315,8 +274,6 @@ function setMovementState(moving) {
   if (currentUser) {
     renderCharacterAvatar('hub-avatar', currentUser);
     renderCharacterAvatar('player-sprite', currentUser);
-    
-    // Shop avatar stays force-stationary
     renderCharacterAvatar('shop-preview-avatar', currentUser, true);
   }
 }
@@ -327,13 +284,25 @@ function setMovementState(moving) {
 
 function handleLocalSignup(e) {
   e.preventDefault();
-  const name = document.getElementById('signup-name').value.trim();
-  const email = document.getElementById('signup-email').value.trim().toLowerCase();
-  const pass = document.getElementById('signup-pass').value;
+  const nameInput = document.getElementById('signup-name');
+  const emailInput = document.getElementById('signup-email');
+  const passInput = document.getElementById('signup-pass');
 
+  if (!emailInput || !passInput) return;
+
+  const name = nameInput ? nameInput.value.trim() : 'Hero';
+  const email = emailInput.value.trim().toLowerCase();
+  const pass = passInput.value;
+
+  if (!email || !pass) {
+    showAppMessage("Please fill out all fields.", "Signup Error");
+    return;
+  }
+
+  // Check existing accounts
   const existingUser = localStorage.getItem(`user_${email}`);
   if (existingUser) {
-    showAppMessage("An account with this email already exists!", "Signup Error");
+    showAppMessage("An account with this email already exists!", "Email Already Exists");
     return;
   }
 
@@ -365,8 +334,13 @@ function handleLocalSignup(e) {
 
 function handleLocalLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const pass = document.getElementById('login-pass').value;
+  const emailInput = document.getElementById('login-email');
+  const passInput = document.getElementById('login-pass');
+
+  if (!emailInput || !passInput) return;
+
+  const email = emailInput.value.trim().toLowerCase();
+  const pass = passInput.value;
 
   const userData = localStorage.getItem(`user_${email}`);
   if (!userData) {
@@ -473,7 +447,7 @@ function checkBossAvailability() {
 }
 
 // ==========================================
-// 3. COMBAT & STAT BOOST SYSTEM
+// 3. COMBAT & REFLECTION SYSTEM
 // ==========================================
 
 function getMonsterData(itemName, price, category) {
@@ -520,10 +494,9 @@ function startBattle() {
   battleState.category = category;
   battleState.maxEnemyHP = price > 100 ? 150 : 100;
   battleState.enemyHP = battleState.maxEnemyHP;
-
-  // Stat Boost Applied: Max HP scales with Level
   battleState.maxPlayerHP = getPlayerMaxHP(playerLvl);
   battleState.playerHP = battleState.maxPlayerHP;
+  battleState.isSubmitting = false;
 
   const monster = getMonsterData(name, price, category);
   document.getElementById('enemy-name').textContent = monster.name;
@@ -552,6 +525,7 @@ function setDialogue(msg) {
 }
 
 function showAttackMenu() {
+  battleState.isSubmitting = false;
   const container = document.getElementById('quiz-answers');
   container.innerHTML = `
     <div class="attack-grid">
@@ -573,71 +547,45 @@ function showAttackMenu() {
 
 function startQuestionFlow(attackType) {
   const container = document.getElementById('quiz-answers');
+  const pool = REFLECTION_QUESTIONS[attackType] || REFLECTION_QUESTIONS.necessity;
+  const question = pool[Math.floor(Math.random() * pool.length)];
 
-  if (attackType === 'necessity') {
-    setDialogue("Question 1/2: Why do you want this item right now?");
-    container.innerHTML = `
-      <div class="input-field">
-        <input type="text" id="user-reflection-1" placeholder="e.g., I saw an ad..." autofocus />
-      </div>
-      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
-    `;
-  } else if (attackType === 'utility') {
-    setDialogue("Question 1/2: How many times do you realistically expect to use this?");
-    container.innerHTML = `
-      <div class="input-field">
-        <input type="number" id="user-reflection-1" placeholder="e.g., 5" autofocus />
-      </div>
-      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
-    `;
-  } else if (attackType === 'wait') {
-    setDialogue("Question 1/2: What else could you do with this money instead?");
-    container.innerHTML = `
-      <div class="input-field">
-        <input type="text" id="user-reflection-1" placeholder="e.g., Save for vacation..." autofocus />
-      </div>
-      <button class="btn btn-primary" onclick="submitQuestionTwo('${attackType}')">Next Question</button>
-    `;
-  }
-}
-
-function submitQuestionTwo(attackType) {
-  const ans1 = document.getElementById('user-reflection-1').value.trim();
-  if (!ans1) {
-    showAppMessage("Please type an answer first!", "Input Error");
-    return;
-  }
-
-  battleState.lastAnswer1 = ans1;
-  const container = document.getElementById('quiz-answers');
-
-  if (attackType === 'necessity') {
-    setDialogue("Question 2/2: Will you still care about owning this 30 days from now?");
-  } else if (attackType === 'utility') {
-    setDialogue("Question 2/2: On a scale of 1 to 10, how much will this improve your daily life?");
-  } else {
-    setDialogue("Question 2/2: On a scale of 1 to 10, how strong is the urge right now?");
-  }
+  setDialogue(question);
 
   container.innerHTML = `
     <div class="input-field">
-      <input type="text" id="user-reflection-2" placeholder="Your answer..." autofocus />
+      <input type="text" id="user-reflection-single" placeholder="Type your answer here..." autofocus />
     </div>
-    <button class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">Submit Reflection</button>
+    <button id="btn-submit-reflection" class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">
+      Submit Reflection
+    </button>
   `;
 }
 
 function processPlayerAttack(attackType) {
-  const ans2 = document.getElementById('user-reflection-2').value.trim();
-  if (!ans2) {
-    showAppMessage("Please enter an answer!", "Input Error");
+  if (battleState.isSubmitting) return; // Prevent double trigger
+
+  const inputEl = document.getElementById('user-reflection-single');
+  const submitBtn = document.getElementById('btn-submit-reflection');
+  
+  if (!inputEl) return;
+  const ans = inputEl.value.trim();
+
+  if (!ans) {
+    showAppMessage("Please type an answer first!", "Input Required");
     return;
+  }
+
+  // Disable button immediately to prevent spamming/hacking
+  battleState.isSubmitting = true;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = "0.5";
+    submitBtn.textContent = "Processing...";
   }
 
   const playerLvl = currentUser ? (currentUser.lvl || 1) : 1;
   const baseDmg = Math.floor(Math.random() * 15) + 35;
-  
-  // Stat Boost Applied: Damage scales up with Level (+10% per level)
   const dmgMultiplier = getPlayerDamageMultiplier(playerLvl);
   const dmg = Math.floor(baseDmg * dmgMultiplier);
 
@@ -884,9 +832,7 @@ function openShop() {
     document.getElementById('shop-gold-val').textContent = parseFloat(currentUser.saved_total || 0).toFixed(2);
   }
 
-  // Force stationary preview inside the shop window
   renderCharacterAvatar('shop-preview-avatar', currentUser, true);
-
   updateShopButtons(currentUser);
   showScreen('screen-shop');
 }
@@ -895,14 +841,12 @@ function updateShopButtons(user) {
   const equipped = user.equipped_items || [];
   const inventory = user.inventory || ['hat_default'];
 
-  // Reset/Unequip All Button
   const starterBtn = document.getElementById('btn-hat_default');
   if (starterBtn) {
     starterBtn.textContent = equipped.length === 0 ? "Equipped" : "Unequip All";
     starterBtn.className = equipped.length === 0 ? "btn btn-sm btn-equipped" : "btn btn-secondary btn-sm";
   }
 
-  // Catalog Item Buttons
   Object.keys(ITEM_CATALOG).forEach(itemId => {
     const btn = document.getElementById(`btn-${itemId}`);
     if (!btn) return;
@@ -931,7 +875,6 @@ function buyOrEquip(itemId, price, spritePath) {
   let inventory = currentUser.inventory || ['hat_default'];
   let savedTotal = parseFloat(currentUser.saved_total || 0);
 
-  // Clear all overlays if equipping default starter
   if (itemId === 'hat_default') {
     currentUser.equipped_items = [];
     saveUserData();
@@ -949,20 +892,16 @@ function buyOrEquip(itemId, price, spritePath) {
     const isEquipped = equipped.includes(targetItem.path) || equipped.includes(targetItem.idlePath);
 
     if (isEquipped) {
-      // Unequip item
       equipped = equipped.filter(p => p !== targetItem.path && p !== targetItem.idlePath);
     } else {
-      // Slot Check: Filter out any existing item in the same slot
       equipped = equipped.filter(equippedPath => {
         const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath || item.idlePath === equippedPath);
         return !catalogItem || catalogItem.category !== targetItem.category;
       });
 
-      // Equip new item path
       equipped.push(spritePath);
     }
   } else {
-    // Unlock new item and auto-equip
     if (savedTotal < price) {
       showAppMessage("You need more saved money to unlock this item!", "Insufficient Funds");
       return;
@@ -971,7 +910,6 @@ function buyOrEquip(itemId, price, spritePath) {
     savedTotal -= price;
     inventory.push(itemId);
 
-    // Slot Check: Filter out existing items in the same slot
     equipped = equipped.filter(equippedPath => {
       const catalogItem = Object.values(ITEM_CATALOG).find(item => item.path === equippedPath || item.idlePath === equippedPath);
       return !catalogItem || catalogItem.category !== targetItem.category;
@@ -1007,7 +945,6 @@ window.addEventListener('DOMContentLoaded', () => {
   if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
   if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
 
-  // Movement key handlers for keyboard controls
   const moveKeys = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
   const activeKeys = new Set();
 
