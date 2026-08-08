@@ -18,6 +18,35 @@ const battleState = {
   lastAnswer1: ''
 };
 
+// ==========================================
+// IN-APP NOTIFICATION SYSTEM
+// ==========================================
+function showNotification(message, type = 'info') {
+  const container = document.getElementById('app-toast-container');
+  if (!container) {
+    console.log(`[Notification]: ${message}`);
+    return;
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast-notification ${type}`;
+  toast.innerHTML = `<span>${message}</span>`;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Global override so all alerts render as in-app notifications
+window.alert = function(msg) {
+  showNotification(msg, 'info');
+};
+
 // Helper function to persist state
 function saveUserData() {
   if (currentUser && currentUser.email) {
@@ -80,7 +109,7 @@ function handleLocalSignup(e) {
 
   const existingUser = localStorage.getItem(`user_${email}`);
   if (existingUser) {
-    alert("An account with this email already exists!");
+    showNotification("An account with this email already exists!", "error");
     return;
   }
 
@@ -114,13 +143,13 @@ function handleLocalLogin(e) {
 
   const userData = localStorage.getItem(`user_${email}`);
   if (!userData) {
-    alert("User not found!");
+    showNotification("User not found!", "error");
     return;
   }
 
   const user = JSON.parse(userData);
   if (user.password !== pass) {
-    alert("Incorrect password!");
+    showNotification("Incorrect password!", "error");
     return;
   }
 
@@ -208,7 +237,7 @@ function checkBossAvailability() {
   if (!currentUser) return showScreen('screen-login');
 
   if (currentUser.vault_unlock_time && currentUser.vault_unlock_time > Date.now()) {
-    alert("Battles are temporarily paused during your cooling period. Check your vault timer!");
+    showNotification("Battles are temporarily paused during your cooling period.", "error");
     checkVaultDirect();
   } else {
     showScreen('screen-quest');
@@ -251,7 +280,7 @@ function startBattle() {
   const categorySelect = document.getElementById('target-category');
   const category = categorySelect ? categorySelect.value : 'general';
 
-  if (!name || isNaN(price) || price <= 0) return alert("Please enter a valid item name and price.");
+  if (!name || isNaN(price) || price <= 0) return showNotification("Please enter a valid item name and price.", "error");
 
   battleState.itemName = name;
   battleState.price = price;
@@ -339,7 +368,7 @@ function startQuestionFlow(attackType) {
 
 function submitQuestionTwo(attackType) {
   const ans1 = document.getElementById('user-reflection-1').value.trim();
-  if (!ans1) return alert("Please type an answer first!");
+  if (!ans1) return showNotification("Please type an answer first!", "error");
 
   battleState.lastAnswer1 = ans1;
   const container = document.getElementById('quiz-answers');
@@ -362,7 +391,7 @@ function submitQuestionTwo(attackType) {
 
 function processPlayerAttack(attackType) {
   const ans2 = document.getElementById('user-reflection-2').value.trim();
-  if (!ans2) return alert("Please enter an answer!");
+  if (!ans2) return showNotification("Please enter an answer!", "error");
 
   const dmg = Math.floor(Math.random() * 15) + 35;
   battleState.enemyHP -= dmg;
@@ -403,7 +432,7 @@ function monsterRealityCounter(attackType) {
 
   if (battleState.playerHP <= 0) {
     setTimeout(() => {
-      alert("You were overwhelmed by the purchase impulse!");
+      showNotification("You were overwhelmed by the purchase impulse!", "error");
       giveInAndSpend();
     }, 1500);
   } else {
@@ -413,7 +442,7 @@ function monsterRealityCounter(attackType) {
 
 function victorySavedMoney() {
   if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
-  alert(`Great job! You beat the impulse and saved $${battleState.price.toFixed(2)}.`);
+  showNotification(`Great job! You beat the impulse and saved $${battleState.price.toFixed(2)}.`, "success");
 
   if (currentUser) {
     currentUser.vault_unlock_time = Date.now() + (15 * 60 * 1000);
@@ -430,7 +459,7 @@ function victorySavedMoney() {
 }
 
 function giveInAndSpend() {
-  alert(`You purchased ${battleState.itemName} for $${battleState.price.toFixed(2)}.`);
+  showNotification(`You purchased ${battleState.itemName} for $${battleState.price.toFixed(2)}.`, "info");
 
   updateTrainerStats(10, 0, {
     name: battleState.itemName,
@@ -448,12 +477,12 @@ function giveInAndSpend() {
 
 function updateTrainerName() {
   const newName = document.getElementById('settings-name').value.trim();
-  if (!newName) return alert("Please enter a valid name.");
+  if (!newName) return showNotification("Please enter a valid name.", "error");
 
   if (currentUser) {
     currentUser.trainer_name = newName;
     saveUserData();
-    alert("Trainer name saved.");
+    showNotification("Trainer name saved.", "success");
     loadTrainerSession();
   }
 }
@@ -469,7 +498,7 @@ function updateMetricsSettings() {
     currentUser.event_price = eventVal || 25.00;
 
     saveUserData();
-    alert("Financial metrics saved.");
+    showNotification("Financial metrics saved.", "success");
     loadTrainerSession();
   }
 }
@@ -480,7 +509,7 @@ function deleteAccount() {
       localStorage.removeItem(`user_${currentUser.email}`);
       localStorage.removeItem('session_user');
       currentUser = null;
-      alert("Account deleted.");
+      showNotification("Account deleted.", "info");
       showScreen('screen-login');
     }
   }
@@ -499,7 +528,7 @@ function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
   if (newXp >= 100) {
     newLvl += 1;
     newXp -= 100;
-    alert(`Level Up! You reached Level ${newLvl}.`);
+    showNotification(`Level Up! You reached Level ${newLvl}.`, "success");
   }
 
   currentUser.xp = newXp;
@@ -680,13 +709,13 @@ function buyOrEquip(itemId, price, spritePath) {
       }
     } else {
       if (savedTotal < price) {
-        alert("You need more saved money to unlock this item!");
+        showNotification("You need more saved money to unlock this item!", "error");
         return;
       }
       savedTotal -= price;
       inventory.push(itemId);
       equipped.push(spritePath);
-      alert("Item unlocked and equipped!");
+      showNotification("Item unlocked and equipped!", "success");
     }
   }
 
