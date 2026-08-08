@@ -1,8 +1,8 @@
 :root {
   /* Core Dark Canvas & Card Surfaces (Deep Slate & Sapphire Black) */
-  --bg-deep: #070c14;                 /* Deep Midnight Obsidian */
-  --card-surface: #0f172a;            /* Dark Slate Surface */
-  --card-border: #1e293b;             /* Crisp Slate Border */
+  --bg-deep: #070c14;                  /* Deep Midnight Obsidian */
+  --card-surface: #0f172a;             /* Dark Slate Surface */
+  --card-border: #1e293b;              /* Crisp Slate Border */
 
   /* Typography (High-Contrast Clean White & Cool Silver) */
   --text-primary: #f8fafc;            /* Crisp Modern White Text */
@@ -10,13 +10,13 @@
 
   /* Modern High-Contrast Blue Accents */
   --poke-yellow: #38bdf8;             /* Primary Accent (Shifted to Electric Blue) */
-  --poke-blue: #60a5fa;               /* Secondary Sapphire Blue Accent */
+  --poke-blue: #60a5fa;                /* Secondary Sapphire Blue Accent */
   --hp-green: #22c55e;                /* Modern Vibrant Emerald Moss HP */
   --hp-red: #ef4444;                  /* Vibrant Crimson Red */
 
   /* Additional Palette Colors */
-  --color-umber: #1e293b;             /* Dark Matte Steel */
-  --color-olive: #0284c7;             /* Vibrant Cobalt Blue Accent */
+  --color-umber: #1e293b;              /* Dark Matte Steel */
+  --color-olive: #0284c7;              /* Vibrant Cobalt Blue Accent */
   --bg-card-light: #334155;           /* Light Slate Container */
 
   /* Modern Readable Clean Typography */
@@ -54,11 +54,49 @@ body {
   background: var(--bg-deep);
   border: 1px solid var(--card-border);
   border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); /* Flat dark drop shadow (No glows) */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+
+  /* IN-APP NOTIFICATION TOASTS */
+  .toast-container {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .toast-notification {
+    background: var(--card-surface);
+    border: 1px solid var(--poke-yellow);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-family: var(--font-main);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    animation: toastSlideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: auto;
+
+    &.error {
+      border-color: var(--hp-red);
+    }
+
+    &.success {
+      border-color: var(--hp-green);
+    }
+  }
 
   /* SCREEN LAYOUTS */
   .screen {
@@ -74,7 +112,7 @@ body {
     }
   }
 
-  /* BACKGROUND INTEGRATION (Updated with absolute root paths) */
+  /* BACKGROUND INTEGRATION */
   .onboarding-screen {
     background: url('assets/background/login-bg.png') center/cover no-repeat;
   }
@@ -132,16 +170,16 @@ body {
     height: 100%;
     z-index: 2;
     pointer-events: none;
-  }
-.costume-overlay-layer.is-idle {
-  /* Ensure idle animation playing or matching transform rules */
-  animation-play-state: running;
-}
 
-.costume-overlay-layer.is-moving {
-  /* Match walking movement CSS if applicable */
-  animation-play-state: running;
-}
+    &.is-idle {
+      animation-play-state: running;
+    }
+
+    &.is-moving {
+      animation-play-state: running;
+    }
+  }
+
   .character-img {
     width: 64px;
     height: 64px;
@@ -744,10 +782,7 @@ body {
     margin-top: 8px;
   }
 
-  /* ==========================================
-     SHOP ITEM STAGNANT PREVIEWS
-     ========================================== */
-
+  /* SHOP ITEM PREVIEWS */
   .shop-grid {
     display: flex;
     flex-direction: column;
@@ -766,7 +801,6 @@ body {
     padding: 12px;
   }
 
-  /* Container for the shop item thumbnail */
   .shop-item-preview {
     width: 64px;
     height: 64px;
@@ -780,26 +814,18 @@ body {
     flex-shrink: 0;
   }
 
-  /* Enlarge image & pause sprite animations in shop */
   .shop-item-preview img,
   .shop-item .item-ph {
     width: 56px;
     height: 56px;
     object-fit: contain;
-    /* Pauses CSS animations or GIF playback behavior where applicable */
     animation-play-state: paused !important; 
   }
 
-  /* ==========================================
-     CHARACTER ANIMATION TOGGLES
-     ========================================== */
-
-  /* Default state: Standing / Stagnant */
   .character-img.is-idle {
     animation-play-state: paused;
   }
 
-  /* Moving state: Apply/play active animations */
   .character-img.is-moving {
     animation-play-state: running;
   }
@@ -820,5 +846,16 @@ body {
   .item-cost { 
     font-size: 0.75rem; 
     color: var(--poke-yellow); 
+  }
+}
+
+@keyframes toastSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
