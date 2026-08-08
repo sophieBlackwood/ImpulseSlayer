@@ -19,7 +19,7 @@ const battleState = {
   isSubmitting: false
 };
 
-// Item Catalog with Categories, Static/Walk Paths, and Animated Idle Paths
+// Item Catalog
 const ITEM_CATALOG = {
   'hat_crown': { 
     name: 'Royal Crown', 
@@ -97,7 +97,6 @@ const ITEM_CATALOG = {
   }
 };
 
-// Pools of unique questions for 1-question battle flows
 const REFLECTION_QUESTIONS = {
   necessity: [
     "Why do you want this item right now?",
@@ -115,6 +114,18 @@ const REFLECTION_QUESTIONS = {
     "If you had to wait 48 hours to buy this, would you still want it?"
   ]
 };
+
+// Cache images in memory
+const imageCache = {};
+
+function getCachedImage(src) {
+  if (!imageCache[src]) {
+    const img = new Image();
+    img.src = src;
+    imageCache[src] = img;
+  }
+  return imageCache[src];
+}
 
 // ==========================================
 // IN-APP POPUP / MODAL SYSTEM
@@ -173,27 +184,91 @@ function showAppMessage(message, title = "Notification", callback = null) {
   };
 }
 
-// Helper function to persist state
 function saveUserData() {
   if (currentUser && currentUser.email) {
     localStorage.setItem(`user_${currentUser.email}`, JSON.stringify(currentUser));
   }
 }
 
-// Helper function to compute level-based stat boosts
 function getPlayerMaxHP(level) {
-  const baseHP = 100;
-  const hpBonusPerLevel = 15;
-  return baseHP + ((level - 1) * hpBonusPerLevel);
+  return 100 + ((level - 1) * 15);
 }
 
 function getPlayerDamageMultiplier(level) {
-  const bonusPerLevel = 0.10; // +10% damage boost per level
-  return 1 + ((level - 1) * bonusPerLevel);
+  return 1 + ((level - 1) * 0.10);
 }
 
 // ==========================================
-// 1. UI NAVIGATION & AVATAR RENDERING
+// SYNCHRONIZED CANVAS RENDERING SYSTEM
+// ==========================================
+
+function renderCharacterAvatar(canvasId, user, forceStationary = false) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !user) return;
+
+  const ctx = canvas.getContext('2d');
+  const isMoving = forceStationary ? false : battleState.isMoving;
+
+  let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
+  if (!forceStationary) {
+    baseSprite = isMoving 
+      ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
+      : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
+  }
+
+  const layers = [baseSprite];
+  const equippedList = user.equipped_items || [];
+
+  equippedList.forEach(path => {
+    if (path && path !== 'BASE') {
+      let activeOverlayPath = path;
+
+      const catalogItem = Object.values(ITEM_CATALOG).find(item => 
+        item.path === path || item.idlePath === path
+      );
+
+      if (catalogItem) {
+        if (forceStationary) {
+          activeOverlayPath = catalogItem.path;
+        } else {
+          activeOverlayPath = (!isMoving && catalogItem.idlePath) ? catalogItem.idlePath : catalogItem.path;
+        }
+      }
+
+      layers.push(activeOverlayPath);
+    }
+  });
+
+  // Clear canvas & render layers synchronously
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  layers.forEach(src => {
+    const img = getCachedImage(src);
+    if (img.complete && img.naturalWidth !== 0) {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
+  });
+}
+
+// Unified Canvas Refresh Loop
+function startGlobalAvatarLoop() {
+  function loop() {
+    if (currentUser) {
+      renderCharacterAvatar('hub-avatar', currentUser);
+      renderCharacterAvatar('player-sprite', currentUser);
+      renderCharacterAvatar('shop-preview-avatar', currentUser, true);
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+}
+
+function setMovementState(moving) {
+  if (battleState.isMoving === moving) return;
+  battleState.isMoving = moving;
+}
+
+// ==========================================
+// 1. UI NAVIGATION & AUTH
 // ==========================================
 
 function showScreen(id) {
@@ -201,7 +276,6 @@ function showScreen(id) {
   const target = document.getElementById(id);
   if (target) target.classList.add('active');
 
-  // Reset movement state on screen transition
   setMovementState(false);
 }
 
@@ -220,68 +294,6 @@ function switchAuthTab(tab) {
   if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
 }
 
-function renderCharacterAvatar(containerId, user, forceStationary = false) {
-  const container = document.getElementById(containerId);
-  if (!container || !user) return;
-
-  const isMoving = forceStationary ? false : battleState.isMoving;
-  const movementClass = isMoving ? 'is-moving' : 'is-idle';
-
-  let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
-  if (!forceStationary) {
-    baseSprite = isMoving 
-      ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
-      : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
-  }
-
-  const equippedList = user.equipped_items || [];
-  let layersHTML = `<img src="${baseSprite}" id="${containerId}-base-img" alt="Base Hero" class="character-img base-layer ${movementClass}" />`;
-
-  equippedList.forEach((path, index) => {
-    if (path && path !== 'BASE') {
-      let activeOverlayPath = path;
-
-      const catalogItem = Object.values(ITEM_CATALOG).find(item => 
-        item.path === path || item.idlePath === path
-      );
-
-      if (catalogItem) {
-        if (forceStationary) {
-          activeOverlayPath = catalogItem.path;
-        } else {
-          if (!isMoving && catalogItem.idlePath) {
-            activeOverlayPath = `${catalogItem.idlePath}?t=${Date.now()}`;
-          } else {
-            activeOverlayPath = catalogItem.path;
-          }
-        }
-      }
-
-      layersHTML += `<img src="${activeOverlayPath}" alt="Costume Layer" class="character-img costume-overlay-layer ${movementClass}" style="z-index: ${index + 2};" />`;
-    }
-  });
-
-  if (container.dataset.lastState !== `${isMoving}-${equippedList.join(',')}-${baseSprite}`) {
-    container.innerHTML = layersHTML;
-    container.dataset.lastState = `${isMoving}-${equippedList.join(',')}-${baseSprite}`;
-  }
-}
-
-function setMovementState(moving) {
-  if (battleState.isMoving === moving) return;
-  battleState.isMoving = moving;
-
-  if (currentUser) {
-    renderCharacterAvatar('hub-avatar', currentUser);
-    renderCharacterAvatar('player-sprite', currentUser);
-    renderCharacterAvatar('shop-preview-avatar', currentUser, true);
-  }
-}
-
-// ==========================================
-// 2. AUTHENTICATION & PROFILE SETUP
-// ==========================================
-
 function handleLocalSignup(e) {
   e.preventDefault();
   const nameInput = document.getElementById('signup-name');
@@ -299,7 +311,6 @@ function handleLocalSignup(e) {
     return;
   }
 
-  // Check existing accounts
   const existingUser = localStorage.getItem(`user_${email}`);
   if (existingUser) {
     showAppMessage("An account with this email already exists!", "Email Already Exists");
@@ -409,10 +420,6 @@ function loadTrainerSession() {
   if (document.getElementById('hub-saved')) document.getElementById('hub-saved').textContent = `$${parseFloat(currentUser.saved_total || 0).toFixed(2)}`;
   if (document.getElementById('hub-exp')) document.getElementById('hub-exp').textContent = `${currentUser.xp || 0} / 100`;
 
-  renderCharacterAvatar('hub-avatar', currentUser);
-  renderCharacterAvatar('player-sprite', currentUser);
-  renderCharacterAvatar('shop-preview-avatar', currentUser, true);
-
   if (document.getElementById('settings-name')) document.getElementById('settings-name').value = currentUser.trainer_name || '';
   if (document.getElementById('settings-wage')) document.getElementById('settings-wage').value = currentUser.wage || 15.00;
   if (document.getElementById('settings-food')) document.getElementById('settings-food').value = currentUser.food_price || 7.50;
@@ -447,7 +454,7 @@ function checkBossAvailability() {
 }
 
 // ==========================================
-// 3. COMBAT & REFLECTION SYSTEM
+// 2. COMBAT & REFLECTION SYSTEM
 // ==========================================
 
 function getMonsterData(itemName, price, category) {
@@ -563,7 +570,7 @@ function startQuestionFlow(attackType) {
 }
 
 function processPlayerAttack(attackType) {
-  if (battleState.isSubmitting) return; // Prevent double trigger
+  if (battleState.isSubmitting) return;
 
   const inputEl = document.getElementById('user-reflection-single');
   const submitBtn = document.getElementById('btn-submit-reflection');
@@ -576,7 +583,6 @@ function processPlayerAttack(attackType) {
     return;
   }
 
-  // Disable button immediately to prevent spamming/hacking
   battleState.isSubmitting = true;
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -669,7 +675,7 @@ function giveInAndSpend() {
 }
 
 // ==========================================
-// 4. SETTINGS & ACCOUNT ACTIONS
+// 3. SETTINGS & ACCOUNT ACTIONS
 // ==========================================
 
 function updateTrainerName() {
@@ -749,7 +755,7 @@ function logoutTrainer() {
 }
 
 // ==========================================
-// 5. VAULT & HISTORY LOGS
+// 4. VAULT & HISTORY LOGS
 // ==========================================
 
 function startVaultTimer(unlockTimestamp) {
@@ -822,7 +828,7 @@ function renderHistoryLogs(logs) {
 }
 
 // ==========================================
-// 6. SHOP & STRICT 1-PER-SLOT EQUIP SYSTEM
+// 5. SHOP SYSTEM
 // ==========================================
 
 function openShop() {
@@ -832,7 +838,6 @@ function openShop() {
     document.getElementById('shop-gold-val').textContent = parseFloat(currentUser.saved_total || 0).toFixed(2);
   }
 
-  renderCharacterAvatar('shop-preview-avatar', currentUser, true);
   updateShopButtons(currentUser);
   showScreen('screen-shop');
 }
@@ -929,7 +934,7 @@ function buyOrEquip(itemId, price, spritePath) {
 }
 
 // ==========================================
-// 7. INITIALIZATION & LISTENERS
+// 6. INITIALIZATION & LISTENERS
 // ==========================================
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -965,4 +970,5 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   loadTrainerSession();
+  startGlobalAvatarLoop();
 });
