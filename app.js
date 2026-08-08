@@ -221,33 +221,40 @@ function renderCharacterAvatar(canvasId, user, forceStationary = false) {
   const layers = [baseSprite];
   const equippedList = user.equipped_items || [];
 
-  // 2. Resolve Equipped Costume Overlays
-  equippedList.forEach(path => {
-    if (path && path !== 'BASE') {
-      let activeOverlayPath = path;
+  // 2. Resolve Active Layer Paths
+  equippedList.forEach(equippedPath => {
+    if (!equippedPath || equippedPath === 'BASE') return;
 
-      const catalogItem = Object.values(ITEM_CATALOG).find(item => 
-        item.path === path || item.idlePath === path
-      );
+    const catalogItem = Object.values(ITEM_CATALOG).find(item => 
+      item.path === equippedPath || item.idlePath === equippedPath
+    );
 
-      if (catalogItem) {
-        if (forceStationary) {
-          activeOverlayPath = catalogItem.path;
-        } else {
-          activeOverlayPath = (!isMoving && catalogItem.idlePath) ? catalogItem.idlePath : catalogItem.path;
-        }
+    if (catalogItem) {
+      if (forceStationary) {
+        layers.push(catalogItem.path);
+      } else {
+        const overlayPath = (!isMoving && catalogItem.idlePath) ? catalogItem.idlePath : catalogItem.path;
+        layers.push(overlayPath);
       }
-
-      layers.push(activeOverlayPath);
+    } else {
+      layers.push(equippedPath);
     }
   });
 
   // 3. Clear Canvas & Draw Preloaded Layers
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   layers.forEach(src => {
+    if (!src) return;
     const img = getCachedImage(src);
+
     if (img && img.complete && img.naturalWidth !== 0) {
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    } else if (img) {
+      // Trigger re-render once the image finishes loading
+      img.onload = () => {
+        renderCharacterAvatar(canvasId, user, forceStationary);
+      };
     }
   });
 }
