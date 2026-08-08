@@ -85,27 +85,15 @@
       </div>
     </section>
 
-    <section id="screen-sprite" class="screen onboarding-screen">
-      <div class="brand-header">
-        <span class="logo-tag">Avatar Setup</span>
-        <h2 class="main-title">Choose Your Hero</h2>
-        <p class="sub-text">Select your base character image below.</p>
+    <div id="screen-sprite" class="screen">
+    <h2>Choose Your Hero</h2>
+    <div class="sprite-grid">
+      <div class="sprite-option active" onclick="selectSprite('assets/characters/hero-male.png', 'assets/characters/hero-male-idle.gif', this)">
+        <img src="assets/characters/hero-male.png" alt="Hero Male" />
       </div>
-
-      <div class="sprite-selector-grid binary-grid">
-        <div class="sprite-option active" onclick="selectSprite('assets/characters/hero-male.png', 'assets/characters/hero-male-idle.gif', this)">
-          <div class="sprite-icon">
-            <img src="assets/characters/hero-male.png" alt="Male Hero" class="character-img" />
-          </div>
-          <span class="sprite-label">Style A</span>
-        </div>
-        <div class="sprite-option" onclick="selectSprite('assets/characters/hero-female.png', 'assets/characters/hero-female-idle.gif', this)">
-          <div class="sprite-icon">
-            <img src="assets/characters/hero-female.png" alt="Female Hero" class="character-img" />
-          </div>
-          <span class="sprite-label">Style B</span>
-        </div>
-      </div>
+    </div>
+    <button class="btn btn-primary" onclick="confirmSpriteSelection()">Confirm Hero</button>
+  </div>
 
       <button class="btn btn-primary" onclick="confirmSpriteSelection()">Confirm Character</button>
     </section>
