@@ -193,10 +193,12 @@ function renderCharacterAvatar(canvasId, user, forceStationary = false) {
   const ctx = canvas.getContext('2d');
   const isMoving = forceStationary ? false : battleState.isMoving;
 
-  // 1. Resolve Base Character with Safe Canvas Fallbacks
+  // 1. Resolve Base Character
   let baseSprite = user.base_sprite_static || 'assets/characters/hero-male.png';
-  if (!forceStationary && isMoving) {
-    baseSprite = user.base_sprite_walk || user.base_sprite_static || 'assets/characters/hero-male.png';
+  if (!forceStationary) {
+    baseSprite = isMoving 
+      ? (user.base_sprite_walk || 'assets/characters/hero-male-walk.gif')
+      : (user.base_sprite_idle || 'assets/characters/hero-male-idle.gif');
   }
 
   const layers = [baseSprite];
@@ -937,11 +939,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const activeKeys = new Set();
 
   window.addEventListener('keydown', (e) => {
-    // Ignore movement listeners when actively focused inside inputs/text areas
-    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
-      return;
-    }
-
     if (moveKeys.includes(e.code)) {
       activeKeys.add(e.code);
       setMovementState(true);
