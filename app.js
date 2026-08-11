@@ -667,52 +667,6 @@ function renderHistoryLogs(logs) {
 // 6. SHOP & SLOT-BASED EQUIP SYSTEM
 // ==========================================
 
-function openShop() {
-  if (!currentUser) return showScreen('screen-login');
-
-  if (document.getElementById('shop-gold-val')) {
-    document.getElementById('shop-gold-val').textContent = parseFloat(currentUser.saved_total || 0).toFixed(2);
-  }
-  renderCharacterAvatar('shop-preview-avatar', currentUser);
-
-  updateShopButtons(currentUser);
-  showScreen('screen-shop');
-}
-
-function updateShopButtons(user) {
-  const allItemIds = Object.keys(ITEM_MANIFEST).concat(['hat_default']);
-  const equipped = user.equipped_items || [];
-  const inventory = user.inventory || ['hat_default'];
-
-  allItemIds.forEach(itemId => {
-    const btn = document.getElementById(`btn-${itemId}`);
-    if (!btn) return;
-
-    if (itemId === 'hat_default') {
-      btn.textContent = equipped.length === 0 ? "Equipped" : "Unequip All";
-      btn.className = equipped.length === 0 ? "btn btn-sm btn-equipped" : "btn btn-secondary btn-sm";
-      return;
-    }
-
-    const itemData = ITEM_MANIFEST[itemId];
-    if (!itemData) return;
-
-    const isOwned = inventory.includes(itemId);
-    const isEquipped = equipped.includes(itemData.path);
-
-    if (isEquipped) {
-      btn.textContent = "Unequip";
-      btn.className = "btn btn-sm btn-equipped";
-    } else if (isOwned) {
-      btn.textContent = "Equip";
-      btn.className = "btn btn-secondary btn-sm";
-    } else {
-      btn.textContent = "Unlock";
-      btn.className = "btn btn-primary btn-sm";
-    }
-  });
-}
-
 function buyOrEquip(itemId, price, spritePath) {
   if (!currentUser) return showScreen('screen-login');
 
@@ -724,25 +678,30 @@ function buyOrEquip(itemId, price, spritePath) {
     equipped = [];
   } else {
     const itemData = ITEM_MANIFEST[itemId];
+    // Always use the official path from ITEM_MANIFEST if available
+    const canonicalPath = itemData ? itemData.path : spritePath;
     const targetSlot = itemData ? itemData.slot : itemId.split('_')[0];
     const isOwned = inventory.includes(itemId);
 
     if (isOwned) {
-      const index = equipped.indexOf(spritePath);
+      const index = equipped.indexOf(canonicalPath);
+      
       if (index > -1) {
+        // Item is equipped -> Unequip it
         equipped.splice(index, 1);
+        showNotification("Item unequipped!", "info");
       } else {
+        // Item is not equipped -> Remove existing item in same slot, then equip
         equipped = equipped.filter(path => {
           const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
-          if (activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot) {
-            return false;
-          }
-          return true;
+          return !(activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot);
         });
 
-        equipped.push(spritePath);
+        equipped.push(canonicalPath);
+        showNotification("Item equipped!", "success");
       }
     } else {
+      // Purchase unowned item
       if (savedTotal < price) {
         showNotification("You need more saved money to unlock this item!", "error");
         return;
@@ -761,7 +720,6 @@ function buyOrEquip(itemId, price, spritePath) {
   syncAllAnimations();
   openShop();
 }
-
 // ==========================================
 // 7. INITIALIZATION & EVENT BINDING
 // ==========================================
