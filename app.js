@@ -16,7 +16,23 @@ const battleState = {
   playerHP: 100,
   maxPlayerHP: 100,
   timerInterval: null,
-  isProcessing: false // Prevents rapid/double click spam
+  isProcessing: false
+};
+
+// Map of all shop items to their sprite paths and slot categories
+const ITEM_MANIFEST = {
+  'hat_crown': { path: 'assets/costumes/overlay-crown.png', slot: 'hat' },
+  'hat_wizard': { path: 'assets/costumes/overlay-wizard-hat.png', slot: 'hat' },
+  'hat_ninja': { path: 'assets/costumes/overlay-ninja-headband.png', slot: 'hat' },
+  'hat_party': { path: 'assets/costumes/overlay-party-hat.png', slot: 'hat' },
+  'hat_helmet': { path: 'assets/costumes/overlay-helmet.png', slot: 'hat' },
+  'face_sunglasses': { path: 'assets/costumes/overlay-sunglasses.png', slot: 'face' },
+  'face_eyepatch': { path: 'assets/costumes/overlay-eyepatch.png', slot: 'face' },
+  'face_visor': { path: 'assets/costumes/overlay-visor.png', slot: 'face' },
+  'item_sword': { path: 'assets/costumes/overlay-wooden-sword.png', slot: 'item' },
+  'item_staff': { path: 'assets/costumes/overlay-magic-staff.png', slot: 'item' },
+  'item_shield': { path: 'assets/costumes/overlay-shield.png', slot: 'item' },
+  'item_laser': { path: 'assets/costumes/overlay-laser-blaster.png', slot: 'item' }
 };
 
 // ==========================================
@@ -43,7 +59,6 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
-// Global override so all alerts render as in-app notifications
 window.alert = function(msg) {
   showNotification(msg, 'info');
 };
@@ -79,15 +94,19 @@ function switchAuthTab(tab) {
   if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
 }
 
+// Global timestamp to sync all idle GIF animations across screens
+let syncAnimToken = Date.now();
+
 function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
-  // Primary: Always load base idle GIF for animated idle support
   const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
+  // Append timestamp parameter to align GIF frame cycles
+  const syncedBaseSprite = `${baseSprite}?sync=${syncAnimToken}`;
   const equippedList = user.equipped_items || [];
 
-  let layersHTML = `<img src="${baseSprite}" alt="Base Hero Idle" class="character-img base-layer" />`;
+  let layersHTML = `<img src="${syncedBaseSprite}" alt="Base Hero Idle" class="character-img base-layer" />`;
 
   equippedList.forEach(path => {
     if (path && path !== 'BASE') {
@@ -96,6 +115,15 @@ function renderCharacterAvatar(containerId, user) {
   });
 
   container.innerHTML = layersHTML;
+}
+
+function syncAllAnimations() {
+  syncAnimToken = Date.now();
+  if (currentUser) {
+    renderCharacterAvatar('hub-avatar', currentUser);
+    renderCharacterAvatar('player-sprite', currentUser);
+    renderCharacterAvatar('shop-preview-avatar', currentUser);
+  }
 }
 
 // ==========================================
@@ -113,7 +141,6 @@ function handleLocalSignup(e) {
     showNotification("Existing profile reset for signup.", "info");
   }
 
-  // Create or reset user account in localStorage
   const newUser = {
     email: email,
     password: pass,
@@ -211,9 +238,7 @@ function loadTrainerSession() {
   if (document.getElementById('hub-saved')) document.getElementById('hub-saved').textContent = `$${parseFloat(currentUser.saved_total || 0).toFixed(2)}`;
   if (document.getElementById('hub-exp')) document.getElementById('hub-exp').textContent = `${currentUser.xp || 0} / 100`;
 
-  renderCharacterAvatar('hub-avatar', currentUser);
-  renderCharacterAvatar('player-sprite', currentUser);
-  renderCharacterAvatar('shop-preview-avatar', currentUser);
+  syncAllAnimations();
 
   if (document.getElementById('settings-name')) document.getElementById('settings-name').value = currentUser.trainer_name || '';
   if (document.getElementById('settings-wage')) document.getElementById('settings-wage').value = currentUser.wage || 15.00;
@@ -254,12 +279,10 @@ function checkBossAvailability() {
 function getMonsterData(itemName, price, category) {
   const lowerName = itemName.toLowerCase();
 
-  // High threshold items trigger major Boss
   if (price >= 150) {
     return { name: "Buyer's Remorse Titan", sprite: "assets/monsters/monster-dragon-fomo.png" };
   }
 
-  // Category & keyword routing logic
   if (category === 'tech' || lowerName.includes('phone') || lowerName.includes('headphone')) {
     return { name: "Upgrade Overlord", sprite: "assets/monsters/monster-beast-impulse.png" };
   } else if (category === 'fashion' || lowerName.includes('shoes') || lowerName.includes('clothes')) {
@@ -270,7 +293,6 @@ function getMonsterData(itemName, price, category) {
     return { name: "Recurring Subscription Imp", sprite: "assets/monsters/monster-phantom-subscription.png" };
   }
 
-  // Price tier defaults
   return price < 30 
     ? { name: "Splurge Gremlin", sprite: "assets/monsters/monster-gremlin-splurge.png" }
     : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
@@ -295,7 +317,7 @@ function startBattle() {
   battleState.enemyHP = 100;
   battleState.maxPlayerHP = 100;
   battleState.playerHP = 100;
-  battleState.isProcessing = false; // Reset lock state for new battle
+  battleState.isProcessing = false;
 
   const monster = getMonsterData(name, price, category);
   battleState.monsterName = monster.name;
@@ -309,7 +331,6 @@ function startBattle() {
   renderCharacterAvatar('player-sprite', currentUser);
 
   updateHPUI();
-  // Dynamic monster name insertion into battle dialogue
   setDialogue(`A wild ${monster.name} appears! Choose a reflection tactic to start.`);
   
   showAttackMenu();
@@ -368,7 +389,6 @@ function startQuestionFlow(attackType) {
 }
 
 function processPlayerAttack(attackType) {
-  // Prevent duplicate submissions / button spamming
   if (battleState.isProcessing) return;
 
   const answerInput = document.getElementById('user-reflection');
@@ -376,7 +396,6 @@ function processPlayerAttack(attackType) {
 
   if (!ans) return showNotification("Please type a reflection answer first!", "error");
 
-  // Lock state & disable button
   battleState.isProcessing = true;
   const submitBtn = document.getElementById('btn-submit-reflection');
   if (submitBtn) {
@@ -575,7 +594,7 @@ function renderHistoryLogs(logs) {
 }
 
 // ==========================================
-// 6. SHOP & MULTI-EQUIP SYSTEM
+// 6. SHOP & SLOT-BASED EQUIP SYSTEM
 // ==========================================
 
 function openShop() {
@@ -591,32 +610,11 @@ function openShop() {
 }
 
 function updateShopButtons(user) {
-  const items = [
-    'hat_crown', 'hat_wizard', 'hat_ninja', 'hat_party', 'hat_helmet',
-    'face_sunglasses', 'face_eyepatch', 'face_visor',
-    'item_sword', 'item_staff', 'item_shield', 'item_laser',
-    'hat_default'
-  ];
-
-  const itemPathMap = {
-    'hat_crown': 'assets/costumes/overlay-crown.png',
-    'hat_wizard': 'assets/costumes/overlay-wizard-hat.png',
-    'hat_ninja': 'assets/costumes/overlay-ninja-headband.png',
-    'hat_party': 'assets/costumes/overlay-party-hat.png',
-    'hat_helmet': 'assets/costumes/overlay-helmet.png',
-    'face_sunglasses': 'assets/costumes/overlay-sunglasses.png',
-    'face_eyepatch': 'assets/costumes/overlay-eyepatch.png',
-    'face_visor': 'assets/costumes/overlay-visor.png',
-    'item_sword': 'assets/costumes/overlay-wooden-sword.png',
-    'item_staff': 'assets/costumes/overlay-magic-staff.png',
-    'item_shield': 'assets/costumes/overlay-shield.png',
-    'item_laser': 'assets/costumes/overlay-laser-blaster.png'
-  };
-
+  const allItemIds = Object.keys(ITEM_MANIFEST).concat(['hat_default']);
   const equipped = user.equipped_items || [];
   const inventory = user.inventory || ['hat_default'];
 
-  items.forEach(itemId => {
+  allItemIds.forEach(itemId => {
     const btn = document.getElementById(`btn-${itemId}`);
     if (!btn) return;
 
@@ -626,9 +624,11 @@ function updateShopButtons(user) {
       return;
     }
 
+    const itemData = ITEM_MANIFEST[itemId];
+    if (!itemData) return;
+
     const isOwned = inventory.includes(itemId);
-    const targetPath = itemPathMap[itemId];
-    const isEquipped = equipped.includes(targetPath);
+    const isEquipped = equipped.includes(itemData.path);
 
     if (isEquipped) {
       btn.textContent = "Unequip";
@@ -650,43 +650,29 @@ function buyOrEquip(itemId, price, spritePath) {
   let inventory = currentUser.inventory || ['hat_default'];
   let savedTotal = parseFloat(currentUser.saved_total || 0);
 
-  const itemPathMap = {
-    'hat_crown': 'assets/costumes/overlay-crown.png',
-    'hat_wizard': 'assets/costumes/overlay-wizard-hat.png',
-    'hat_ninja': 'assets/costumes/overlay-ninja-headband.png',
-    'hat_party': 'assets/costumes/overlay-party-hat.png',
-    'hat_helmet': 'assets/costumes/overlay-helmet.png',
-    'face_sunglasses': 'assets/costumes/overlay-sunglasses.png',
-    'face_eyepatch': 'assets/costumes/overlay-eyepatch.png',
-    'face_visor': 'assets/costumes/overlay-visor.png',
-    'item_sword': 'assets/costumes/overlay-wooden-sword.png',
-    'item_staff': 'assets/costumes/overlay-magic-staff.png',
-    'item_shield': 'assets/costumes/overlay-shield.png',
-    'item_laser': 'assets/costumes/overlay-laser-blaster.png'
-  };
-
   if (itemId === 'hat_default') {
     equipped = [];
   } else {
+    const itemData = ITEM_MANIFEST[itemId];
+    const targetSlot = itemData ? itemData.slot : itemId.split('_')[0];
     const isOwned = inventory.includes(itemId);
 
     if (isOwned) {
       const index = equipped.indexOf(spritePath);
       if (index > -1) {
-        // Unequip if already equipped
+        // Unequip item if currently active
         equipped.splice(index, 1);
       } else {
-        // Equip item: remove any existing equipped item from the same category slot
-        const categoryPrefix = itemId.split('_')[0]; // 'hat', 'face', or 'item'
-
+        // Strict slot enforcement: Remove any currently equipped item matching this slot (hat, face, item)
         equipped = equipped.filter(path => {
-          const matchingKey = Object.keys(itemPathMap).find(key => itemPathMap[key] === path);
-          if (matchingKey && matchingKey.startsWith(categoryPrefix + '_')) {
-            return false; // Remove item currently occupying this slot
+          const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
+          if (activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot) {
+            return false; // Remove old item in the same slot
           }
           return true;
         });
 
+        // Equip the new item into the slot
         equipped.push(spritePath);
       }
     } else {
@@ -706,7 +692,7 @@ function buyOrEquip(itemId, price, spritePath) {
   currentUser.saved_total = savedTotal;
 
   saveUserData();
-  loadTrainerSession();
+  syncAllAnimations();
   openShop();
 }
 
