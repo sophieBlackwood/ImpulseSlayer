@@ -10,11 +10,13 @@ const battleState = {
   price: 0,
   itemName: '',
   category: 'general',
+  monsterName: '',
   enemyHP: 100,
   maxEnemyHP: 100,
   playerHP: 100,
   maxPlayerHP: 100,
-  timerInterval: null
+  timerInterval: null,
+  isProcessing: false // Prevents rapid/double click spam
 };
 
 // ==========================================
@@ -81,11 +83,11 @@ function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
-  // Primary: Use animated idle GIF
+  // Primary: Always load base idle GIF for animated idle support
   const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
   const equippedList = user.equipped_items || [];
 
-  let layersHTML = `<img src="${baseSprite}" alt="Base Hero" class="character-img base-layer" />`;
+  let layersHTML = `<img src="${baseSprite}" alt="Base Hero Idle" class="character-img base-layer" />`;
 
   equippedList.forEach(path => {
     if (path && path !== 'BASE') {
@@ -103,8 +105,8 @@ function renderCharacterAvatar(containerId, user) {
 function handleLocalSignup(e) {
   e.preventDefault();
   let name = document.getElementById('signup-name').value.trim().slice(0, 20);
-  const email = document.getElementById('signup-email').value.trim().toLowerCase();
-  const pass = document.getElementById('signup-pass').value;
+  const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
+  const pass = document.getElementById('signup-pass').value.slice(0, 50);
 
   const existingUser = localStorage.getItem(`user_${email}`);
   if (existingUser) {
@@ -139,8 +141,8 @@ function handleLocalSignup(e) {
 
 function handleLocalLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const pass = document.getElementById('login-pass').value;
+  const email = document.getElementById('login-email').value.trim().toLowerCase().slice(0, 50);
+  const pass = document.getElementById('login-pass').value.slice(0, 50);
 
   const userData = localStorage.getItem(`user_${email}`);
   if (!userData) {
@@ -252,10 +254,12 @@ function checkBossAvailability() {
 function getMonsterData(itemName, price, category) {
   const lowerName = itemName.toLowerCase();
 
+  // High threshold items triggers major Boss
   if (price >= 150) {
     return { name: "Buyer's Remorse Titan", sprite: "assets/monsters/monster-dragon-fomo.png" };
   }
 
+  // Category & keyword routing logic
   if (category === 'tech' || lowerName.includes('phone') || lowerName.includes('headphone')) {
     return { name: "Upgrade Overlord", sprite: "assets/monsters/monster-beast-impulse.png" };
   } else if (category === 'fashion' || lowerName.includes('shoes') || lowerName.includes('clothes')) {
@@ -266,6 +270,7 @@ function getMonsterData(itemName, price, category) {
     return { name: "Recurring Subscription Imp", sprite: "assets/monsters/monster-phantom-subscription.png" };
   }
 
+  // Price tier defaults
   return price < 30 
     ? { name: "Splurge Gremlin", sprite: "assets/monsters/monster-gremlin-splurge.png" }
     : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
@@ -290,8 +295,11 @@ function startBattle() {
   battleState.enemyHP = 100;
   battleState.maxPlayerHP = 100;
   battleState.playerHP = 100;
+  battleState.isProcessing = false; // Reset lock state for new battle
 
   const monster = getMonsterData(name, price, category);
+  battleState.monsterName = monster.name;
+
   document.getElementById('enemy-name').textContent = monster.name;
   document.getElementById('enemy-sprite').innerHTML = `<img src="${monster.sprite}" alt="${monster.name}" class="character-img" />`;
 
@@ -301,7 +309,8 @@ function startBattle() {
   renderCharacterAvatar('player-sprite', currentUser);
 
   updateHPUI();
-  setDialogue(`A wild ${monster.name} appears! Choose a single reflection tactic to finish this battle.`);
+  // Dynamic monster name insertion into battle dialogue
+  setDialogue(`A wild ${monster.name} appears! Choose a reflection tactic to start.`);
   
   showAttackMenu();
   showScreen('screen-battle');
@@ -354,27 +363,39 @@ function startQuestionFlow(attackType) {
     <div class="input-field">
       <input type="text" id="user-reflection" placeholder="Type your reflection answer (max 80 chars)..." maxlength="80" autofocus />
     </div>
-    <button class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">Submit Reflection</button>
+    <button id="btn-submit-reflection" class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">Submit Reflection</button>
   `;
 }
 
 function processPlayerAttack(attackType) {
+  // Prevent duplicate submissions / button spamming
+  if (battleState.isProcessing) return;
+
   const answerInput = document.getElementById('user-reflection');
   const ans = answerInput ? answerInput.value.trim().slice(0, 80) : '';
 
   if (!ans) return showNotification("Please type a reflection answer first!", "error");
 
+  // Lock state & disable button
+  battleState.isProcessing = true;
+  const submitBtn = document.getElementById('btn-submit-reflection');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.6';
+    submitBtn.textContent = 'Processing...';
+  }
+
   battleState.enemyHP = 0;
   updateHPUI();
 
-  setDialogue(`Your mindful reflection landed a critical strike on the impulse monster!`);
+  setDialogue(`Your mindful reflection landed a critical strike on the ${battleState.monsterName}!`);
 
   setTimeout(victorySavedMoney, 1200);
 }
 
 function victorySavedMoney() {
   if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
-  showNotification(`Victory! You beat the impulse and saved $${battleState.price.toFixed(2)}.`, "success");
+  showNotification(`Victory! You defeated ${battleState.monsterName} and saved $${battleState.price.toFixed(2)}.`, "success");
 
   if (currentUser) {
     currentUser.vault_unlock_time = Date.now() + (15 * 60 * 1000);
