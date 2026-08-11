@@ -19,7 +19,7 @@
 
     <section id="screen-login" class="screen active onboarding-screen">
       <div class="brand-header">
-        <span class="logo-tag">Version 5.0</span>
+        <span class="logo-tag">Version 7.0</span>
         <h1 class="main-title">Impulse Slayer</h1>
         <p class="sub-text">Your personal savings shield and tracker.</p>
       </div>
@@ -96,13 +96,13 @@
       <div class="sprite-selector-grid binary-grid">
         <div class="sprite-option active" onclick="selectSprite('assets/characters/hero-male.png', 'assets/characters/hero-male-idle.gif', this)">
           <div class="sprite-icon">
-            <img src="assets/characters/hero-male-idle.gif" alt="Male Hero Idle" class="character-img" />
+            <img src="assets/characters/hero-male.png" alt="Male Hero Idle" class="character-img" />
           </div>
           <span class="sprite-label">Style A</span>
         </div>
         <div class="sprite-option" onclick="selectSprite('assets/characters/hero-female.png', 'assets/characters/hero-female-idle.gif', this)">
           <div class="sprite-icon">
-            <img src="assets/characters/hero-female-idle.gif" alt="Female Hero Idle" class="character-img" />
+            <img src="assets/characters/hero-female.png" alt="Female Hero Idle" class="character-img" />
           </div>
           <span class="sprite-label">Style B</span>
         </div>
@@ -292,7 +292,7 @@
             <span class="item-name">Royal Crown</span>
             <span class="item-cost">$50.00 Saved</span>
           </div>
-          <button id="btn-hat_crown" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_crown', 50, 'assets/costumes/overlay-crown.png')">Unlock</button>
+          <button id="btn-hat_crown" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_crown', 50, 'assets/costumes/overlay-crown-idle.gif)">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -303,7 +303,7 @@
             <span class="item-name">Wizard Hat</span>
             <span class="item-cost">$40.00 Saved</span>
           </div>
-          <button id="btn-hat_wizard" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_wizard', 40, 'assets/costumes/overlay-wizard-hat.png')">Unlock</button>
+          <button id="btn-hat_wizard" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_wizard', 40, 'assets/costumes/overlay-wizard-hat-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -314,7 +314,7 @@
             <span class="item-name">Ninja Headband</span>
             <span class="item-cost">$30.00 Saved</span>
           </div>
-          <button id="btn-hat_ninja" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_ninja', 30, 'assets/costumes/overlay-ninja-headband.png')">Unlock</button>
+          <button id="btn-hat_ninja" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_ninja', 30, 'assets/costumes/overlay-ninja-headband-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -325,7 +325,7 @@
             <span class="item-name">Party Hat</span>
             <span class="item-cost">$25.00 Saved</span>
           </div>
-          <button id="btn-hat_party" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_party', 25, 'assets/costumes/overlay-party-hat.png')">Unlock</button>
+          <button id="btn-hat_party" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_party', 25, 'assets/costumes/overlay-party-hat-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -336,7 +336,7 @@
             <span class="item-name">Knight Helmet</span>
             <span class="item-cost">$45.00 Saved</span>
           </div>
-          <button id="btn-hat_helmet" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_helmet', 45, 'assets/costumes/overlay-helmet.png')">Unlock</button>
+          <button id="btn-hat_helmet" class="btn btn-secondary btn-sm" onclick="buyOrEquip('hat_helmet', 45, 'assets/costumes/overlay-helmet-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -347,7 +347,7 @@
             <span class="item-name">Cool Sunglasses</span>
             <span class="item-cost">$35.00 Saved</span>
           </div>
-          <button id="btn-face_sunglasses" class="btn btn-secondary btn-sm" onclick="buyOrEquip('face_sunglasses', 35, 'assets/costumes/overlay-sunglasses.png')">Unlock</button>
+          <button id="btn-face_sunglasses" class="btn btn-secondary btn-sm" onclick="buyOrEquip('face_sunglasses', 35, 'assets/costumes/overlay-sunglasses-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -358,7 +358,7 @@
             <span class="item-name">Pirate Eyepatch</span>
             <span class="item-cost">$20.00 Saved</span>
           </div>
-          <button id="btn-face_eyepatch" class="btn btn-secondary btn-sm" onclick="buyOrEquip('face_eyepatch', 20, 'assets/costumes/overlay-eyepatch.png')">Unlock</button>
+          <button id="btn-face_eyepatch" class="btn btn-secondary btn-sm" onclick="buyOrEquip('face_eyepatch', 20, 'assets/costumes/overlay-eyepatch-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -369,7 +369,7 @@
             <span class="item-name">Cyber Visor</span>
             <span class="item-cost">$60.00 Saved</span>
           </div>
-          <button id="btn-face_visor" class="btn btn-secondary btn-sm" onclick="buyOrEquip('face_visor', 60, 'assets/costumes/overlay-visor.png')">Unlock</button>
+          <button id="btn-face_visor" class="btn btn-secondary btn-sm" onclick="buyOrEquip('face_visor', 60, 'assets/costumes/overlay-visor-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -380,7 +380,7 @@
             <span class="item-name">Wooden Sword</span>
             <span class="item-cost">$15.00 Saved</span>
           </div>
-          <button id="btn-item_sword" class="btn btn-secondary btn-sm" onclick="buyOrEquip('item_sword', 15, 'assets/costumes/overlay-wooden-sword.png')">Unlock</button>
+          <button id="btn-item_sword" class="btn btn-secondary btn-sm" onclick="buyOrEquip('item_sword', 15, 'assets/costumes/overlay-wooden-sword-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -391,7 +391,7 @@
             <span class="item-name">Magic Staff</span>
             <span class="item-cost">$50.00 Saved</span>
           </div>
-          <button id="btn-item_staff" class="btn btn-secondary btn-sm" onclick="buyOrEquip('item_staff', 50, 'assets/costumes/overlay-magic-staff.png')">Unlock</button>
+          <button id="btn-item_staff" class="btn btn-secondary btn-sm" onclick="buyOrEquip('item_staff', 50, 'assets/costumes/overlay-magic-staff-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -402,7 +402,7 @@
             <span class="item-name">Wooden Shield</span>
             <span class="item-cost">$30.00 Saved</span>
           </div>
-          <button id="btn-item_shield" class="btn btn-secondary btn-sm" onclick="buyOrEquip('item_shield', 30, 'assets/costumes/overlay-shield.png')">Unlock</button>
+          <button id="btn-item_shield" class="btn btn-secondary btn-sm" onclick="buyOrEquip('item_shield', 30, 'assets/costumes/overlay-shield-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
@@ -413,7 +413,7 @@
             <span class="item-name">Laser Blaster</span>
             <span class="item-cost">$75.00 Saved</span>
           </div>
-          <button id="btn-item_laser" class="btn btn-secondary btn-sm" onclick="buyOrEquip('item_laser', 75, 'assets/costumes/overlay-laser-blaster.png')">Unlock</button>
+          <button id="btn-item_laser" class="btn btn-secondary btn-sm" onclick="buyOrEquip('item_laser', 75, 'assets/costumes/overlay-laser-blaster-idle.gif')">Unlock</button>
         </div>
 
         <div class="shop-item">
