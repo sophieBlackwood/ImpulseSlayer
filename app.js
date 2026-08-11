@@ -94,7 +94,7 @@ function switchAuthTab(tab) {
   if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
 }
 
-// Global timestamp to sync all idle GIF animations across screens
+// Global timestamp token to keep all idle hero GIFs in frame synchronization
 let syncAnimToken = Date.now();
 
 function renderCharacterAvatar(containerId, user) {
@@ -102,7 +102,6 @@ function renderCharacterAvatar(containerId, user) {
   if (!container || !user) return;
 
   const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
-  // Append timestamp parameter to align GIF frame cycles
   const syncedBaseSprite = `${baseSprite}?sync=${syncAnimToken}`;
   const equippedList = user.equipped_items || [];
 
@@ -192,9 +191,19 @@ function saveFinancialProfile(e) {
   if (e) e.preventDefault();
   if (!currentUser) return showScreen('screen-login');
 
-  currentUser.wage = parseFloat(document.getElementById('survey-wage').value) || 15.00;
-  currentUser.food_price = parseFloat(document.getElementById('survey-food').value) || 7.50;
-  currentUser.event_price = parseFloat(document.getElementById('survey-event').value) || 25.00;
+  let wage = parseFloat(document.getElementById('survey-wage').value) || 15.00;
+  let food = parseFloat(document.getElementById('survey-food').value) || 7.50;
+  let eventVal = parseFloat(document.getElementById('survey-event').value) || 25.00;
+
+  // Max limit check ($5,000)
+  if (wage > 5000 || food > 5000 || eventVal > 5000) {
+    showNotification("Financial entries cannot exceed $5,000.", "error");
+    return;
+  }
+
+  currentUser.wage = wage;
+  currentUser.food_price = food;
+  currentUser.event_price = eventVal;
 
   saveUserData();
   showScreen('screen-sprite');
@@ -298,6 +307,18 @@ function getMonsterData(itemName, price, category) {
     : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
 }
 
+function calculateMonsterHP(price) {
+  if (price < 30) {
+    return 100;
+  } else if (price < 150) {
+    return 150;
+  } else {
+    // Dynamic HP scaling up to a max cap of 500 HP
+    const scaledHP = 200 + Math.floor((price - 150) * 0.5);
+    return Math.min(scaledHP, 500);
+  }
+}
+
 function startBattle() {
   const nameInput = document.getElementById('target-name');
   const priceInput = document.getElementById('target-price');
@@ -308,13 +329,22 @@ function startBattle() {
   const categorySelect = document.getElementById('target-category');
   const category = categorySelect ? categorySelect.value : 'general';
 
-  if (!name || isNaN(price) || price <= 0) return showNotification("Please enter a valid item name and price.", "error");
+  if (!name || isNaN(price) || price <= 0) {
+    return showNotification("Please enter a valid item name and price.", "error");
+  }
+
+  // Strict $5,000 price upper bound enforcement
+  if (price > 5000) {
+    return showNotification("Item price cannot exceed $5,000.00.", "error");
+  }
+
+  const monsterHP = calculateMonsterHP(price);
 
   battleState.itemName = name;
   battleState.price = price;
   battleState.category = category;
-  battleState.maxEnemyHP = 100;
-  battleState.enemyHP = 100;
+  battleState.maxEnemyHP = monsterHP;
+  battleState.enemyHP = monsterHP;
   battleState.maxPlayerHP = 100;
   battleState.playerHP = 100;
   battleState.isProcessing = false;
@@ -331,7 +361,7 @@ function startBattle() {
   renderCharacterAvatar('player-sprite', currentUser);
 
   updateHPUI();
-  setDialogue(`A wild ${monster.name} appears! Choose a reflection tactic to start.`);
+  setDialogue(`A wild ${monster.name} appears with ${monsterHP} HP! Choose a reflection tactic to start.`);
   
   showAttackMenu();
   showScreen('screen-battle');
@@ -465,6 +495,11 @@ function updateMetricsSettings() {
   const wage = parseFloat(document.getElementById('settings-wage').value);
   const food = parseFloat(document.getElementById('settings-food').value);
   const eventVal = parseFloat(document.getElementById('settings-event').value);
+
+  if (wage > 5000 || food > 5000 || eventVal > 5000) {
+    showNotification("Settings amounts cannot exceed $5,000.", "error");
+    return;
+  }
 
   if (currentUser) {
     currentUser.wage = wage || 15.00;
@@ -663,16 +698,15 @@ function buyOrEquip(itemId, price, spritePath) {
         // Unequip item if currently active
         equipped.splice(index, 1);
       } else {
-        // Strict slot enforcement: Remove any currently equipped item matching this slot (hat, face, item)
+        // Slot check: remove active item in the same slot
         equipped = equipped.filter(path => {
           const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
           if (activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot) {
-            return false; // Remove old item in the same slot
+            return false;
           }
           return true;
         });
 
-        // Equip the new item into the slot
         equipped.push(spritePath);
       }
     } else {
