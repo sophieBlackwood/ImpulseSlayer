@@ -110,10 +110,10 @@ function handleLocalSignup(e) {
 
   const existingUser = localStorage.getItem(`user_${email}`);
   if (existingUser) {
-    showNotification("An account with this email already exists!", "error");
-    return;
+    showNotification("Existing profile reset for signup.", "info");
   }
 
+  // Create or reset user account in localStorage
   const newUser = {
     email: email,
     password: pass,
@@ -254,7 +254,7 @@ function checkBossAvailability() {
 function getMonsterData(itemName, price, category) {
   const lowerName = itemName.toLowerCase();
 
-  // High threshold items triggers major Boss
+  // High threshold items trigger major Boss
   if (price >= 150) {
     return { name: "Buyer's Remorse Titan", sprite: "assets/monsters/monster-dragon-fomo.png" };
   }
