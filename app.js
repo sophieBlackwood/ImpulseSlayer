@@ -11,8 +11,8 @@ const battleState = {
   itemName: '',
   category: 'general',
   monsterName: '',
-  enemyHP: 100,
-  maxEnemyHP: 100,
+  enemyHP: 150,
+  maxEnemyHP: 150,
   playerHP: 100,
   maxPlayerHP: 100,
   timerInterval: null,
@@ -74,6 +74,32 @@ const QUESTION_POOLS = {
     "How close does saving this money put you to your next major milestone?"
   ]
 };
+
+// ==========================================
+// INPUT SANITIZATION & MONEY LIMIT GUARD
+// ==========================================
+function enforceMoneyLimit(inputElement) {
+  if (!inputElement) return;
+
+  let val = inputElement.value.replace(/[^0-9.]/g, '');
+
+  const parts = val.split('.');
+  if (parts.length > 2) {
+    val = parts[0] + '.' + parts.slice(1).join('');
+  }
+
+  if (parts[1] && parts[1].length > 2) {
+    val = parts[0] + '.' + parts[1].slice(0, 2);
+  }
+
+  let numVal = parseFloat(val);
+  if (!isNaN(numVal) && numVal > 5000) {
+    val = "5000";
+    showNotification("Maximum monetary limit is $5,000.00", "error");
+  }
+
+  inputElement.value = val;
+}
 
 // ==========================================
 // IN-APP NOTIFICATION SYSTEM
@@ -320,7 +346,7 @@ function checkBossAvailability() {
 }
 
 // ==========================================
-// 3. COMBAT & DYNAMIC MONSTER SYSTEM
+// 3. HARDER COMBAT & MONSTER HP SYSTEM
 // ==========================================
 
 function getMonsterData(itemName, price, category) {
@@ -345,14 +371,16 @@ function getMonsterData(itemName, price, category) {
     : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
 }
 
+// HARDER HP SCALING (150 HP minimum up to 1,000 HP max)
 function calculateMonsterHP(price) {
   if (price < 30) {
-    return 100;
+    return 150; // Requires 3 hits
   } else if (price < 150) {
-    return 150;
+    return 250; // Requires 5 hits
   } else {
-    const scaledHP = 200 + Math.floor((price - 150) * 0.5);
-    return Math.min(scaledHP, 500);
+    // Dynamic HP scaling: scales rapidly up to 1,000 max HP
+    const scaledHP = 300 + Math.floor((price - 150) * 0.25);
+    return Math.min(scaledHP, 1000);
   }
 }
 
@@ -397,7 +425,7 @@ function startBattle() {
   renderCharacterAvatar('player-sprite', currentUser);
 
   updateHPUI();
-  setDialogue(`A wild ${monster.name} appears with ${monsterHP} HP! Choose a reflection tactic to start.`);
+  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP! Perform multiple mindful reflections to defeat it.`);
   
   showAttackMenu();
   showScreen('screen-battle');
@@ -449,10 +477,11 @@ function startQuestionFlow(attackType) {
     <div class="input-field">
       <input type="text" id="user-reflection" placeholder="Type your reflection answer (max 80 chars)..." maxlength="80" autofocus />
     </div>
-    <button id="btn-submit-reflection" class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">Submit Reflection</button>
+    <button id="btn-submit-reflection" class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">Submit Strike</button>
   `;
 }
 
+// MULTI-HIT BATTLE MECHANIC: Each reflection deals 50 damage
 function processPlayerAttack(attackType) {
   if (battleState.isProcessing) return;
 
@@ -466,15 +495,23 @@ function processPlayerAttack(attackType) {
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.style.opacity = '0.6';
-    submitBtn.textContent = 'Processing...';
+    submitBtn.textContent = 'Striking...';
   }
 
-  battleState.enemyHP = 0;
+  const damageDealt = 50;
+  battleState.enemyHP = Math.max(0, battleState.enemyHP - damageDealt);
   updateHPUI();
 
-  setDialogue(`Your mindful reflection landed a critical strike on the ${battleState.monsterName}!`);
-
-  setTimeout(victorySavedMoney, 1200);
+  if (battleState.enemyHP <= 0) {
+    setDialogue(`FINAL STRIKE! Your reflection landed the finishing blow on ${battleState.monsterName}!`);
+    setTimeout(victorySavedMoney, 1200);
+  } else {
+    setDialogue(`Solid reflection! You dealt ${damageDealt} damage to ${battleState.monsterName}. It still has ${battleState.enemyHP} HP remaining!`);
+    setTimeout(() => {
+      battleState.isProcessing = false;
+      showAttackMenu();
+    }, 1500);
+  }
 }
 
 function victorySavedMoney() {
@@ -485,7 +522,7 @@ function victorySavedMoney() {
     currentUser.vault_unlock_time = Date.now() + (15 * 60 * 1000);
   }
 
-  updateTrainerStats(50, battleState.price, {
+  updateTrainerStats(75, battleState.price, {
     name: battleState.itemName,
     price: battleState.price,
     type: 'SAVED',
@@ -664,8 +701,54 @@ function renderHistoryLogs(logs) {
 }
 
 // ==========================================
-// 6. SHOP & SLOT-BASED EQUIP SYSTEM
+// 6. SHOP & RELIABLE EQUIP/UNEQUIP SYSTEM
 // ==========================================
+
+function openShop() {
+  if (!currentUser) return showScreen('screen-login');
+
+  if (document.getElementById('shop-gold-val')) {
+    document.getElementById('shop-gold-val').textContent = parseFloat(currentUser.saved_total || 0).toFixed(2);
+  }
+  renderCharacterAvatar('shop-preview-avatar', currentUser);
+
+  updateShopButtons(currentUser);
+  showScreen('screen-shop');
+}
+
+function updateShopButtons(user) {
+  const allItemIds = Object.keys(ITEM_MANIFEST).concat(['hat_default']);
+  const equipped = user.equipped_items || [];
+  const inventory = user.inventory || ['hat_default'];
+
+  allItemIds.forEach(itemId => {
+    const btn = document.getElementById(`btn-${itemId}`);
+    if (!btn) return;
+
+    if (itemId === 'hat_default') {
+      btn.textContent = equipped.length === 0 ? "Equipped" : "Unequip All";
+      btn.className = equipped.length === 0 ? "btn btn-sm btn-equipped" : "btn btn-secondary btn-sm";
+      return;
+    }
+
+    const itemData = ITEM_MANIFEST[itemId];
+    if (!itemData) return;
+
+    const isOwned = inventory.includes(itemId);
+    const isEquipped = equipped.includes(itemData.path);
+
+    if (isEquipped) {
+      btn.textContent = "Unequip";
+      btn.className = "btn btn-sm btn-equipped";
+    } else if (isOwned) {
+      btn.textContent = "Equip";
+      btn.className = "btn btn-secondary btn-sm";
+    } else {
+      btn.textContent = "Unlock";
+      btn.className = "btn btn-primary btn-sm";
+    }
+  });
+}
 
 function buyOrEquip(itemId, price, spritePath) {
   if (!currentUser) return showScreen('screen-login');
@@ -678,7 +761,6 @@ function buyOrEquip(itemId, price, spritePath) {
     equipped = [];
   } else {
     const itemData = ITEM_MANIFEST[itemId];
-    // Always use the official path from ITEM_MANIFEST if available
     const canonicalPath = itemData ? itemData.path : spritePath;
     const targetSlot = itemData ? itemData.slot : itemId.split('_')[0];
     const isOwned = inventory.includes(itemId);
@@ -687,11 +769,9 @@ function buyOrEquip(itemId, price, spritePath) {
       const index = equipped.indexOf(canonicalPath);
       
       if (index > -1) {
-        // Item is equipped -> Unequip it
         equipped.splice(index, 1);
         showNotification("Item unequipped!", "info");
       } else {
-        // Item is not equipped -> Remove existing item in same slot, then equip
         equipped = equipped.filter(path => {
           const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
           return !(activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot);
@@ -701,7 +781,6 @@ function buyOrEquip(itemId, price, spritePath) {
         showNotification("Item equipped!", "success");
       }
     } else {
-      // Purchase unowned item
       if (savedTotal < price) {
         showNotification("You need more saved money to unlock this item!", "error");
         return;
@@ -720,10 +799,17 @@ function buyOrEquip(itemId, price, spritePath) {
   syncAllAnimations();
   openShop();
 }
+
 // ==========================================
 // 7. INITIALIZATION & EVENT BINDING
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
+  // Bind real-time monetary guards to inputs
+  const currencyInputs = document.querySelectorAll('input[type="number"], .money-input');
+  currencyInputs.forEach(input => {
+    input.addEventListener('input', (e) => enforceMoneyLimit(e.target));
+  });
+
   const signupForm = document.getElementById('form-signup');
   if (signupForm) signupForm.addEventListener('submit', handleLocalSignup);
 
