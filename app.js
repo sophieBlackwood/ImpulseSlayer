@@ -35,6 +35,46 @@ const ITEM_MANIFEST = {
   'item_laser': { path: 'assets/costumes/overlay-laser-blaster.png', slot: 'item' }
 };
 
+// Pools of randomized reflection questions per attack type
+const QUESTION_POOLS = {
+  necessity: [
+    "Why do you want this item right now, and will it matter in 30 days?",
+    "Is this a true 'need' for your daily life or an impulse 'want'?",
+    "What emotion triggered this urge to buy right now?",
+    "Would you still buy this if nobody else ever saw you with it?",
+    "If you wait 48 hours to buy this, will you still care as much?",
+    "Are you buying this to solve a temporary mood or boredom?",
+    "Will buying this improve your daily productivity or just give a quick thrill?",
+    "Do you already own something similar that accomplishes the same goal?",
+    "If you were given the cash value instead of this item, would you keep the cash?",
+    "How does buying this align with your long-term personal goals?"
+  ],
+  utility: [
+    "How many times will you realistically use this item in the next year?",
+    "If you divide the price by how often you'll use it, is the cost-per-use worth it?",
+    "Will this item hold value over time or quickly gather dust?",
+    "Is there a free or cheaper alternative that offers the same functionality?",
+    "Will this purchase require additional add-ons, subscriptions, or maintenance?",
+    "How much space will this take up in your life or room?",
+    "Is the quality high enough to last, or will you need to replace it soon?",
+    "Are you paying extra just for a brand name or fancy packaging?",
+    "Can you borrow or rent this item instead of purchasing it outright?",
+    "Does this item solve a real friction point in your routine?"
+  ],
+  wait: [
+    "What important long-term goal could you put this money toward instead?",
+    "How many hours of work did it take you to earn this amount of money?",
+    "If you invested or saved this amount today, how much could it grow?",
+    "What experience or trip could you fund by skipping this purchase?",
+    "Would future-you thank you for saving this cash instead of spending it?",
+    "If your savings balance drops by this amount, how secure will you feel?",
+    "What is the single biggest trade-off you are making by buying this?",
+    "Could this money cover an emergency or unexpected expense down the road?",
+    "Are you sacrificing a major reward later for instant gratification now?",
+    "How close does saving this money put you to your next major milestone?"
+  ]
+};
+
 // ==========================================
 // IN-APP NOTIFICATION SYSTEM
 // ==========================================
@@ -94,7 +134,6 @@ function switchAuthTab(tab) {
   if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
 }
 
-// Global timestamp token to keep all idle hero GIFs in frame synchronization
 let syncAnimToken = Date.now();
 
 function renderCharacterAvatar(containerId, user) {
@@ -195,7 +234,6 @@ function saveFinancialProfile(e) {
   let food = parseFloat(document.getElementById('survey-food').value) || 7.50;
   let eventVal = parseFloat(document.getElementById('survey-event').value) || 25.00;
 
-  // Max limit check ($5,000)
   if (wage > 5000 || food > 5000 || eventVal > 5000) {
     showNotification("Financial entries cannot exceed $5,000.", "error");
     return;
@@ -313,7 +351,6 @@ function calculateMonsterHP(price) {
   } else if (price < 150) {
     return 150;
   } else {
-    // Dynamic HP scaling up to a max cap of 500 HP
     const scaledHP = 200 + Math.floor((price - 150) * 0.5);
     return Math.min(scaledHP, 500);
   }
@@ -333,7 +370,6 @@ function startBattle() {
     return showNotification("Please enter a valid item name and price.", "error");
   }
 
-  // Strict $5,000 price upper bound enforcement
   if (price > 5000) {
     return showNotification("Item price cannot exceed $5,000.00.", "error");
   }
@@ -401,13 +437,12 @@ function showAttackMenu() {
 
 function startQuestionFlow(attackType) {
   const container = document.getElementById('quiz-answers');
+  const pool = QUESTION_POOLS[attackType];
 
-  if (attackType === 'necessity') {
-    setDialogue("Reflection Question: Why do you want this item right now, and will it matter in 30 days?");
-  } else if (attackType === 'utility') {
-    setDialogue("Reflection Question: How many times will you use this, and is it worth the price tag?");
-  } else if (attackType === 'wait') {
-    setDialogue("Reflection Question: What important goal or item could you put this money toward instead?");
+  if (pool && pool.length > 0) {
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    const selectedQuestion = pool[randomIndex];
+    setDialogue(`Reflection Question: ${selectedQuestion}`);
   }
 
   container.innerHTML = `
@@ -695,10 +730,8 @@ function buyOrEquip(itemId, price, spritePath) {
     if (isOwned) {
       const index = equipped.indexOf(spritePath);
       if (index > -1) {
-        // Unequip item if currently active
         equipped.splice(index, 1);
       } else {
-        // Slot check: remove active item in the same slot
         equipped = equipped.filter(path => {
           const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
           if (activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot) {
@@ -710,7 +743,6 @@ function buyOrEquip(itemId, price, spritePath) {
         equipped.push(spritePath);
       }
     } else {
-      // Purchase unowned item without auto-equipping
       if (savedTotal < price) {
         showNotification("You need more saved money to unlock this item!", "error");
         return;
