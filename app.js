@@ -650,6 +650,21 @@ function buyOrEquip(itemId, price, spritePath) {
   let inventory = currentUser.inventory || ['hat_default'];
   let savedTotal = parseFloat(currentUser.saved_total || 0);
 
+  const itemPathMap = {
+    'hat_crown': 'assets/costumes/overlay-crown.png',
+    'hat_wizard': 'assets/costumes/overlay-wizard-hat.png',
+    'hat_ninja': 'assets/costumes/overlay-ninja-headband.png',
+    'hat_party': 'assets/costumes/overlay-party-hat.png',
+    'hat_helmet': 'assets/costumes/overlay-helmet.png',
+    'face_sunglasses': 'assets/costumes/overlay-sunglasses.png',
+    'face_eyepatch': 'assets/costumes/overlay-eyepatch.png',
+    'face_visor': 'assets/costumes/overlay-visor.png',
+    'item_sword': 'assets/costumes/overlay-wooden-sword.png',
+    'item_staff': 'assets/costumes/overlay-magic-staff.png',
+    'item_shield': 'assets/costumes/overlay-shield.png',
+    'item_laser': 'assets/costumes/overlay-laser-blaster.png'
+  };
+
   if (itemId === 'hat_default') {
     equipped = [];
   } else {
@@ -658,19 +673,31 @@ function buyOrEquip(itemId, price, spritePath) {
     if (isOwned) {
       const index = equipped.indexOf(spritePath);
       if (index > -1) {
+        // Unequip if already equipped
         equipped.splice(index, 1);
       } else {
+        // Equip item: remove any existing equipped item from the same category slot
+        const categoryPrefix = itemId.split('_')[0]; // 'hat', 'face', or 'item'
+
+        equipped = equipped.filter(path => {
+          const matchingKey = Object.keys(itemPathMap).find(key => itemPathMap[key] === path);
+          if (matchingKey && matchingKey.startsWith(categoryPrefix + '_')) {
+            return false; // Remove item currently occupying this slot
+          }
+          return true;
+        });
+
         equipped.push(spritePath);
       }
     } else {
+      // Purchase unowned item without auto-equipping
       if (savedTotal < price) {
         showNotification("You need more saved money to unlock this item!", "error");
         return;
       }
       savedTotal -= price;
       inventory.push(itemId);
-      equipped.push(spritePath);
-      showNotification("Item unlocked and equipped!", "success");
+      showNotification("Item unlocked!", "success");
     }
   }
 
