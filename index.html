@@ -96,13 +96,13 @@
       <div class="sprite-selector-grid binary-grid">
         <div class="sprite-option active" onclick="selectSprite('assets/characters/hero-male.png', 'assets/characters/hero-male-idle.gif', this)">
           <div class="sprite-icon">
-            <img src="assets/characters/hero-male.png" alt="Male Hero" class="character-img" />
+            <img src="assets/characters/hero-male-idle.gif" alt="Male Hero Idle" class="character-img" />
           </div>
           <span class="sprite-label">Style A</span>
         </div>
         <div class="sprite-option" onclick="selectSprite('assets/characters/hero-female.png', 'assets/characters/hero-female-idle.gif', this)">
           <div class="sprite-icon">
-            <img src="assets/characters/hero-female.png" alt="Female Hero" class="character-img" />
+            <img src="assets/characters/hero-female-idle.gif" alt="Female Hero Idle" class="character-img" />
           </div>
           <span class="sprite-label">Style B</span>
         </div>
@@ -113,9 +113,7 @@
 
     <section id="screen-hub" class="screen">
       <div class="profile-header glass-card">
-        <div id="hub-avatar" class="avatar-box">
-          <img id="hub-avatar-img" src="assets/characters/hero-male-idle.gif" alt="Hero Avatar" class="character-img" />
-        </div>
+        <div id="hub-avatar" class="avatar-box"></div>
         <div class="user-meta">
           <h2 id="hub-trainer-name">Hero Alex</h2>
           <span id="hub-trainer-lvl" class="lvl-tag">Level 1</span>
@@ -225,17 +223,11 @@
             <div class="hp-bar-bg"><div id="enemy-hp" class="hp-bar-fill"></div></div>
           </div>
           
-          <div id="enemy-sprite" class="sprite-box">
-            <div class="img-placeholder monster-ph">
-              <span>[Monster Drawing]</span>
-            </div>
-          </div>
+          <div id="enemy-sprite" class="sprite-box"></div>
         </div>
 
         <div class="unit-row player-side">
-          <div id="player-sprite" class="sprite-box">
-            <img id="battle-avatar-img" src="assets/characters/hero-male-idle.gif" alt="Hero Sprite" class="character-img" />
-          </div>
+          <div id="player-sprite" class="sprite-box"></div>
           <div class="hud-plate">
             <div class="plate-top">
               <span id="player-battle-name" class="unit-name">Hero</span>
@@ -285,10 +277,7 @@
       </div>
 
       <div class="glass-card text-center mb-12">
-        <div id="shop-preview-avatar" class="avatar-box large">
-          <img id="shop-preview-img" src="assets/characters/hero-male-idle.gif" alt="Hero Preview" class="character-img" />
-          <div id="shop-costume-layer" class="costume-overlay-layer"></div>
-        </div>
+        <div id="shop-preview-avatar" class="avatar-box large"></div>
         <p class="sub-text">Current Outfit</p>
         <div class="gold-badge">Saved Gold: $<span id="shop-gold-val">0.00</span></div>
       </div>
@@ -445,4 +434,4 @@
 
   <script src="app.js"></script>
 </body>
-</html>s
+</html>
