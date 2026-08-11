@@ -159,15 +159,15 @@
 
         <div class="input-field">
           <label>Hourly Wage ($/hr)</label>
-          <input type="number" id="settings-wage" step="0.50" max="9999" />
+         <input type="number" id="survey-wage" class="money-input" min="0" max="5000" step="0.01" placeholder="15.00" />
         </div>
         <div class="input-field">
           <label>Favorite Snack Price ($)</label>
-          <input type="number" id="settings-food" step="0.50" max="9999" />
+         <input type="number" id="survey-food" class="money-input" min="0" max="5000" step="0.01" placeholder="7.50" />
         </div>
         <div class="input-field">
           <label>Favorite Activity Price ($)</label>
-          <input type="number" id="settings-event" step="1.00" max="9999" />
+         <input type="number" id="survey-event" class="money-input" min="0" max="5000" step="0.01" placeholder="25.00" />
         </div>
         <button class="btn btn-secondary" onclick="updateMetricsSettings()">Save Metrics</button>
 
@@ -192,10 +192,18 @@
           <label for="target-name">Item Name (max 30 chars)</label>
           <input type="text" id="target-name" placeholder="Wireless Headphones" maxlength="30" />
         </div>
-        <div class="input-field">
-          <label for="target-price">Item Cost ($)</label>
-          <input type="number" id="target-price" placeholder="120.00" step="0.01" max="999999" />
-        </div>
+       <div class="input-field">
+  <label for="target-price">Item Cost ($)</label>
+  <input 
+    type="number" 
+    id="target-price" 
+    class="money-input" 
+    placeholder="0.00" 
+    min="0" 
+    max="5000" 
+    step="0.01" 
+  />
+       </div>
 
         <div class="input-field">
           <label for="target-category">Item Category</label>
