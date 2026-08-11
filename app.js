@@ -81,6 +81,7 @@ function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
+  // Primary: Use animated idle GIF
   const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
   const equippedList = user.equipped_items || [];
 
@@ -121,6 +122,8 @@ function handleLocalSignup(e) {
     lvl: 1,
     xp: 0,
     saved_total: 0,
+    base_sprite_static: 'assets/characters/hero-male.png',
+    base_sprite_idle: 'assets/characters/hero-male-idle.gif',
     equipped_items: [],
     inventory: ['hat_default'],
     logs: [],
@@ -295,6 +298,8 @@ function startBattle() {
   document.getElementById('player-battle-name').textContent = currentUser ? currentUser.trainer_name : 'Hero';
   document.getElementById('player-battle-lvl').textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
 
+  renderCharacterAvatar('player-sprite', currentUser);
+
   updateHPUI();
   setDialogue(`A wild ${monster.name} appears! Choose a single reflection tactic to finish this battle.`);
   
@@ -334,7 +339,6 @@ function showAttackMenu() {
   `;
 }
 
-// ONE QUESTION PER BATTLE FLOW
 function startQuestionFlow(attackType) {
   const container = document.getElementById('quiz-answers');
 
@@ -360,34 +364,12 @@ function processPlayerAttack(attackType) {
 
   if (!ans) return showNotification("Please type a reflection answer first!", "error");
 
-  // Single decisive hit to defeat the monster in one round
   battleState.enemyHP = 0;
   updateHPUI();
 
   setDialogue(`Your mindful reflection landed a critical strike on the impulse monster!`);
 
   setTimeout(victorySavedMoney, 1200);
-}
-
-function monsterRealityCounter(attackType) {
-  const price = battleState.price;
-  const wage = currentUser ? currentUser.wage : 15.00;
-  const food = currentUser ? currentUser.food_price : 7.50;
-
-  const hoursWorked = (price / wage).toFixed(1);
-  const mealsCount = Math.floor(price / food);
-
-  const counterAttacks = [
-    `The Monster strikes back! "This costs $${price.toFixed(2)}—that is ${hoursWorked} hours of work at your wage!"`,
-    `The Monster counters! "That $${price.toFixed(2)} equals ${mealsCount} full meals you could buy!"`
-  ];
-
-  const chosenCounter = counterAttacks[Math.floor(Math.random() * counterAttacks.length)];
-
-  battleState.playerHP -= 20;
-  updateHPUI();
-
-  setDialogue(chosenCounter);
 }
 
 function victorySavedMoney() {
