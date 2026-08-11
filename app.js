@@ -19,20 +19,20 @@ const battleState = {
   isProcessing: false
 };
 
-// Map of all shop items to their sprite paths and slot categories
+// Map of all shop items to their animated GIF paths and slot categories
 const ITEM_MANIFEST = {
-  'hat_crown': { path: 'assets/costumes/overlay-crown.png', slot: 'hat' },
-  'hat_wizard': { path: 'assets/costumes/overlay-wizard-hat.png', slot: 'hat' },
-  'hat_ninja': { path: 'assets/costumes/overlay-ninja-headband.png', slot: 'hat' },
-  'hat_party': { path: 'assets/costumes/overlay-party-hat.png', slot: 'hat' },
-  'hat_helmet': { path: 'assets/costumes/overlay-helmet.png', slot: 'hat' },
-  'face_sunglasses': { path: 'assets/costumes/overlay-sunglasses.png', slot: 'face' },
-  'face_eyepatch': { path: 'assets/costumes/overlay-eyepatch.png', slot: 'face' },
-  'face_visor': { path: 'assets/costumes/overlay-visor.png', slot: 'face' },
-  'item_sword': { path: 'assets/costumes/overlay-wooden-sword.png', slot: 'item' },
-  'item_staff': { path: 'assets/costumes/overlay-magic-staff.png', slot: 'item' },
-  'item_shield': { path: 'assets/costumes/overlay-shield.png', slot: 'item' },
-  'item_laser': { path: 'assets/costumes/overlay-laser-blaster.png', slot: 'item' }
+  'hat_crown': { path: 'assets/costumes/overlay-crown-idle.gif', slot: 'hat' },
+  'hat_wizard': { path: 'assets/costumes/overlay-wizard-hat-idle.gif', slot: 'hat' },
+  'hat_ninja': { path: 'assets/costumes/overlay-ninja-headband-idle.gif', slot: 'hat' },
+  'hat_party': { path: 'assets/costumes/overlay-party-hat-idle.gif', slot: 'hat' },
+  'hat_helmet': { path: 'assets/costumes/overlay-helmet-idle.gif', slot: 'hat' },
+  'face_sunglasses': { path: 'assets/costumes/overlay-sunglasses-idle.gif', slot: 'face' },
+  'face_eyepatch': { path: 'assets/costumes/overlay-eyepatch-idle.gif', slot: 'face' },
+  'face_visor': { path: 'assets/costumes/overlay-visor-idle.gif', slot: 'face' },
+  'item_sword': { path: 'assets/costumes/overlay-wooden-sword-idle.gif', slot: 'item' },
+  'item_staff': { path: 'assets/costumes/overlay-magic-staff-idle.gif', slot: 'item' },
+  'item_shield': { path: 'assets/costumes/overlay-shield-idle.gif', slot: 'item' },
+  'item_laser': { path: 'assets/costumes/overlay-laser-blaster-idle.gif', slot: 'item' }
 };
 
 // Pools of randomized reflection questions per attack type
@@ -174,7 +174,9 @@ function renderCharacterAvatar(containerId, user) {
 
   equippedList.forEach(path => {
     if (path && path !== 'BASE') {
-      layersHTML += `<img src="${path}" alt="Costume Layer" class="character-img costume-overlay-layer" />`;
+      // Append cache-busting sync token to force costume GIFs to restart playing in sync
+      const syncedCostumePath = `${path}?sync=${syncAnimToken}`;
+      layersHTML += `<img src="${syncedCostumePath}" alt="Costume Layer" class="character-img costume-overlay-layer" />`;
     }
   });
 
@@ -371,14 +373,12 @@ function getMonsterData(itemName, price, category) {
     : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
 }
 
-// HARDER HP SCALING (150 HP minimum up to 1,000 HP max)
 function calculateMonsterHP(price) {
   if (price < 30) {
-    return 150; // Requires 3 hits
+    return 150; // Requires 3 strikes
   } else if (price < 150) {
-    return 250; // Requires 5 hits
+    return 250; // Requires 5 strikes
   } else {
-    // Dynamic HP scaling: scales rapidly up to 1,000 max HP
     const scaledHP = 300 + Math.floor((price - 150) * 0.25);
     return Math.min(scaledHP, 1000);
   }
@@ -481,7 +481,6 @@ function startQuestionFlow(attackType) {
   `;
 }
 
-// MULTI-HIT BATTLE MECHANIC: Each reflection deals 50 damage
 function processPlayerAttack(attackType) {
   if (battleState.isProcessing) return;
 
@@ -804,7 +803,6 @@ function buyOrEquip(itemId, price, spritePath) {
 // 7. INITIALIZATION & EVENT BINDING
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
-  // Bind real-time monetary guards to inputs
   const currencyInputs = document.querySelectorAll('input[type="number"], .money-input');
   currencyInputs.forEach(input => {
     input.addEventListener('input', (e) => enforceMoneyLimit(e.target));
