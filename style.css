@@ -643,8 +643,13 @@ body {
     }
 
     &.flee {
+      grid-column: 1 / -1;
+      width: 100%;
+      text-align: center;
       color: var(--hp-red);
       border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.08);
+      margin-top: 4px;
     }
   }
 
