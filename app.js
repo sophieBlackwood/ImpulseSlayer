@@ -1,6 +1,3 @@
-// ==========================================
-// LOCAL STORAGE AUTH & GAME STATE
-// ==========================================
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
