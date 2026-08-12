@@ -368,6 +368,60 @@ function checkBossAvailability() {
 // 3. COMBAT, ANIMATION & COUNTER-ATTACK SYSTEM
 // ==========================================
 
+/**
+ * Generates a dynamic monster attack pulling directly from currentUser financial stats.
+ * Uses fallback default stats if currentUser data is incomplete.
+ */
+function getRandomMonsterAttack() {
+  const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
+  const foodPrice = (currentUser && currentUser.food_price > 0) ? currentUser.food_price : 7.50;
+  const eventPrice = (currentUser && currentUser.event_price > 0) ? currentUser.event_price : 25.00;
+  
+  const price = battleState.price || 20.00;
+  const itemName = battleState.itemName || "this item";
+
+  const hoursWorked = (price / wage).toFixed(1);
+  const snacksEquivalent = Math.round(price / foodPrice);
+  const eventsEquivalent = (price / eventPrice).toFixed(1);
+  const daysOfWage = (price / (wage * 8)).toFixed(1);
+
+  const attacks = [
+    {
+      name: "Wage Dagger",
+      taunt: `"${itemName} isn't just $${price.toFixed(2)}—that costs you ${hoursWorked} hours of work!"`,
+      damage: 18
+    },
+    {
+      name: "Snack Blast",
+      taunt: `"Think fast! Buying ${itemName} equals giving up ${snacksEquivalent} favorite meals!"`,
+      damage: 15
+    },
+    {
+      name: "Event Slasher",
+      taunt: `"Is it worth trading ${eventsEquivalent} weekend outings just for ${itemName}?"`,
+      damage: 22
+    },
+    {
+      name: "Workday Drain",
+      taunt: `"That purchase takes away ${daysOfWage} full days of your hard-earned wages!"`,
+      damage: 20
+    },
+    {
+      name: "FOMO Flare",
+      taunt: `"Everyone else is buying ${itemName} right now—can you really afford to skip it?"`,
+      damage: 12
+    },
+    {
+      name: "Opportunity Cost Beam",
+      taunt: `"If you saved that $${price.toFixed(2)}, it could grow significantly in your vault!"`,
+      damage: 25
+    }
+  ];
+
+  const randomIndex = Math.floor(Math.random() * attacks.length);
+  return attacks[randomIndex];
+}
+
 function getMonsterData(itemName, price, category) {
   const lowerName = itemName.toLowerCase();
 
@@ -442,7 +496,7 @@ function startBattle() {
   battleState.maxEnemyHP = monsterHP;
   battleState.enemyHP = monsterHP;
 
-  // Player Max HP scales up with Trainer Level
+  // Level Perk: Player Max HP scales up with Trainer Level
   const maxHP = typeof getPlayerMaxHP === 'function' ? getPlayerMaxHP() : 100;
   battleState.maxPlayerHP = maxHP;
   battleState.playerHP = maxHP;
@@ -570,7 +624,7 @@ function processPlayerAttack(attackType) {
   const playerContainer = document.getElementById('player-sprite');
   if (playerContainer) {
     playerContainer.classList.remove('anim-player-attack');
-    void playerContainer.offsetWidth; // Trigger reflow
+    void playerContainer.offsetWidth; // Reflow
     playerContainer.classList.add('anim-player-attack');
   }
 
@@ -607,12 +661,30 @@ function processPlayerAttack(attackType) {
         const enemyContainer = document.getElementById('enemy-sprite');
         if (enemyContainer) {
           enemyContainer.classList.remove('anim-monster-attack');
-          void enemyContainer.offsetWidth; // Trigger reflow
+          void enemyContainer.offsetWidth; // Reflow
           enemyContainer.classList.add('anim-monster-attack');
         }
 
-        // Fetch dynamic attack calculated from user stats
-        const chosenAttack = getRandomMonsterAttack();
+        // Fetch dynamic attack with safe execution fallback
+        let chosenAttack = null;
+        try {
+          if (typeof getRandomMonsterAttack === 'function') {
+            chosenAttack = getRandomMonsterAttack();
+          }
+        } catch (err) {
+          console.error("Error retrieving monster attack:", err);
+        }
+
+        // Fallback default object if function missing or invalid
+        if (!chosenAttack || typeof chosenAttack.damage !== 'number') {
+          const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
+          const hoursWorked = (battleState.price / wage).toFixed(1);
+          chosenAttack = {
+            name: "Impulse Strike",
+            taunt: `"${battleState.itemName} costs you ${hoursWorked} hours of work!"`,
+            damage: 15
+          };
+        }
 
         battleState.playerHP = Math.max(0, battleState.playerHP - chosenAttack.damage);
 
