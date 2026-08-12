@@ -402,64 +402,156 @@ body {
     color: var(--text-primary); 
   }
 
-  .btn {
-    width: 100%;
-    padding: 14px;
-    border: none;
-    border-radius: 10px;
-    font-family: var(--font-heading);
-    font-weight: 700;
-    font-size: 0.9rem;
-    cursor: pointer;
-    margin-top: 8px;
+/* ==========================================
+   GLOBAL BUTTON STYLES
+========================================== */
 
-    &:active { 
-      transform: scale(0.98); 
-    }
-  }
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
 
-  .btn-primary { 
-    background: var(--poke-yellow); 
-    color: var(--bg-deep); 
-  }
+.btn:active { 
+  transform: scale(0.98); 
+}
 
-  .btn-action-main { 
-    background: var(--hp-green); 
-    color: #ffffff; 
-    padding: 16px; 
-    font-size: 0.95rem; 
-  }
+.btn-primary { 
+  background: var(--poke-yellow); 
+  color: var(--bg-deep); 
+}
 
-  .btn-secondary { 
-    background: var(--color-umber); 
-    color: var(--text-primary); 
-    border: 1px solid var(--card-border); 
-  }
+.btn-action-main { 
+  background: var(--hp-green); 
+  color: #ffffff; 
+  padding: 16px; 
+  font-size: 0.95rem; 
+}
 
-  .btn-equipped { 
-    background: var(--color-olive); 
-    color: var(--text-primary); 
-    font-weight: 700; 
-  }
+.btn-secondary { 
+  background: var(--color-umber); 
+  color: var(--text-primary); 
+  border: 1px solid var(--card-border); 
+}
 
-  .btn-danger { 
-    background: rgba(239, 68, 68, 0.15); 
-    color: var(--hp-red); 
-    border: 1px solid rgba(239, 68, 68, 0.4); 
-  }
+.btn-equipped { 
+  background: var(--color-olive); 
+  color: var(--text-primary); 
+  font-weight: 700; 
+}
 
-  .btn-ghost { 
-    background: transparent; 
-    color: var(--text-muted); 
-    font-size: 0.85rem; 
-  }
+.btn-danger { 
+  background: rgba(239, 68, 68, 0.15); 
+  color: var(--hp-red); 
+  border: 1px solid rgba(239, 68, 68, 0.4); 
+}
 
-  .btn-sm { 
-    width: auto; 
-    padding: 8px 14px; 
-    font-size: 0.75rem; 
-    margin-top: 0; 
-  }
+.btn-ghost { 
+  background: transparent; 
+  color: var(--text-muted); 
+  font-size: 0.85rem; 
+}
+
+.btn-sm { 
+  width: auto; 
+  padding: 8px 14px; 
+  font-size: 0.75rem; 
+  margin-top: 0; 
+}
+
+/* ==========================================
+   DELETE ACCOUNT MODAL STYLES (SCOPED)
+========================================== */
+
+/* Modal Container */
+.modal-content {
+  background-color: #1a202c; /* Dark theme background */
+  border: 1px solid #2d3748;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+.modal-content h3 {
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.modal-content p {
+  color: #a0aec0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+/* Modal Actions Layout */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Scoped Modal Buttons (Prevents breaking full-width layout elsewhere) */
+.modal-actions .btn {
+  width: auto;             /* Override width: 100% so buttons sit side-by-side */
+  margin-top: 0;          /* Remove top margin inside modal action rows */
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* Scoped Cancel Button */
+.modal-actions .btn-secondary {
+  background-color: #2d3748;
+  color: #e2e8f0;
+  border: 1px solid #4a5568;
+}
+
+.modal-actions .btn-secondary:hover {
+  background-color: #4a5568;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.modal-actions .btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* Scoped Delete Button */
+.modal-actions .btn-danger {
+  background-color: #e53e3e;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+}
+
+.modal-actions .btn-danger:hover {
+  background-color: #c53030;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.35);
+  transform: translateY(-1px);
+}
+
+.modal-actions .btn-danger:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(229, 62, 62, 0.2);
+}
 
   .profile-header {
     display: flex;
