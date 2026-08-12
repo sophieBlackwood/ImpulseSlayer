@@ -27,8 +27,15 @@
 
       <div class="glass-card">
         <div class="auth-toggle">
-          <button id="tab-login" class="toggle-btn active" onclick="switchAuthTab('login')">Login</button>
-          <button id="tab-signup" class="toggle-btn" onclick="switchAuthTab('signup')">Sign Up</button>
+          <!--<button id="tab-login" class="toggle-btn active" onclick="switchAuthTab('login')">Login</button>
+          <button id="tab-signup" class="toggle-btn" onclick="switchAuthTab('signup')">Sign Up</button>-->
+          <button id="tab-login" class="active">Log In</button>
+          <button id="tab-signup">Sign Up</button>
+          <form id="form-login">
+  </form>
+
+<form id="form-signup" class="hidden">
+  </form>
         </div>
         
         <form id="form-login" onsubmit="handleLocalLogin(event)">
