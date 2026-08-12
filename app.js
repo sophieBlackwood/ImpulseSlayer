@@ -214,21 +214,31 @@ function syncAllAnimations() {
 // 2. AUTHENTICATION & PROFILE SETUP
 // ==========================================
 
-function handleLocalSignup(e) {
+async function handleLocalSignup(e) {
   e.preventDefault();
   let name = document.getElementById('signup-name').value.trim().slice(0, 20);
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
 
-  const existingUser = localStorage.getItem(`user_${email}`);
-  if (existingUser) {
-    showNotification("An account with this email already exists. Please log in.", "error");
+  // Ask Supabase to create the user account
+  const { data, error } = await supabase.auth.signUp({
+    email: email,
+    password: pass,
+    options: {
+      data: { trainer_name: name || 'Hero' }
+    }
+  });
+
+  // If Supabase finds a problem (e.g., password too short)
+  if (error) {
+    showNotification(error.message, "error");
     return;
   }
 
-  const newUser = {
+  // Create the exact currentUser structure your game expects
+  currentUser = {
+    id: data.user.id,
     email: email,
-    password: pass,
     trainer_name: name || 'Hero',
     wage: 15.00,
     food_price: 7.50,
@@ -244,32 +254,47 @@ function handleLocalSignup(e) {
     vault_unlock_time: null
   };
 
-  localStorage.setItem(`user_${email}`, JSON.stringify(newUser));
-  localStorage.setItem('session_user', email);
-  currentUser = newUser;
-
+  saveUserData();
   showScreen('screen-survey');
 }
 
-function handleLocalLogin(e) {
+async function handleLocalLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('login-pass').value.slice(0, 50);
 
-  const userData = localStorage.getItem(`user_${email}`);
-  if (!userData) {
-    showNotification("User account not found!", "error");
-    return;
-  }
+  // Ask Supabase to check the password
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: pass
+  });
 
-  const user = JSON.parse(userData);
-  if (user.password !== pass) {
-    showNotification("Incorrect password!", "error");
+  if (error) {
+    showNotification(error.message, "error");
     return;
   }
 
   localStorage.setItem('session_user', email);
-  currentUser = user;
+  
+  const savedData = localStorage.getItem(`user_${email}`);
+  if (savedData) {
+    currentUser = JSON.parse(savedData);
+  } else {
+    currentUser = {
+      id: data.user.id,
+      email: email,
+      trainer_name: data.user.user_metadata?.trainer_name || 'Hero',
+      wage: 15.00,
+      food_price: 7.50,
+      event_price: 25.00,
+      lvl: 1,
+      xp: 0,
+      saved_total: 0,
+      base_sprite_idle: 'assets/characters/hero-male-idle.gif',
+      equipped_items: []
+    };
+  }
+
   loadTrainerSession();
 }
 
