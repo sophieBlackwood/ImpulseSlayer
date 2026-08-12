@@ -347,7 +347,7 @@ function checkBossAvailability() {
 }
 
 // ==========================================
-// 3. HARDER COMBAT, MONSTER ANIMATIONS & COUNTER-ATTACKS
+// 3. COMBAT, ANIMATION & COUNTER-ATTACK SYSTEM
 // ==========================================
 
 function getMonsterData(itemName, price, category) {
@@ -438,7 +438,7 @@ function startBattle() {
 
   renderCharacterAvatar('player-sprite', currentUser);
 
-  // Enlarge hero character specifically during battle arena display
+  // Enlarge player sprite during combat
   const playerContainer = document.getElementById('player-sprite');
   if (playerContainer) {
     playerContainer.style.transform = 'scale(1.3)';
@@ -446,7 +446,7 @@ function startBattle() {
   }
 
   updateHPUI();
-  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP!`);
+  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP! Perform multiple mindful reflections to defeat it.`);
   
   showAttackMenu();
   showScreen('screen-battle');
@@ -518,7 +518,15 @@ function processPlayerAttack(attackType) {
     submitBtn.textContent = 'Striking...';
   }
 
-  // Player Strike Deals 50 Damage
+  // 1. Trigger Player Attack Animation (Diagonal Dart Up-Right)
+  const playerContainer = document.getElementById('player-sprite');
+  if (playerContainer) {
+    playerContainer.classList.remove('anim-player-attack');
+    void playerContainer.offsetWidth; // Trigger reflow
+    playerContainer.classList.add('anim-player-attack');
+  }
+
+  // Apply Player Damage
   const damageDealt = 50;
   battleState.enemyHP = Math.max(0, battleState.enemyHP - damageDealt);
   updateHPUI();
@@ -527,38 +535,50 @@ function processPlayerAttack(attackType) {
     setDialogue(`FINAL STRIKE! Your reflection landed the finishing blow on ${battleState.monsterName}!`);
     setTimeout(victorySavedMoney, 1200);
   } else {
-    // Monster Counter-Attacks using user's real financial metrics!
-    const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
-    const foodPrice = (currentUser && currentUser.food_price > 0) ? currentUser.food_price : 7.50;
-    const eventPrice = (currentUser && currentUser.event_price > 0) ? currentUser.event_price : 25.00;
+    setDialogue(`You dealt ${damageDealt} DMG to ${battleState.monsterName}!`);
 
-    const hoursWorked = (battleState.price / wage).toFixed(1);
-    const snacksEquivalent = Math.round(battleState.price / foodPrice);
-    const eventsEquivalent = (battleState.price / eventPrice).toFixed(1);
-
-    const monsterTaunts = [
-      `"${battleState.itemName} isn't just $${battleState.price.toFixed(2)}—that costs you ${hoursWorked} hours of work!"`,
-      `"Think fast! That purchase equals buying ${snacksEquivalent} favorite snacks in one go!"`,
-      `"Is it worth giving up ${eventsEquivalent} weekend outings for this single item?"`
-    ];
-
-    const chosenTaunt = monsterTaunts[Math.floor(Math.random() * monsterTaunts.length)];
-
-    const monsterDamage = 15;
-    battleState.playerHP = Math.max(0, battleState.playerHP - monsterDamage);
-
-    setDialogue(`You dealt ${damageDealt} DMG! ${battleState.monsterName} counter-attacks: ${chosenTaunt} (-${monsterDamage} HP)`);
-    updateHPUI();
-
+    // 2. Pause 1 second before the monster counter-attacks
     setTimeout(() => {
-      if (battleState.playerHP <= 0) {
-        setDialogue(`${battleState.monsterName} overwhelmed your resolve! You gave in to the impulse.`);
-        setTimeout(giveInAndSpend, 1500);
-      } else {
-        battleState.isProcessing = false;
-        showAttackMenu();
+      // Trigger Monster Attack Animation (Diagonal Dart Down-Left)
+      const enemyContainer = document.getElementById('enemy-sprite');
+      if (enemyContainer) {
+        enemyContainer.classList.remove('anim-monster-attack');
+        void enemyContainer.offsetWidth; // Trigger reflow
+        enemyContainer.classList.add('anim-monster-attack');
       }
-    }, 2500);
+
+      const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
+      const foodPrice = (currentUser && currentUser.food_price > 0) ? currentUser.food_price : 7.50;
+      const eventPrice = (currentUser && currentUser.event_price > 0) ? currentUser.event_price : 25.00;
+
+      const hoursWorked = (battleState.price / wage).toFixed(1);
+      const snacksEquivalent = Math.round(battleState.price / foodPrice);
+      const eventsEquivalent = (battleState.price / eventPrice).toFixed(1);
+
+      const monsterTaunts = [
+        `"${battleState.itemName} isn't just $${battleState.price.toFixed(2)}—that costs you ${hoursWorked} hours of work!"`,
+        `"Think fast! That purchase equals buying ${snacksEquivalent} favorite snacks in one go!"`,
+        `"Is it worth giving up ${eventsEquivalent} weekend outings for this single item?"`
+      ];
+
+      const chosenTaunt = monsterTaunts[Math.floor(Math.random() * monsterTaunts.length)];
+      const monsterDamage = 15;
+      battleState.playerHP = Math.max(0, battleState.playerHP - monsterDamage);
+
+      setDialogue(`${battleState.monsterName} counter-attacks: ${chosenTaunt} (-${monsterDamage} HP)`);
+      updateHPUI();
+
+      setTimeout(() => {
+        if (battleState.playerHP <= 0) {
+          setDialogue(`${battleState.monsterName} overwhelmed your resolve! You gave in to the impulse.`);
+          setTimeout(giveInAndSpend, 1500);
+        } else {
+          battleState.isProcessing = false;
+          showAttackMenu();
+        }
+      }, 1500);
+
+    }, 1000); // 1 second turn delay
   }
 }
 
