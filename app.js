@@ -446,7 +446,7 @@ function startBattle() {
   }
 
   updateHPUI();
-  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP! Perform multiple mindful reflections to defeat it.`);
+  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP!`);
   
   showAttackMenu();
   showScreen('screen-battle');
