@@ -174,7 +174,6 @@ function renderCharacterAvatar(containerId, user) {
 
   equippedList.forEach(path => {
     if (path && path !== 'BASE') {
-      // Append cache-busting sync token to force costume GIFs to restart playing in sync
       const syncedCostumePath = `${path}?sync=${syncAnimToken}`;
       layersHTML += `<img src="${syncedCostumePath}" alt="Costume Layer" class="character-img costume-overlay-layer" />`;
     }
@@ -348,38 +347,51 @@ function checkBossAvailability() {
 }
 
 // ==========================================
-// 3. HARDER COMBAT & MONSTER HP SYSTEM
+// 3. HARDER COMBAT, MONSTER ANIMATIONS & COUNTER-ATTACKS
 // ==========================================
 
 function getMonsterData(itemName, price, category) {
   const lowerName = itemName.toLowerCase();
 
   if (price >= 150) {
-    return { name: "Buyer's Remorse Titan", sprite: "assets/monsters/monster-dragon-fomo.png" };
+    return { 
+      name: "Buyer's Remorse Titan", 
+      sprite: "assets/monsters/buyers-remorse-titan-idle.gif" 
+    };
   }
 
   if (category === 'tech' || lowerName.includes('phone') || lowerName.includes('headphone')) {
-    return { name: "Upgrade Overlord", sprite: "assets/monsters/monster-beast-impulse.png" };
+    return { 
+      name: "Upgrade Overlord", 
+      sprite: "assets/monsters/upgrade-overlord-idle.gif" 
+    };
   } else if (category === 'fashion' || lowerName.includes('shoes') || lowerName.includes('clothes')) {
-    return { name: "Fast-Fashion Phantom", sprite: "assets/monsters/monster-phantom-subscription.png" };
+    return { 
+      name: "Fast-Fashion Phantom", 
+      sprite: "assets/monsters/fast-fashion-phantom-idle.gif" 
+    };
   } else if (category === 'food' || lowerName.includes('snack') || lowerName.includes('coffee')) {
-    // UPDATED: Now uses animated GIF if available, or PNG
-    return { name: "Snack-Attack Slime", sprite: "assets/monsters/splurge-gremlin-idle.gif" };
+    return { 
+      name: "Snack-Attack Slime", 
+      sprite: "assets/monsters/sneak-attack-slime-idle.gif" 
+    };
   } else if (category === 'sub' || lowerName.includes('subscription')) {
-    return { name: "Recurring Subscription Imp", sprite: "assets/monsters/monster-phantom-subscription.png" };
+    return { 
+      name: "Phantom Subscription Imp", 
+      sprite: "assets/monsters/phantom-subscription-imp-idle.gif" 
+    };
   }
 
-  // UPDATED: Standard small purchase monster using your new 200px asset
   return price < 30 
     ? { name: "Splurge Gremlin", sprite: "assets/monsters/splurge-gremlin-idle.gif" }
-    : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
+    : { name: "FOMO Beast", sprite: "assets/monsters/fomo-beast-idle.gif" };
 }
 
 function calculateMonsterHP(price) {
   if (price < 30) {
-    return 150; // Requires 3 strikes
+    return 150;
   } else if (price < 150) {
-    return 250; // Requires 5 strikes
+    return 250;
   } else {
     const scaledHP = 300 + Math.floor((price - 150) * 0.25);
     return Math.min(scaledHP, 1000);
@@ -419,7 +431,7 @@ function startBattle() {
   battleState.monsterName = monster.name;
 
   document.getElementById('enemy-name').textContent = monster.name;
-  document.getElementById('enemy-sprite').innerHTML = `<img src="${monster.sprite}" alt="${monster.name}" class="character-img" />`;
+  document.getElementById('enemy-sprite').innerHTML = `<img src="${monster.sprite}?sync=${Date.now()}" alt="${monster.name}" class="character-img" />`;
 
   document.getElementById('player-battle-name').textContent = currentUser ? currentUser.trainer_name : 'Hero';
   document.getElementById('player-battle-lvl').textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
@@ -499,6 +511,7 @@ function processPlayerAttack(attackType) {
     submitBtn.textContent = 'Striking...';
   }
 
+  // Player Strike Deals 50 Damage
   const damageDealt = 50;
   battleState.enemyHP = Math.max(0, battleState.enemyHP - damageDealt);
   updateHPUI();
@@ -507,11 +520,38 @@ function processPlayerAttack(attackType) {
     setDialogue(`FINAL STRIKE! Your reflection landed the finishing blow on ${battleState.monsterName}!`);
     setTimeout(victorySavedMoney, 1200);
   } else {
-    setDialogue(`Solid reflection! You dealt ${damageDealt} damage to ${battleState.monsterName}. It still has ${battleState.enemyHP} HP remaining!`);
+    // Monster Counter-Attacks using user's real financial metrics!
+    const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
+    const foodPrice = (currentUser && currentUser.food_price > 0) ? currentUser.food_price : 7.50;
+    const eventPrice = (currentUser && currentUser.event_price > 0) ? currentUser.event_price : 25.00;
+
+    const hoursWorked = (battleState.price / wage).toFixed(1);
+    const snacksEquivalent = Math.round(battleState.price / foodPrice);
+    const eventsEquivalent = (battleState.price / eventPrice).toFixed(1);
+
+    const monsterTaunts = [
+      `"${battleState.itemName} isn't just $${battleState.price.toFixed(2)}—that costs you ${hoursWorked} hours of work!"`,
+      `"Think fast! That purchase equals buying ${snacksEquivalent} favorite snacks in one go!"`,
+      `"Is it worth giving up ${eventsEquivalent} weekend outings for this single item?"`
+    ];
+
+    const chosenTaunt = monsterTaunts[Math.floor(Math.random() * monsterTaunts.length)];
+
+    const monsterDamage = 15;
+    battleState.playerHP = Math.max(0, battleState.playerHP - monsterDamage);
+
+    setDialogue(`You dealt ${damageDealt} DMG! ${battleState.monsterName} counter-attacks: ${chosenTaunt} (-${monsterDamage} HP)`);
+    updateHPUI();
+
     setTimeout(() => {
-      battleState.isProcessing = false;
-      showAttackMenu();
-    }, 1500);
+      if (battleState.playerHP <= 0) {
+        setDialogue(`${battleState.monsterName} overwhelmed your resolve! You gave in to the impulse.`);
+        setTimeout(giveInAndSpend, 1500);
+      } else {
+        battleState.isProcessing = false;
+        showAttackMenu();
+      }
+    }, 2500);
   }
 }
 
