@@ -1,6 +1,11 @@
 // ==========================================
 // LOCAL STORAGE AUTH & GAME STATE
 // ==========================================
+// Connect to Supabase
+const SUPABASE_URL = 'https://rbcxqtonglxehaqceavh.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiY3hxdG9uZ2x4ZWhhcWNlYXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NTc1MTQsImV4cCI6MjEwMjEzMzUxNH0.46PzKlyyWM1VH6ff7jYD8Qwjw2fHUNNH_obvxKr0Ve8';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
