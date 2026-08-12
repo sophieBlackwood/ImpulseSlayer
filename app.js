@@ -183,7 +183,6 @@ function renderCharacterAvatar(containerId, user) {
   equippedList.forEach(itemEntry => {
     if (!itemEntry || itemEntry === 'BASE') return;
 
-    // Check if itemEntry is a manifest key (e.g. 'hat_crown') or a raw file path
     let costumePath = itemEntry;
     if (ITEM_MANIFEST[itemEntry]) {
       costumePath = ITEM_MANIFEST[itemEntry].path;
@@ -216,7 +215,6 @@ function handleLocalSignup(e) {
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
 
-  // Issue A Fix: Don't automatically reset or force email error behavior
   const existingUser = localStorage.getItem(`user_${email}`);
   if (existingUser) {
     showNotification("An account with this email already exists. Please log in.", "error");
@@ -253,7 +251,6 @@ function handleLocalLogin(e) {
   const email = document.getElementById('login-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('login-pass').value.slice(0, 50);
 
-  // Issue C Fix: Controlled single user lookup and single notification call
   const userData = localStorage.getItem(`user_${email}`);
   if (!userData) {
     showNotification("User account not found!", "error");
@@ -368,7 +365,6 @@ function checkBossAvailability() {
 // 3. COMBAT, ANIMATION & COUNTER-ATTACK SYSTEM
 // ==========================================
 
-// Mapping categories to specific background image options
 const CATEGORY_BACKGROUNDS = {
   tech: [
     "assets/backgrounds/bg-tech-1.png",
@@ -383,7 +379,7 @@ const CATEGORY_BACKGROUNDS = {
     "assets/backgrounds/bg-food-2.png"
   ],
   sub: [
-    "assets/backgrounds/bg-sub-1.png"
+    "assets/backgrounds/bg-sub-1.png",
     "assets/backgrounds/bg-sub-2.png"
   ],
   general: [
@@ -406,10 +402,6 @@ function setBattleBackgroundByCategory(category) {
   battleScreen.style.backgroundRepeat = 'no-repeat';
 }
 
-/**
- * Generates a dynamic monster attack pulling directly from currentUser financial stats.
- * Uses fallback default stats if currentUser data is incomplete.
- */
 function getRandomMonsterAttack() {
   const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
   const foodPrice = (currentUser && currentUser.food_price > 0) ? currentUser.food_price : 7.50;
@@ -534,7 +526,6 @@ function startBattle() {
   battleState.maxEnemyHP = monsterHP;
   battleState.enemyHP = monsterHP;
 
-  // Level Perk: Player Max HP scales up with Trainer Level
   const maxHP = typeof getPlayerMaxHP === 'function' ? getPlayerMaxHP() : 100;
   battleState.maxPlayerHP = maxHP;
   battleState.playerHP = maxHP;
@@ -570,7 +561,6 @@ function startBattle() {
     enemyContainer.classList.remove('anim-monster-attack', 'anim-monster-retreat');
   }
 
-  // Set category-specific background image
   setBattleBackgroundByCategory(category);
 
   updateHPUI();
@@ -661,11 +651,10 @@ function processPlayerAttack(attackType) {
     submitBtn.textContent = 'Striking...';
   }
 
-  // Trigger Player Attack Animation
   const playerContainer = document.getElementById('player-sprite');
   if (playerContainer) {
     playerContainer.classList.remove('anim-player-attack');
-    void playerContainer.offsetWidth; // Reflow
+    void playerContainer.offsetWidth;
     playerContainer.classList.add('anim-player-attack');
   }
 
@@ -688,7 +677,6 @@ function processPlayerAttack(attackType) {
   } else {
     setDialogue(`You dealt ${damageDealt} DMG to ${battleState.monsterName}!${healMsg}`);
 
-    // Pause 2 seconds before monster counter-attacks
     setTimeout(() => {
       const missChance = typeof getEnemyMissChance === 'function' ? getEnemyMissChance() : 0.25;
       const isMiss = Math.random() < missChance;
@@ -698,15 +686,13 @@ function processPlayerAttack(attackType) {
         battleState.isProcessing = false;
         showAttackMenu();
       } else {
-        // Trigger Monster Attack Animation
         const enemyContainer = document.getElementById('enemy-sprite');
         if (enemyContainer) {
           enemyContainer.classList.remove('anim-monster-attack');
-          void enemyContainer.offsetWidth; // Reflow
+          void enemyContainer.offsetWidth;
           enemyContainer.classList.add('anim-monster-attack');
         }
 
-        // Safe fetch with fallback guard
         let chosenAttack = null;
         try {
           if (typeof getRandomMonsterAttack === 'function') {
@@ -716,7 +702,6 @@ function processPlayerAttack(attackType) {
           console.error("Error retrieving monster attack:", err);
         }
 
-        // Fallback default object if function missing or invalid
         if (!chosenAttack || typeof chosenAttack.damage !== 'number') {
           const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
           const hoursWorked = (battleState.price / wage).toFixed(1);
@@ -828,7 +813,6 @@ function updateMetricsSettings() {
   }
 }
 
-// Issue B Fix: Fully in-app styled modal prompt for account deletion
 function deleteAccount() {
   const existingModal = document.getElementById('delete-modal');
   if (existingModal) existingModal.remove();
