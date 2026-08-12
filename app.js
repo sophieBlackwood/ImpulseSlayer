@@ -384,7 +384,9 @@ const CATEGORY_BACKGROUNDS = {
   ],
   general: [
     "assets/backgrounds/bg-general-1.png",
-    "assets/backgrounds/bg-general-2.png"
+    "assets/backgrounds/bg-general-2.png",
+    "assets/backgrounds/bg-general-3.png",
+    "assets/backgrounds/bg-general-4.png"
   ]
 };
 
@@ -564,7 +566,7 @@ function startBattle() {
   setBattleBackgroundByCategory(category);
 
   updateHPUI();
-  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP! Perform multiple mindful reflections to defeat it.`);
+  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP!`);
   
   showAttackMenu();
   showScreen('screen-battle');
