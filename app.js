@@ -368,6 +368,44 @@ function checkBossAvailability() {
 // 3. COMBAT, ANIMATION & COUNTER-ATTACK SYSTEM
 // ==========================================
 
+// Mapping categories to specific background image options
+const CATEGORY_BACKGROUNDS = {
+  tech: [
+    "assets/backgrounds/bg-tech-1.png",
+    "assets/backgrounds/bg-tech-2.png"
+  ],
+  fashion: [
+    "assets/backgrounds/bg-fashion-1.png",
+    "assets/backgrounds/bg-fashion-2.png"
+  ],
+  food: [
+    "assets/backgrounds/bg-food-1.png",
+    "assets/backgrounds/bg-food-2.png"
+  ],
+  sub: [
+    "assets/backgrounds/bg-sub-1.png"
+    "assets/backgrounds/bg-sub-2.png"
+  ],
+  general: [
+    "assets/backgrounds/bg-general-1.png",
+    "assets/backgrounds/bg-general-2.png"
+  ]
+};
+
+function setBattleBackgroundByCategory(category) {
+  const battleScreen = document.getElementById('screen-battle');
+  if (!battleScreen) return;
+
+  const bgList = CATEGORY_BACKGROUNDS[category] || CATEGORY_BACKGROUNDS.general;
+  const randomIndex = Math.floor(Math.random() * bgList.length);
+  const selectedBg = bgList[randomIndex];
+
+  battleScreen.style.backgroundImage = `url('${selectedBg}')`;
+  battleScreen.style.backgroundSize = 'cover';
+  battleScreen.style.backgroundPosition = 'center';
+  battleScreen.style.backgroundRepeat = 'no-repeat';
+}
+
 /**
  * Generates a dynamic monster attack pulling directly from currentUser financial stats.
  * Uses fallback default stats if currentUser data is incomplete.
@@ -532,6 +570,9 @@ function startBattle() {
     enemyContainer.classList.remove('anim-monster-attack', 'anim-monster-retreat');
   }
 
+  // Set category-specific background image
+  setBattleBackgroundByCategory(category);
+
   updateHPUI();
   setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP! Perform multiple mindful reflections to defeat it.`);
   
@@ -665,7 +706,7 @@ function processPlayerAttack(attackType) {
           enemyContainer.classList.add('anim-monster-attack');
         }
 
-        // Fetch dynamic attack with safe execution fallback
+        // Safe fetch with fallback guard
         let chosenAttack = null;
         try {
           if (typeof getRandomMonsterAttack === 'function') {
