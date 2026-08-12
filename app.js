@@ -580,6 +580,14 @@ function processPlayerAttack(attackType) {
 }
 
 function victorySavedMoney() {
+  const enemyContainer = document.getElementById('enemy-sprite');
+  
+  if (enemyContainer) {
+    enemyContainer.classList.remove('anim-monster-attack');
+    void enemyContainer.offsetWidth; // Force reflow
+    enemyContainer.classList.add('anim-monster-retreat');
+  }
+
   if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
   showNotification(`Victory! You defeated ${battleState.monsterName} and saved $${battleState.price.toFixed(2)}.`, "success");
 
@@ -594,7 +602,10 @@ function victorySavedMoney() {
     date: new Date().toLocaleDateString()
   });
 
-  checkVaultDirect();
+  // Delay screen transition until the slide-out finishes
+  setTimeout(() => {
+    checkVaultDirect();
+  }, 500); 
 }
 
 function giveInAndSpend() {
