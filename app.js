@@ -173,16 +173,24 @@ function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
+  // 1. Resolve base sprite
   const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
-  const syncedBaseSprite = `${baseSprite}?sync=${syncAnimToken}`;
   const equippedList = user.equipped_items || [];
 
-  let layersHTML = `<img src="${syncedBaseSprite}" alt="Base Hero Idle" class="character-img base-layer" />`;
+  let layersHTML = `<img src="${baseSprite}" alt="Base Hero Idle" class="character-img base-layer" />`;
 
-  equippedList.forEach(path => {
-    if (path && path !== 'BASE') {
-      const syncedCostumePath = `${path}?sync=${syncAnimToken}`;
-      layersHTML += `<img src="${syncedCostumePath}" alt="Costume Layer" class="character-img costume-overlay-layer" />`;
+  // 2. Resolve costume overlay layers reliably
+  equippedList.forEach(itemEntry => {
+    if (!itemEntry || itemEntry === 'BASE') return;
+
+    // Check if itemEntry is a manifest key (e.g. 'hat_crown') or a raw file path
+    let costumePath = itemEntry;
+    if (ITEM_MANIFEST[itemEntry]) {
+      costumePath = ITEM_MANIFEST[itemEntry].path;
+    }
+
+    if (costumePath) {
+      layersHTML += `<img src="${costumePath}" alt="Costume Layer" class="character-img costume-overlay-layer" />`;
     }
   });
 
