@@ -442,7 +442,7 @@ function startBattle() {
   battleState.maxEnemyHP = monsterHP;
   battleState.enemyHP = monsterHP;
 
-  // Level Perk: Player Max HP scales up with Trainer Level
+  // Player Max HP scales up with Trainer Level
   const maxHP = typeof getPlayerMaxHP === 'function' ? getPlayerMaxHP() : 100;
   battleState.maxPlayerHP = maxHP;
   battleState.playerHP = maxHP;
@@ -469,7 +469,6 @@ function startBattle() {
 
   const playerContainer = document.getElementById('player-sprite');
 
-  // Issue D Fix: Remove animation classes on entry
   if (playerContainer) {
     playerContainer.classList.remove('anim-player-attack');
     playerContainer.style.transform = 'scale(1.3)';
@@ -502,7 +501,6 @@ function setDialogue(msg) {
   if (dialogueBox) dialogueBox.textContent = msg;
 }
 
-// Issue E Fix: Added Mindful Rest action to battle choices
 function showAttackMenu() {
   const container = document.getElementById('quiz-answers');
   if (!container) return;
@@ -576,7 +574,6 @@ function processPlayerAttack(attackType) {
     playerContainer.classList.add('anim-player-attack');
   }
 
-  // Issue E logic: "heal" gives +25 HP and deals 20 DMG; standard strikes deal 50 DMG
   let damageDealt = 50;
   let healMsg = '';
 
@@ -598,7 +595,6 @@ function processPlayerAttack(attackType) {
 
     // Pause 2 seconds before monster counter-attacks
     setTimeout(() => {
-      // Level Perk: Enemy miss chance increases with higher levels
       const missChance = typeof getEnemyMissChance === 'function' ? getEnemyMissChance() : 0.25;
       const isMiss = Math.random() < missChance;
 
@@ -615,10 +611,8 @@ function processPlayerAttack(attackType) {
           enemyContainer.classList.add('anim-monster-attack');
         }
 
-        // Pull dynamic attack pool & damage stats
-        const chosenAttack = typeof getRandomMonsterAttack === 'function' 
-          ? getRandomMonsterAttack() 
-          : { name: "Impulse Attack", taunt: `"${battleState.itemName} is tempting!"`, damage: 15 };
+        // Fetch dynamic attack calculated from user stats
+        const chosenAttack = getRandomMonsterAttack();
 
         battleState.playerHP = Math.max(0, battleState.playerHP - chosenAttack.damage);
 
@@ -653,7 +647,6 @@ function victorySavedMoney() {
   showNotification(`Victory! You defeated ${battleState.monsterName} and saved $${battleState.price.toFixed(2)}.`, "success");
 
   if (currentUser) {
-    // Level Perk: Vault lock cooldown decreases with higher levels
     const cooldownMins = typeof getCooldownMinutes === 'function' ? getCooldownMinutes() : 15;
     currentUser.vault_unlock_time = Date.now() + (cooldownMins * 60 * 1000);
   }
@@ -682,6 +675,7 @@ function giveInAndSpend() {
 
   checkVaultDirect();
 }
+
 // ==========================================
 // 4. SETTINGS & ACCOUNT ACTIONS
 // ==========================================
