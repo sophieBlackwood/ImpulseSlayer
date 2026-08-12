@@ -2,10 +2,11 @@
 // LOCAL STORAGE AUTH & GAME STATE
 // ==========================================
 // Connect to Supabase
+// Connect to Supabase
 const SUPABASE_URL = 'https://rbcxqtonglxehaqceavh.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiY3hxdG9uZ2x4ZWhhcWNlYXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NTc1MTQsImV4cCI6MjEwMjEzMzUxNH0.46PzKlyyWM1VH6ff7jYD8Qwjw2fHUNNH_obvxKr0Ve8';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
@@ -220,8 +221,8 @@ async function handleLocalSignup(e) {
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
 
-  // Ask Supabase to create the user account
-  const { data, error } = await supabase.auth.signUp({
+  // 1. Create account in Supabase
+  const { data, error } = await supabaseClient.auth.signUp({
     email: email,
     password: pass,
     options: {
@@ -229,13 +230,12 @@ async function handleLocalSignup(e) {
     }
   });
 
-  // If Supabase finds a problem (e.g., password too short)
   if (error) {
     showNotification(error.message, "error");
     return;
   }
 
-  // Create the exact currentUser structure your game expects
+  // 2. Initialize new hero profile
   currentUser = {
     id: data.user.id,
     email: email,
@@ -248,8 +248,8 @@ async function handleLocalSignup(e) {
     saved_total: 0,
     base_sprite_static: 'assets/characters/hero-male.png',
     base_sprite_idle: 'assets/characters/hero-male-idle.gif',
-    equipped_items: [],
-    inventory: ['hat_default'],
+    equipped_items: [],         // Start with no costume layers equipped
+    inventory: ['hat_default'],  // Starter slot placeholder
     logs: [],
     vault_unlock_time: null
   };
@@ -264,7 +264,7 @@ async function handleLocalLogin(e) {
   const pass = document.getElementById('login-pass').value.slice(0, 50);
 
   // Ask Supabase to check the password
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
     email: email,
     password: pass
   });
@@ -279,6 +279,8 @@ async function handleLocalLogin(e) {
   const savedData = localStorage.getItem(`user_${email}`);
   if (savedData) {
     currentUser = JSON.parse(savedData);
+  } if (savedData) {
+    currentUser = JSON.parse(savedData);
   } else {
     currentUser = {
       id: data.user.id,
@@ -290,9 +292,15 @@ async function handleLocalLogin(e) {
       lvl: 1,
       xp: 0,
       saved_total: 0,
+      base_sprite_static: 'assets/characters/hero-male.png',
       base_sprite_idle: 'assets/characters/hero-male-idle.gif',
-      equipped_items: []
+      equipped_items: [],
+      inventory: ['hat_default'],
+      logs: [],
+      vault_unlock_time: null
     };
+    saveUserData(); // Save to local storage right away
+  }
   }
 
   loadTrainerSession();
