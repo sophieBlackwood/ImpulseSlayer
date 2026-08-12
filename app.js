@@ -438,6 +438,13 @@ function startBattle() {
 
   renderCharacterAvatar('player-sprite', currentUser);
 
+  // Enlarge hero character specifically during battle arena display
+  const playerContainer = document.getElementById('player-sprite');
+  if (playerContainer) {
+    playerContainer.style.transform = 'scale(1.3)';
+    playerContainer.style.transformOrigin = 'bottom center';
+  }
+
   updateHPUI();
   setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP! Perform multiple mindful reflections to defeat it.`);
   
