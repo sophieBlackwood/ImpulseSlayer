@@ -1,3 +1,6 @@
+// ==========================================
+// LOCAL STORAGE AUTH & GAME STATE
+// ==========================================
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
@@ -69,6 +72,12 @@ const QUESTION_POOLS = {
     "Could this money cover an emergency or unexpected expense down the road?",
     "Are you sacrificing a major reward later for instant gratification now?",
     "How close does saving this money put you to your next major milestone?"
+  ],
+  heal: [
+    "Take a breath: What is a small daily joy you can appreciate for free right now?",
+    "How can taking a pause right now help protect your financial freedom?",
+    "What positive habits are you building by taking time to rethink this purchase?",
+    "If you step away from the checkout right now, how will you feel tomorrow?"
   ]
 };
 
@@ -122,6 +131,7 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
+// Override default browser alerts with in-app notifications
 window.alert = function(msg) {
   showNotification(msg, 'info');
 };
@@ -198,9 +208,11 @@ function handleLocalSignup(e) {
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
 
+  // Issue A Fix: Don't automatically reset or force email error behavior
   const existingUser = localStorage.getItem(`user_${email}`);
   if (existingUser) {
-    showNotification("Existing profile reset for signup.", "info");
+    showNotification("An account with this email already exists. Please log in.", "error");
+    return;
   }
 
   const newUser = {
@@ -233,9 +245,10 @@ function handleLocalLogin(e) {
   const email = document.getElementById('login-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('login-pass').value.slice(0, 50);
 
+  // Issue C Fix: Controlled single user lookup and single notification call
   const userData = localStorage.getItem(`user_${email}`);
   if (!userData) {
-    showNotification("User not found!", "error");
+    showNotification("User account not found!", "error");
     return;
   }
 
@@ -427,23 +440,29 @@ function startBattle() {
   const monster = getMonsterData(name, price, category);
   battleState.monsterName = monster.name;
 
+  const enemyContainer = document.getElementById('enemy-sprite');
   document.getElementById('enemy-name').textContent = monster.name;
-  document.getElementById('enemy-sprite').innerHTML = `<img src="${monster.sprite}?sync=${Date.now()}" alt="${monster.name}" class="character-img" />`;
+  enemyContainer.innerHTML = `<img src="${monster.sprite}?sync=${Date.now()}" alt="${monster.name}" class="character-img" />`;
 
   document.getElementById('player-battle-name').textContent = currentUser ? currentUser.trainer_name : 'Hero';
   document.getElementById('player-battle-lvl').textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
 
   renderCharacterAvatar('player-sprite', currentUser);
 
-  // Enlarge player sprite during combat
   const playerContainer = document.getElementById('player-sprite');
+
+  // Issue D Fix: Remove any animation classes from previous battles so sprites do not attack on entry
   if (playerContainer) {
+    playerContainer.classList.remove('anim-player-attack');
     playerContainer.style.transform = 'scale(1.3)';
     playerContainer.style.transformOrigin = 'bottom center';
   }
+  if (enemyContainer) {
+    enemyContainer.classList.remove('anim-monster-attack', 'anim-monster-retreat');
+  }
 
   updateHPUI();
-  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP!`);
+  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP! Perform multiple mindful reflections to defeat it.`);
   
   showAttackMenu();
   showScreen('screen-battle');
@@ -461,6 +480,7 @@ function setDialogue(msg) {
   document.getElementById('battle-text').textContent = msg;
 }
 
+// Issue E Fix: Added Mindful Rest action to battle choices
 function showAttackMenu() {
   const container = document.getElementById('quiz-answers');
   container.innerHTML = `
@@ -473,6 +493,9 @@ function showAttackMenu() {
       </button>
       <button class="attack-btn" onclick="startQuestionFlow('wait')">
         Opportunity Cost<small>Explore alternative uses</small>
+      </button>
+      <button class="attack-btn" onclick="startQuestionFlow('heal')">
+        Mindful Rest<small>+25 HP Heal & +20 DMG</small>
       </button>
       <button class="attack-btn flee" onclick="giveInAndSpend()">
         Give In & Buy<small>Resign and purchase</small>
@@ -491,11 +514,15 @@ function startQuestionFlow(attackType) {
     setDialogue(`Reflection Question: ${selectedQuestion}`);
   }
 
+  const isHeal = attackType === 'heal';
+
   container.innerHTML = `
     <div class="input-field">
       <input type="text" id="user-reflection" placeholder="Type your reflection answer (max 80 chars)..." maxlength="80" autofocus />
     </div>
-    <button id="btn-submit-reflection" class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">Submit Strike</button>
+    <button id="btn-submit-reflection" class="btn btn-primary" onclick="processPlayerAttack('${attackType}')">
+      ${isHeal ? 'Rest & Strike' : 'Submit Strike'}
+    </button>
   `;
 }
 
@@ -515,7 +542,7 @@ function processPlayerAttack(attackType) {
     submitBtn.textContent = 'Striking...';
   }
 
-  // 1. Trigger Player Attack Animation (Diagonal Dart Up-Right)
+  // Trigger Player Attack Animation
   const playerContainer = document.getElementById('player-sprite');
   if (playerContainer) {
     playerContainer.classList.remove('anim-player-attack');
@@ -523,8 +550,17 @@ function processPlayerAttack(attackType) {
     playerContainer.classList.add('anim-player-attack');
   }
 
-  // Apply Player Damage
-  const damageDealt = 50;
+  // Issue E logic: "heal" gives +25 HP and deals 20 DMG; standard strikes deal 50 DMG
+  let damageDealt = 50;
+  let healMsg = '';
+
+  if (attackType === 'heal') {
+    damageDealt = 20;
+    const healedHP = Math.min(25, battleState.maxPlayerHP - battleState.playerHP);
+    battleState.playerHP = Math.min(battleState.maxPlayerHP, battleState.playerHP + 25);
+    healMsg = ` Restored +${healedHP} HP!`;
+  }
+
   battleState.enemyHP = Math.max(0, battleState.enemyHP - damageDealt);
   updateHPUI();
 
@@ -532,50 +568,59 @@ function processPlayerAttack(attackType) {
     setDialogue(`FINAL STRIKE! Your reflection landed the finishing blow on ${battleState.monsterName}!`);
     setTimeout(victorySavedMoney, 1200);
   } else {
-    setDialogue(`You dealt ${damageDealt} DMG to ${battleState.monsterName}!`);
+    setDialogue(`You dealt ${damageDealt} DMG to ${battleState.monsterName}!${healMsg}`);
 
-    // 2. Pause 1 second before the monster counter-attacks
+    // Pause 2 seconds before monster counter-attacks
     setTimeout(() => {
-      // Trigger Monster Attack Animation (Diagonal Dart Down-Left)
-      const enemyContainer = document.getElementById('enemy-sprite');
-      if (enemyContainer) {
-        enemyContainer.classList.remove('anim-monster-attack');
-        void enemyContainer.offsetWidth; // Trigger reflow
-        enemyContainer.classList.add('anim-monster-attack');
+      // Issue F Fix: 25% chance for the enemy to miss its attack
+      const isMiss = Math.random() < 0.25;
+
+      if (isMiss) {
+        setDialogue(`${battleState.monsterName} attacked but MISSED! You took 0 damage.`);
+        battleState.isProcessing = false;
+        showAttackMenu();
+      } else {
+        // Trigger Monster Attack Animation
+        const enemyContainer = document.getElementById('enemy-sprite');
+        if (enemyContainer) {
+          enemyContainer.classList.remove('anim-monster-attack');
+          void enemyContainer.offsetWidth; // Trigger reflow
+          enemyContainer.classList.add('anim-monster-attack');
+        }
+
+        const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
+        const foodPrice = (currentUser && currentUser.food_price > 0) ? currentUser.food_price : 7.50;
+        const eventPrice = (currentUser && currentUser.event_price > 0) ? currentUser.event_price : 25.00;
+
+        const hoursWorked = (battleState.price / wage).toFixed(1);
+        const snacksEquivalent = Math.round(battleState.price / foodPrice);
+        const eventsEquivalent = (battleState.price / eventPrice).toFixed(1);
+
+        const monsterTaunts = [
+          `"${battleState.itemName} isn't just $${battleState.price.toFixed(2)}—that costs you ${hoursWorked} hours of work!"`,
+          `"Think fast! That purchase equals buying ${snacksEquivalent} favorite snacks in one go!"`,
+          `"Is it worth giving up ${eventsEquivalent} weekend outings for this single item?"`
+        ];
+
+        const chosenTaunt = monsterTaunts[Math.floor(Math.random() * monsterTaunts.length)];
+        const monsterDamage = 15;
+        battleState.playerHP = Math.max(0, battleState.playerHP - monsterDamage);
+
+        setDialogue(`${battleState.monsterName} counter-attacks: ${chosenTaunt} (-${monsterDamage} HP)`);
+        updateHPUI();
+
+        setTimeout(() => {
+          if (battleState.playerHP <= 0) {
+            setDialogue(`${battleState.monsterName} overwhelmed your resolve! You gave in to the impulse.`);
+            setTimeout(giveInAndSpend, 1500);
+          } else {
+            battleState.isProcessing = false;
+            showAttackMenu();
+          }
+        }, 1500);
       }
 
-      const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
-      const foodPrice = (currentUser && currentUser.food_price > 0) ? currentUser.food_price : 7.50;
-      const eventPrice = (currentUser && currentUser.event_price > 0) ? currentUser.event_price : 25.00;
-
-      const hoursWorked = (battleState.price / wage).toFixed(1);
-      const snacksEquivalent = Math.round(battleState.price / foodPrice);
-      const eventsEquivalent = (battleState.price / eventPrice).toFixed(1);
-
-      const monsterTaunts = [
-        `"${battleState.itemName} isn't just $${battleState.price.toFixed(2)}—that costs you ${hoursWorked} hours of work!"`,
-        `"Think fast! That purchase equals buying ${snacksEquivalent} favorite snacks in one go!"`,
-        `"Is it worth giving up ${eventsEquivalent} weekend outings for this single item?"`
-      ];
-
-      const chosenTaunt = monsterTaunts[Math.floor(Math.random() * monsterTaunts.length)];
-      const monsterDamage = 15;
-      battleState.playerHP = Math.max(0, battleState.playerHP - monsterDamage);
-
-      setDialogue(`${battleState.monsterName} counter-attacks: ${chosenTaunt} (-${monsterDamage} HP)`);
-      updateHPUI();
-
-      setTimeout(() => {
-        if (battleState.playerHP <= 0) {
-          setDialogue(`${battleState.monsterName} overwhelmed your resolve! You gave in to the impulse.`);
-          setTimeout(giveInAndSpend, 1500);
-        } else {
-          battleState.isProcessing = false;
-          showAttackMenu();
-        }
-      }, 1500);
-
-    }, 2000); // 2 second turn delay
+    }, 2000);
   }
 }
 
@@ -584,7 +629,7 @@ function victorySavedMoney() {
   
   if (enemyContainer) {
     enemyContainer.classList.remove('anim-monster-attack');
-    void enemyContainer.offsetWidth; // Force reflow
+    void enemyContainer.offsetWidth;
     enemyContainer.classList.add('anim-monster-retreat');
   }
 
@@ -602,10 +647,9 @@ function victorySavedMoney() {
     date: new Date().toLocaleDateString()
   });
 
-  // Delay screen transition until the slide-out finishes
   setTimeout(() => {
     checkVaultDirect();
-  }, 500); 
+  }, 500);
 }
 
 function giveInAndSpend() {
@@ -660,15 +704,41 @@ function updateMetricsSettings() {
   }
 }
 
+// Issue B Fix: Fully in-app styled modal prompt for account deletion
 function deleteAccount() {
-  if (confirm("Are you sure you want to delete your account? This will erase all your progress.")) {
-    if (currentUser) {
-      localStorage.removeItem(`user_${currentUser.email}`);
-      localStorage.removeItem('session_user');
-      currentUser = null;
-      showNotification("Account deleted.", "info");
-      showScreen('screen-login');
-    }
+  const existingModal = document.getElementById('delete-modal');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'delete-modal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h3>Delete Account?</h3>
+      <p>Are you sure you want to delete your account? This action cannot be undone and all savings progress will be lost.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDeleteAccount()">Delete</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('delete-modal');
+  if (modal) modal.remove();
+}
+
+function confirmDeleteAccount() {
+  closeDeleteModal();
+  if (currentUser) {
+    localStorage.removeItem(`user_${currentUser.email}`);
+    localStorage.removeItem('session_user');
+    currentUser = null;
+    showNotification("Account successfully deleted.", "info");
+    showScreen('screen-login');
   }
 }
 
