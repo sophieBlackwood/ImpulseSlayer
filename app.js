@@ -441,25 +441,35 @@ function startBattle() {
   battleState.category = category;
   battleState.maxEnemyHP = monsterHP;
   battleState.enemyHP = monsterHP;
-  battleState.maxPlayerHP = 100;
-  battleState.playerHP = 100;
+
+  // Level Perk: Player Max HP scales up with Trainer Level
+  const maxHP = typeof getPlayerMaxHP === 'function' ? getPlayerMaxHP() : 100;
+  battleState.maxPlayerHP = maxHP;
+  battleState.playerHP = maxHP;
   battleState.isProcessing = false;
 
   const monster = getMonsterData(name, price, category);
   battleState.monsterName = monster.name;
 
   const enemyContainer = document.getElementById('enemy-sprite');
-  document.getElementById('enemy-name').textContent = monster.name;
-  enemyContainer.innerHTML = `<img src="${monster.sprite}?sync=${Date.now()}" alt="${monster.name}" class="character-img" />`;
+  const enemyNameEl = document.getElementById('enemy-name');
+  if (enemyNameEl) enemyNameEl.textContent = monster.name;
+  if (enemyContainer) {
+    enemyContainer.innerHTML = `<img src="${monster.sprite}?sync=${Date.now()}" alt="${monster.name}" class="character-img" />`;
+  }
 
-  document.getElementById('player-battle-name').textContent = currentUser ? currentUser.trainer_name : 'Hero';
-  document.getElementById('player-battle-lvl').textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
+  const playerNameEl = document.getElementById('player-battle-name');
+  const playerLvlEl = document.getElementById('player-battle-lvl');
+  if (playerNameEl) playerNameEl.textContent = currentUser ? currentUser.trainer_name : 'Hero';
+  if (playerLvlEl) playerLvlEl.textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
 
-  renderCharacterAvatar('player-sprite', currentUser);
+  if (typeof renderCharacterAvatar === 'function') {
+    renderCharacterAvatar('player-sprite', currentUser);
+  }
 
   const playerContainer = document.getElementById('player-sprite');
 
-  // Issue D Fix: Remove any animation classes from previous battles so sprites do not attack on entry
+  // Issue D Fix: Remove animation classes on entry
   if (playerContainer) {
     playerContainer.classList.remove('anim-player-attack');
     playerContainer.style.transform = 'scale(1.3)';
@@ -480,17 +490,23 @@ function updateHPUI() {
   const enemyPct = Math.max(0, (battleState.enemyHP / battleState.maxEnemyHP) * 100);
   const playerPct = Math.max(0, (battleState.playerHP / battleState.maxPlayerHP) * 100);
   
-  document.getElementById('enemy-hp').style.width = `${enemyPct}%`;
-  document.getElementById('player-hp').style.width = `${playerPct}%`;
+  const enemyBar = document.getElementById('enemy-hp');
+  const playerBar = document.getElementById('player-hp');
+
+  if (enemyBar) enemyBar.style.width = `${enemyPct}%`;
+  if (playerBar) playerBar.style.width = `${playerPct}%`;
 }
 
 function setDialogue(msg) {
-  document.getElementById('battle-text').textContent = msg;
+  const dialogueBox = document.getElementById('battle-text');
+  if (dialogueBox) dialogueBox.textContent = msg;
 }
 
 // Issue E Fix: Added Mindful Rest action to battle choices
 function showAttackMenu() {
   const container = document.getElementById('quiz-answers');
+  if (!container) return;
+
   container.innerHTML = `
     <div class="attack-grid">
       <button class="attack-btn" onclick="startQuestionFlow('necessity')">
@@ -514,6 +530,8 @@ function showAttackMenu() {
 
 function startQuestionFlow(attackType) {
   const container = document.getElementById('quiz-answers');
+  if (!container) return;
+
   const pool = QUESTION_POOLS[attackType];
 
   if (pool && pool.length > 0) {
@@ -580,8 +598,9 @@ function processPlayerAttack(attackType) {
 
     // Pause 2 seconds before monster counter-attacks
     setTimeout(() => {
-      // Issue F Fix: 25% chance for the enemy to miss its attack
-      const isMiss = Math.random() < 0.25;
+      // Level Perk: Enemy miss chance increases with higher levels
+      const missChance = typeof getEnemyMissChance === 'function' ? getEnemyMissChance() : 0.25;
+      const isMiss = Math.random() < missChance;
 
       if (isMiss) {
         setDialogue(`${battleState.monsterName} attacked but MISSED! You took 0 damage.`);
@@ -596,25 +615,14 @@ function processPlayerAttack(attackType) {
           enemyContainer.classList.add('anim-monster-attack');
         }
 
-        const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
-        const foodPrice = (currentUser && currentUser.food_price > 0) ? currentUser.food_price : 7.50;
-        const eventPrice = (currentUser && currentUser.event_price > 0) ? currentUser.event_price : 25.00;
+        // Pull dynamic attack pool & damage stats
+        const chosenAttack = typeof getRandomMonsterAttack === 'function' 
+          ? getRandomMonsterAttack() 
+          : { name: "Impulse Attack", taunt: `"${battleState.itemName} is tempting!"`, damage: 15 };
 
-        const hoursWorked = (battleState.price / wage).toFixed(1);
-        const snacksEquivalent = Math.round(battleState.price / foodPrice);
-        const eventsEquivalent = (battleState.price / eventPrice).toFixed(1);
+        battleState.playerHP = Math.max(0, battleState.playerHP - chosenAttack.damage);
 
-        const monsterTaunts = [
-          `"${battleState.itemName} isn't just $${battleState.price.toFixed(2)}—that costs you ${hoursWorked} hours of work!"`,
-          `"Think fast! That purchase equals buying ${snacksEquivalent} favorite snacks in one go!"`,
-          `"Is it worth giving up ${eventsEquivalent} weekend outings for this single item?"`
-        ];
-
-        const chosenTaunt = monsterTaunts[Math.floor(Math.random() * monsterTaunts.length)];
-        const monsterDamage = 15;
-        battleState.playerHP = Math.max(0, battleState.playerHP - monsterDamage);
-
-        setDialogue(`${battleState.monsterName} counter-attacks: ${chosenTaunt} (-${monsterDamage} HP)`);
+        setDialogue(`${battleState.monsterName} used ${chosenAttack.name}! ${chosenAttack.taunt} (-${chosenAttack.damage} HP)`);
         updateHPUI();
 
         setTimeout(() => {
@@ -645,7 +653,9 @@ function victorySavedMoney() {
   showNotification(`Victory! You defeated ${battleState.monsterName} and saved $${battleState.price.toFixed(2)}.`, "success");
 
   if (currentUser) {
-    currentUser.vault_unlock_time = Date.now() + (15 * 60 * 1000);
+    // Level Perk: Vault lock cooldown decreases with higher levels
+    const cooldownMins = typeof getCooldownMinutes === 'function' ? getCooldownMinutes() : 15;
+    currentUser.vault_unlock_time = Date.now() + (cooldownMins * 60 * 1000);
   }
 
   updateTrainerStats(75, battleState.price, {
@@ -672,7 +682,6 @@ function giveInAndSpend() {
 
   checkVaultDirect();
 }
-
 // ==========================================
 // 4. SETTINGS & ACCOUNT ACTIONS
 // ==========================================
