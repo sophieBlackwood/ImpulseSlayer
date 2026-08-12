@@ -1109,11 +1109,10 @@ window.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('form-login');
   if (loginForm) loginForm.addEventListener('submit', handleLocalLogin);
 
-  const tabLogin = document.getElementById('tab-login');
-  const tabSignup = document.getElementById('tab-signup');
+ const tabLogin = document.getElementById('tab-login');
+const tabSignup = document.getElementById('tab-signup');
 
-  if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
-  if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
-
+if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
+if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
   loadTrainerSession();
 });
