@@ -443,7 +443,7 @@ function startBattle() {
   }
 
   updateHPUI();
-  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP! Perform multiple mindful reflections to defeat it.`);
+  setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP!`);
   
   showAttackMenu();
   showScreen('screen-battle');
@@ -575,7 +575,7 @@ function processPlayerAttack(attackType) {
         }
       }, 1500);
 
-    }, 1000); // 1 second turn delay
+    }, 2000); // 2 second turn delay
   }
 }
 
