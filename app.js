@@ -363,13 +363,15 @@ function getMonsterData(itemName, price, category) {
   } else if (category === 'fashion' || lowerName.includes('shoes') || lowerName.includes('clothes')) {
     return { name: "Fast-Fashion Phantom", sprite: "assets/monsters/monster-phantom-subscription.png" };
   } else if (category === 'food' || lowerName.includes('snack') || lowerName.includes('coffee')) {
-    return { name: "Snack-Attack Slime", sprite: "assets/monsters/monster-gremlin-splurge.png" };
+    // UPDATED: Now uses animated GIF if available, or PNG
+    return { name: "Snack-Attack Slime", sprite: "assets/monsters/splurge-gremlin-idle.gif" };
   } else if (category === 'sub' || lowerName.includes('subscription')) {
     return { name: "Recurring Subscription Imp", sprite: "assets/monsters/monster-phantom-subscription.png" };
   }
 
+  // UPDATED: Standard small purchase monster using your new 200px asset
   return price < 30 
-    ? { name: "Splurge Gremlin", sprite: "assets/monsters/monster-gremlin-splurge.png" }
+    ? { name: "Splurge Gremlin", sprite: "assets/monsters/splurge-gremlin-idle.gif" }
     : { name: "FOMO Beast", sprite: "assets/monsters/monster-beast-impulse.png" };
 }
 
