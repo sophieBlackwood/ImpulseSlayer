@@ -139,19 +139,30 @@ function showScreen(id) {
   if (target) target.classList.add('active');
 }
 
-function switchAuthTab(tab) {
-  const isLogin = tab === 'login';
-  const loginForm = document.getElementById('form-login');
-  const signupForm = document.getElementById('form-signup');
-  
-  if (loginForm) loginForm.classList.toggle('hidden', !isLogin);
-  if (signupForm) signupForm.classList.toggle('hidden', isLogin);
-  
-  const tabLogin = document.getElementById('tab-login');
-  const tabSignup = document.getElementById('tab-signup');
+// Function to switch between Auth Tabs
+function switchAuthTab(tabName) {
+  const loginForm = document.getElementById('login-form');
+  const signupForm = document.getElementById('signup-form');
+  const loginBtn = document.getElementById('tab-login-btn');
+  const signupBtn = document.getElementById('tab-signup-btn');
 
-  if (tabLogin) tabLogin.classList.toggle('active', isLogin);
-  if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
+  if (tabName === 'signup') {
+    // Show Signup Form
+    loginForm.classList.add('hidden');
+    signupForm.classList.remove('hidden');
+
+    // Update Tab Styles
+    loginBtn.classList.remove('active');
+    signupBtn.classList.add('active');
+  } else {
+    // Show Login Form
+    signupForm.classList.add('hidden');
+    loginForm.classList.remove('hidden');
+
+    // Update Tab Styles
+    signupBtn.classList.remove('active');
+    loginBtn.classList.add('active');
+  }
 }
 
 let syncAnimToken = Date.now();
