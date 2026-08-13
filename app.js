@@ -421,26 +421,26 @@ function checkBossAvailability() {
 
 const CATEGORY_BACKGROUNDS = {
   tech: [
-    "assets/backgrounds/bg-tech-1.png",
-    "assets/backgrounds/bg-tech-2.png"
+    "assets/background/bg-tech-1.png",
+    "assets/background/bg-tech-2.png"
   ],
   fashion: [
-    "assets/backgrounds/bg-fashion-1.png",
-    "assets/backgrounds/bg-fashion-2.png"
+    "assets/background/bg-fashion-1.png",
+    "assets/background/bg-fashion-2.png"
   ],
   food: [
-    "assets/backgrounds/bg-food-1.png",
-    "assets/backgrounds/bg-food-2.png"
+    "assets/background/bg-food-1.png",
+    "assets/background/bg-food-2.png"
   ],
   sub: [
-    "assets/backgrounds/bg-sub-1.png",
-    "assets/backgrounds/bg-sub-2.png"
+    "assets/background/bg-sub-1.png",
+    "assets/background/bg-sub-2.png"
   ],
   general: [
-    "assets/backgrounds/bg-general-1.png",
-    "assets/backgrounds/bg-general-2.png",
-    "assets/backgrounds/bg-general-3.png",
-    "assets/backgrounds/bg-general-4.png"
+    "assets/background/bg-general-1.png",
+    "assets/background/bg-general-2.png",
+    "assets/background/bg-general-3.png",
+    "assets/background/bg-general-4.png"
   ]
 };
 
