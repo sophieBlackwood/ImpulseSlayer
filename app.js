@@ -233,48 +233,62 @@ async function handleLocalSignup(e) {
 
 async function handleLocalLogin(e) {
   e.preventDefault();
+
   const email = document.getElementById('login-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('login-pass').value.slice(0, 50);
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
+  // 1. Sign in via Supabase Auth
+  const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
     email: email,
     password: pass
   });
 
-  if (error) {
-    showNotification(error.message, "error");
+  if (authError) {
+    showNotification(authError.message, "error");
     return;
   }
 
-  localStorage.setItem('session_user', email);
-  
-  const savedData = localStorage.getItem(`user_${email}`);
-  if (savedData) {
-    currentUser = JSON.parse(savedData);
-  } else {
-    currentUser = {
-      id: data.user.id,
-      email: email,
-      trainer_name: data.user.user_metadata?.trainer_name || 'Hero',
-      wage: 15.00,
-      food_price: 7.50,
-      event_price: 25.00,
-      lvl: 1,
-      xp: 0,
-      saved_total: 0,
-      base_sprite_static: 'assets/characters/hero-male.png',
-      base_sprite_idle: 'assets/characters/hero-male-idle.gif',
-      equipped_items: [],
-      inventory: ['hat_default'],
-      logs: [],
-      vault_unlock_time: null
-    };
-    saveUserData();
+  const user = authData.user;
+
+  // 2. Fetch the player's profile directly from the Supabase database
+  const { data: profile, error: dbError } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (dbError) {
+    console.error('Error fetching user profile:', dbError);
+    showNotification('Logged in, but failed to load profile data.', 'error');
+    return;
   }
 
+  // 3. Set your global currentUser to the data loaded from Supabase
+  currentUser = {
+    id: profile.id,
+    email: user.email,
+    trainer_name: profile.trainer_name || 'Hero',
+    wage: profile.wage || 15.00,
+    food_price: profile.food_price || 7.50,
+    event_price: profile.event_price || 25.00,
+    lvl: profile.level || 1,
+    xp: profile.exp || 0,
+    saved_total: profile.total_saved || 0,
+    base_sprite_static: profile.base_sprite_static || 'assets/characters/hero-male.png',
+    base_sprite_idle: profile.base_sprite_idle || 'assets/characters/hero-male-idle.gif',
+    equipped_items: profile.equipped_items || [],
+    inventory: profile.inventory || ['hat_default'],
+    logs: profile.logs || [],
+    vault_unlock_time: profile.vault_unlock_time || null
+  };
+
+  // 4. Optionally cache session locally and boot into the main game UI
+  localStorage.setItem('session_user', email);
+  saveUserData(); // Keeps a fallback copy in local storage if you still want it
+  
+  showNotification(`Welcome back, ${currentUser.trainer_name}!`, 'success');
   loadTrainerSession();
 }
-
 function saveFinancialProfile(e) {
   if (e) e.preventDefault();
   if (!currentUser) return showScreen('screen-login');
