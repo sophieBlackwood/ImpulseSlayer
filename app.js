@@ -192,10 +192,12 @@ function syncAllAnimations() {
 
 async function handleLocalSignup(e) {
   e.preventDefault();
+
   let name = document.getElementById('signup-name').value.trim().slice(0, 20);
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
   
+  // 1. Create the user account in Supabase Auth
   const { data, error } = await supabaseClient.auth.signUp({
     email: email,
     password: pass,
@@ -208,27 +210,62 @@ async function handleLocalSignup(e) {
     showNotification(error.message, "error");
     return;
   }
-  
-  currentUser = {
-    id: data.user.id,
-    email: email,
-    trainer_name: name || 'Hero',
-    wage: 15.00,
-    food_price: 7.50,
-    event_price: 25.00,
-    lvl: 1,
-    xp: 0,
-    saved_total: 0,
-    base_sprite_static: 'assets/characters/hero-male.png',
-    base_sprite_idle: 'assets/characters/hero-male-idle.gif',
-    equipped_items: [],        
-    inventory: ['hat_default'],
-    logs: [],
-    vault_unlock_time: null
-  };
 
-  saveUserData();
-  showScreen('screen-survey');
+  const user = data.user;
+
+  if (user) {
+    // 2. Insert the starting profile row into your Supabase database
+    const { error: dbError } = await supabaseClient
+      .from('profiles')
+      .insert([
+        { 
+          id: user.id, // Links this row to the Auth user UUID
+          trainer_name: name || 'Hero',
+          wage: 15.00,
+          food_price: 7.50,
+          event_price: 25.00,
+          level: 1,
+          exp: 0,
+          total_saved: 0.00,
+          base_sprite_static: 'assets/characters/hero-male.png',
+          base_sprite_idle: 'assets/characters/hero-male-idle.gif',
+          equipped_items: [],        
+          inventory: ['hat_default'],
+          logs: [],
+          vault_unlock_time: null
+        }
+      ]);
+
+    if (dbError) {
+      console.error("Database Insert Error:", dbError);
+      showNotification("Account created, but profile failed to save.", "error");
+      return;
+    }
+
+    // 3. Set global currentUser object
+    currentUser = {
+      id: user.id,
+      email: email,
+      trainer_name: name || 'Hero',
+      wage: 15.00,
+      food_price: 7.50,
+      event_price: 25.00,
+      lvl: 1,
+      xp: 0,
+      saved_total: 0,
+      base_sprite_static: 'assets/characters/hero-male.png',
+      base_sprite_idle: 'assets/characters/hero-male-idle.gif',
+      equipped_items: [],        
+      inventory: ['hat_default'],
+      logs: [],
+      vault_unlock_time: null
+    };
+
+    // 4. Save local backup & proceed to survey
+    saveUserData();
+    showNotification("Account created successfully!", "success");
+    showScreen('screen-survey');
+  }
 }
 
 async function handleLocalLogin(e) {
