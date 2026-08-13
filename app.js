@@ -1,12 +1,7 @@
-// ==========================================
-// LOCAL STORAGE AUTH & GAME STATE
-// ==========================================
-// Connect to Supabase
-// Connect to Supabase
 const SUPABASE_URL = 'https://rbcxqtonglxehaqceavh.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJiY3hxdG9uZ2x4ZWhhcWNlYXZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NTc1MTQsImV4cCI6MjEwMjEzMzUxNH0.46PzKlyyWM1VH6ff7jYD8Qwjw2fHUNNH_obvxKr0Ve8';
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
@@ -25,7 +20,6 @@ const battleState = {
   isProcessing: false
 };
 
-// Map of all shop items to their animated GIF paths and slot categories
 const ITEM_MANIFEST = {
   'hat_crown': { path: 'assets/costumes/overlay-crown-idle.gif', slot: 'hat' },
   'hat_wizard': { path: 'assets/costumes/overlay-wizard-hat-idle.gif', slot: 'hat' },
@@ -41,7 +35,6 @@ const ITEM_MANIFEST = {
   'item_laser': { path: 'assets/costumes/overlay-laser-blaster-idle.gif', slot: 'item' }
 };
 
-// Pools of randomized reflection questions per attack type
 const QUESTION_POOLS = {
   necessity: [
     "Why do you want this item right now, and will it matter in 30 days?",
@@ -87,9 +80,6 @@ const QUESTION_POOLS = {
   ]
 };
 
-// ==========================================
-// INPUT SANITIZATION & MONEY LIMIT GUARD
-// ==========================================
 function enforceMoneyLimit(inputElement) {
   if (!inputElement) return;
 
@@ -113,9 +103,6 @@ function enforceMoneyLimit(inputElement) {
   inputElement.value = val;
 }
 
-// ==========================================
-// IN-APP NOTIFICATION SYSTEM
-// ==========================================
 function showNotification(message, type = 'info') {
   const container = document.getElementById('app-toast-container');
   if (!container) {
@@ -137,7 +124,6 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
-// Override default browser alerts with in-app notifications
 window.alert = function(msg) {
   showNotification(msg, 'info');
 };
@@ -147,11 +133,6 @@ function saveUserData() {
     localStorage.setItem(`user_${currentUser.email}`, JSON.stringify(currentUser));
   }
 }
-
-// ==========================================
-// 1. UI NAVIGATION & SCREEN MANAGEMENT
-// ==========================================
-
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById(id);
@@ -179,13 +160,11 @@ function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
-  // 1. Resolve base sprite
   const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
   const equippedList = user.equipped_items || [];
 
   let layersHTML = `<img src="${baseSprite}" alt="Base Hero Idle" class="character-img base-layer" />`;
 
-  // 2. Resolve costume overlay layers reliably
   equippedList.forEach(itemEntry => {
     if (!itemEntry || itemEntry === 'BASE') return;
 
@@ -211,17 +190,12 @@ function syncAllAnimations() {
   }
 }
 
-// ==========================================
-// 2. AUTHENTICATION & PROFILE SETUP
-// ==========================================
-
 async function handleLocalSignup(e) {
   e.preventDefault();
   let name = document.getElementById('signup-name').value.trim().slice(0, 20);
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
-
-  // 1. Create account in Supabase
+  
   const { data, error } = await supabaseClient.auth.signUp({
     email: email,
     password: pass,
@@ -234,8 +208,7 @@ async function handleLocalSignup(e) {
     showNotification(error.message, "error");
     return;
   }
-
-  // 2. Initialize new hero profile
+  
   currentUser = {
     id: data.user.id,
     email: email,
@@ -248,8 +221,8 @@ async function handleLocalSignup(e) {
     saved_total: 0,
     base_sprite_static: 'assets/characters/hero-male.png',
     base_sprite_idle: 'assets/characters/hero-male-idle.gif',
-    equipped_items: [],         // Start with no costume layers equipped
-    inventory: ['hat_default'],  // Starter slot placeholder
+    equipped_items: [],        
+    inventory: ['hat_default'],
     logs: [],
     vault_unlock_time: null
   };
@@ -263,7 +236,6 @@ async function handleLocalLogin(e) {
   const email = document.getElementById('login-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('login-pass').value.slice(0, 50);
 
-  // Ask Supabase to check the password
   const { data, error } = await supabaseClient.auth.signInWithPassword({
     email: email,
     password: pass
@@ -278,8 +250,6 @@ async function handleLocalLogin(e) {
   
   const savedData = localStorage.getItem(`user_${email}`);
   if (savedData) {
-    currentUser = JSON.parse(savedData);
-  } if (savedData) {
     currentUser = JSON.parse(savedData);
   } else {
     currentUser = {
@@ -299,8 +269,7 @@ async function handleLocalLogin(e) {
       logs: [],
       vault_unlock_time: null
     };
-    saveUserData(); // Save to local storage right away
-  }
+    saveUserData();
   }
 
   loadTrainerSession();
@@ -398,10 +367,6 @@ function checkBossAvailability() {
     showScreen('screen-quest');
   }
 }
-
-// ==========================================
-// 3. COMBAT, ANIMATION & COUNTER-ATTACK SYSTEM
-// ==========================================
 
 const CATEGORY_BACKGROUNDS = {
   tech: [
@@ -814,10 +779,6 @@ function giveInAndSpend() {
   checkVaultDirect();
 }
 
-// ==========================================
-// 4. SETTINGS & ACCOUNT ACTIONS
-// ==========================================
-
 function updateTrainerName() {
   const nameInput = document.getElementById('settings-name');
   const newName = nameInput ? nameInput.value.trim().slice(0, 20) : '';
@@ -920,10 +881,6 @@ function logoutTrainer() {
   currentUser = null;
   showScreen('screen-login');
 }
-
-// ==========================================
-// 5. VAULT & HISTORY LOGS
-// ==========================================
 
 function startVaultTimer(unlockTimestamp) {
   if (battleState.timerInterval) clearInterval(battleState.timerInterval);
@@ -1081,7 +1038,15 @@ function buyOrEquip(itemId, price, spritePath) {
       }
       savedTotal -= price;
       inventory.push(itemId);
-      showNotification("Item unlocked!", "success");
+
+      // Auto-equip new item to slot
+      equipped = equipped.filter(path => {
+        const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
+        return !(activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot);
+      });
+      equipped.push(canonicalPath);
+
+      showNotification("Item unlocked and equipped!", "success");
     }
   }
 
@@ -1109,10 +1074,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('form-login');
   if (loginForm) loginForm.addEventListener('submit', handleLocalLogin);
 
- const tabLogin = document.getElementById('tab-login');
-const tabSignup = document.getElementById('tab-signup');
+  const tabLogin = document.getElementById('tab-login');
+  const tabSignup = document.getElementById('tab-signup');
 
-if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
-if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
+  if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
+  if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
+
   loadTrainerSession();
 });
