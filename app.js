@@ -197,7 +197,7 @@ async function handleLocalSignup(e) {
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
   
-  // 1. Create the user account in Supabase Auth
+ // 1. Create the user account in Supabase Auth (YOUR SNIPPET - PERFECT AS IS)
   const { data, error } = await supabaseClient.auth.signUp({
     email: email,
     password: pass,
@@ -209,6 +209,57 @@ async function handleLocalSignup(e) {
   if (error) {
     showNotification(error.message, "error");
     return;
+  }
+
+  // =========================================================
+  // 2. ADD THIS RIGHT AFTER: Insert row into 'profiles' table
+  // =========================================================
+  const user = data.user;
+
+  if (user) {
+    const { error: dbError } = await supabaseClient
+      .from('profiles')
+      .insert([
+        { 
+          id: user.id, // Links directly to the auth user UUID
+          trainer_name: name || 'Hero',
+          wage: 15.00,
+          food_price: 7.50,
+          event_price: 25.00,
+          level: 1,
+          exp: 0,
+          total_saved: 0.00
+        }
+      ]);
+
+    if (dbError) {
+      console.error("Database Insert Error:", dbError.message);
+      showNotification("Account created, but database profile failed to save.", "error");
+      return;
+    }
+
+    // 3. Set global currentUser state & navigate
+    currentUser = {
+      id: user.id,
+      email: email,
+      trainer_name: name || 'Hero',
+      wage: 15.00,
+      food_price: 7.50,
+      event_price: 25.00,
+      lvl: 1,
+      xp: 0,
+      saved_total: 0,
+      base_sprite_static: 'assets/characters/hero-male.png',
+      base_sprite_idle: 'assets/characters/hero-male-idle.gif',
+      equipped_items: [],        
+      inventory: ['hat_default'],
+      logs: [],
+      vault_unlock_time: null
+    };
+
+    saveUserData();
+    showNotification("Account created successfully!", "success");
+    showScreen('screen-survey');
   }
 
   const user = data.user;
@@ -891,14 +942,39 @@ function closeDeleteModal() {
   if (modal) modal.remove();
 }
 
-function confirmDeleteAccount() {
+async function confirmDeleteAccount() {
   closeDeleteModal();
-  if (currentUser) {
-    localStorage.removeItem(`user_${currentUser.email}`);
+
+  if (!currentUser) return;
+
+  try {
+    const userEmail = currentUser.email;
+
+    // 1. Delete the user's row from the Supabase 'profiles' table
+    const { error: dbError } = await supabaseClient
+      .from('profiles')
+      .delete()
+      .eq('id', currentUser.id);
+
+    if (dbError) {
+      console.error("Database deletion error:", dbError);
+    }
+
+    // 2. Sign out of the active Supabase Auth session
+    await supabaseClient.auth.signOut();
+
+    // 3. Wipe all local storage fallbacks
+    localStorage.removeItem(`user_${userEmail}`);
     localStorage.removeItem('session_user');
     currentUser = null;
+
+    // 4. Notify and redirect
     showNotification("Account successfully deleted.", "info");
     showScreen('screen-login');
+
+  } catch (err) {
+    console.error("Error during deletion process:", err);
+    showNotification("An error occurred while deleting your account.", "error");
   }
 }
 
