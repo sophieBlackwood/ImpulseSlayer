@@ -495,8 +495,8 @@ input:focus {
    DELETE ACCOUNT MODAL STYLES (SCOPED)
    ========================================== */
 .modal-actions .btn {
-  width: auto;             
-  margin-top: 0;          
+  width: auto;              
+  margin-top: 0;           
   padding: 0.6rem 1.2rem;
   font-size: 0.9rem;
   font-weight: 600;
