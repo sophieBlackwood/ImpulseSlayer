@@ -215,11 +215,17 @@ async function handleLocalSignup(e) {
     return;
   }
 
+  // 1. Sign up the user & pass initial metadata to auth options
   const { data, error } = await supabaseClient.auth.signUp({
     email: email,
     password: pass,
     options: {
-      data: { trainer_name: name || 'Hero' }
+      data: { 
+        trainer_name: name || 'Hero',
+        wage: 15.00,
+        food_price: 7.50,
+        event_price: 25.00
+      }
     }
   });
 
@@ -229,35 +235,10 @@ async function handleLocalSignup(e) {
   }
 
   const user = data.user;
+  const session = data.session;
 
   if (user) {
-    const { error: dbError } = await supabaseClient
-      .from('profiles')
-      .insert([
-        { 
-          id: user.id,
-          trainer_name: name || 'Hero',
-          wage: 15.00,
-          food_price: 7.50,
-          event_price: 25.00,
-          level: 1,
-          exp: 0,
-          total_saved: 0.00,
-          base_sprite_static: 'assets/characters/hero-male.png',
-          base_sprite_idle: 'assets/characters/hero-male-idle.gif',
-          equipped_items: [],        
-          inventory: ['hat_default'],
-          logs: [],
-          vault_unlock_time: null
-        }
-      ]);
-
-    if (dbError) {
-      console.error("Database Insert Error:", dbError);
-      showNotification("Account created, but profile failed to save.", "error");
-      return;
-    }
-
+    // 2. Set default client-side user object
     currentUser = {
       id: user.id,
       email: email,
@@ -275,6 +256,24 @@ async function handleLocalSignup(e) {
       logs: [],
       vault_unlock_time: null
     };
+
+    localStorage.setItem('session_user', email);
+
+    if (typeof saveUserData === 'function') {
+      saveUserData();
+    }
+
+    // 3. Handle session state based on email confirmation settings
+    if (session) {
+      showNotification("Account created successfully!", "success");
+      if (typeof showScreen === 'function') {
+        showScreen('screen-survey');
+      }
+    } else {
+      showNotification("Account created! Please check your email to confirm your login.", "success");
+    }
+  }
+}
 
     localStorage.setItem('session_user', email);
     saveUserData();
@@ -297,6 +296,7 @@ async function handleLocalLogin(e) {
     return;
   }
 
+  // 1. Authenticate with Supabase
   const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
     email: email,
     password: pass
@@ -309,11 +309,12 @@ async function handleLocalLogin(e) {
 
   const user = authData.user;
 
+  // 2. Fetch profile data using maybeSingle() to prevent hard errors if profile doesn't exist yet
   const { data: profile, error: dbError } = await supabaseClient
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single();
+    .maybeSingle();
 
   if (dbError) {
     console.error('Error fetching user profile:', dbError);
@@ -321,31 +322,38 @@ async function handleLocalLogin(e) {
     return;
   }
 
+  // 3. Populate global user object (falls back to defaults if profile row is missing or fields are empty)
   currentUser = {
-    id: profile.id,
+    id: user.id,
     email: user.email,
-    trainer_name: profile.trainer_name || 'Hero',
-    wage: profile.wage || 15.00,
-    food_price: profile.food_price || 7.50,
-    event_price: profile.event_price || 25.00,
-    lvl: profile.level || 1,
-    xp: profile.exp || 0,
-    saved_total: profile.total_saved || 0,
-    base_sprite_static: profile.base_sprite_static || 'assets/characters/hero-male.png',
-    base_sprite_idle: profile.base_sprite_idle || 'assets/characters/hero-male-idle.gif',
-    equipped_items: profile.equipped_items || [],
-    inventory: profile.inventory || ['hat_default'],
-    logs: profile.logs || [],
-    vault_unlock_time: profile.vault_unlock_time || null
+    trainer_name: profile?.trainer_name || user.user_metadata?.trainer_name || 'Hero',
+    wage: profile?.wage ?? 15.00,
+    food_price: profile?.food_price ?? 7.50,
+    event_price: profile?.event_price ?? 25.00,
+    lvl: profile?.level || 1,
+    xp: profile?.exp || 0,
+    saved_total: profile?.total_saved || 0,
+    base_sprite_static: profile?.base_sprite_static || 'assets/characters/hero-male.png',
+    base_sprite_idle: profile?.base_sprite_idle || 'assets/characters/hero-male-idle.gif',
+    equipped_items: profile?.equipped_items || [],
+    inventory: profile?.inventory || ['hat_default'],
+    logs: profile?.logs || [],
+    vault_unlock_time: profile?.vault_unlock_time || null
   };
 
+  // 4. Save local session and load UI state
   localStorage.setItem('session_user', email);
-  saveUserData();
+
+  if (typeof saveUserData === 'function') {
+    saveUserData();
+  }
 
   showNotification(`Welcome back, ${currentUser.trainer_name}!`, 'success');
-  loadTrainerSession();
-}
 
+  if (typeof loadTrainerSession === 'function') {
+    loadTrainerSession();
+  }
+}
 function logoutTrainer() {
   localStorage.removeItem('session_user');
   currentUser = null;
