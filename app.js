@@ -391,17 +391,19 @@ const CATEGORY_BACKGROUNDS = {
 };
 
 function setBattleBackgroundByCategory(category) {
-  const battleScreen = document.getElementById('screen-battle');
-  if (!battleScreen) return;
+  // Target the combat box container rather than the full screen
+  const battleStage = document.getElementById('battle-stage') || document.querySelector('.battle-arena');
+  if (!battleStage) return;
 
   const bgList = CATEGORY_BACKGROUNDS[category] || CATEGORY_BACKGROUNDS.general;
   const randomIndex = Math.floor(Math.random() * bgList.length);
   const selectedBg = bgList[randomIndex];
 
-  battleScreen.style.backgroundImage = `url('${selectedBg}')`;
-  battleScreen.style.backgroundSize = 'cover';
-  battleScreen.style.backgroundPosition = 'center';
-  battleScreen.style.backgroundRepeat = 'no-repeat';
+  // Apply background image strictly to the arena frame
+  battleStage.style.backgroundImage = `url('${selectedBg}')`;
+  battleStage.style.backgroundSize = 'cover';
+  battleStage.style.backgroundPosition = 'center';
+  battleStage.style.backgroundRepeat = 'no-repeat';
 }
 
 function getRandomMonsterAttack() {
