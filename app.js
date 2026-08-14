@@ -139,30 +139,47 @@ function showScreen(id) {
   if (target) target.classList.add('active');
 }
 
-// Function to switch between Auth Tabs
-function switchAuthTab(tabName) {
+// ==========================================
+// UI & TAB SWITCHING
+// ==========================================
+function switchAuthTab(mode) {
   const loginForm = document.getElementById('login-form');
   const signupForm = document.getElementById('signup-form');
-  const loginBtn = document.getElementById('tab-login-btn');
-  const signupBtn = document.getElementById('tab-signup-btn');
+  const loginTab = document.getElementById('tab-login');
+  const signupTab = document.getElementById('tab-signup');
 
-  if (tabName === 'signup') {
-    // Show Signup Form
+  if (mode === 'signup') {
     loginForm.classList.add('hidden');
     signupForm.classList.remove('hidden');
-
-    // Update Tab Styles
-    loginBtn.classList.remove('active');
-    signupBtn.classList.add('active');
+    loginTab.classList.remove('active');
+    signupTab.classList.add('active');
   } else {
-    // Show Login Form
     signupForm.classList.add('hidden');
     loginForm.classList.remove('hidden');
-
-    // Update Tab Styles
-    signupBtn.classList.remove('active');
-    loginBtn.classList.add('active');
+    signupTab.classList.remove('active');
+    loginTab.classList.add('active');
   }
+}
+
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(screenId);
+  if (target) target.classList.add('active');
+}
+
+function showNotification(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast-notification ${type}`;
+  toast.innerText = message;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
 }
 
 let syncAnimToken = Date.now();
@@ -208,7 +225,7 @@ async function handleLocalSignup(e) {
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
   
- // 1. Create the user account in Supabase Auth (YOUR SNIPPET - PERFECT AS IS)
+  // 1. Create the user account in Supabase Auth
   const { data, error } = await supabaseClient.auth.signUp({
     email: email,
     password: pass,
@@ -222,61 +239,10 @@ async function handleLocalSignup(e) {
     return;
   }
 
-  // =========================================================
-  // 2. ADD THIS RIGHT AFTER: Insert row into 'profiles' table
-  // =========================================================
+  // 2. Insert the starting profile row into your Supabase database
   const user = data.user;
 
   if (user) {
-    const { error: dbError } = await supabaseClient
-      .from('profiles')
-      .insert([
-        { 
-          id: user.id, // Links directly to the auth user UUID
-          trainer_name: name || 'Hero',
-          wage: 15.00,
-          food_price: 7.50,
-          event_price: 25.00,
-          level: 1,
-          exp: 0,
-          total_saved: 0.00
-        }
-      ]);
-
-    if (dbError) {
-      console.error("Database Insert Error:", dbError.message);
-      showNotification("Account created, but database profile failed to save.", "error");
-      return;
-    }
-
-    // 3. Set global currentUser state & navigate
-    currentUser = {
-      id: user.id,
-      email: email,
-      trainer_name: name || 'Hero',
-      wage: 15.00,
-      food_price: 7.50,
-      event_price: 25.00,
-      lvl: 1,
-      xp: 0,
-      saved_total: 0,
-      base_sprite_static: 'assets/characters/hero-male.png',
-      base_sprite_idle: 'assets/characters/hero-male-idle.gif',
-      equipped_items: [],        
-      inventory: ['hat_default'],
-      logs: [],
-      vault_unlock_time: null
-    };
-
-    saveUserData();
-    showNotification("Account created successfully!", "success");
-    showScreen('screen-survey');
-  }
-
-  const user = data.user;
-
-  if (user) {
-    // 2. Insert the starting profile row into your Supabase database
     const { error: dbError } = await supabaseClient
       .from('profiles')
       .insert([
@@ -381,9 +347,9 @@ async function handleLocalLogin(e) {
     vault_unlock_time: profile.vault_unlock_time || null
   };
 
-  // 4. Optionally cache session locally and boot into the main game UI
+  // 4. Cache session locally and boot into the main game UI
   localStorage.setItem('session_user', email);
-  saveUserData(); // Keeps a fallback copy in local storage if you still want it
+  saveUserData();
   
   showNotification(`Welcome back, ${currentUser.trainer_name}!`, 'success');
   loadTrainerSession();
