@@ -177,17 +177,22 @@ body {
   border: 4px solid var(--card-border);
   position: relative;
   overflow: hidden;
+  /* Keeps the outer arena container using the default background */
+  background-color: var(--card-surface);
 }
 
 .arena-stage {
   flex: 1;
-  background: url('assets/background/battle-bg.png') center/cover no-repeat;
-  border: 1px solid var(--card-border);
-  border-radius: 14px;
+  width: 100%;
+  height: 100%;
+  /* Contain the battle background strictly within the stage container */
+  background: url('assets/background/battle-bg.png') center / cover no-repeat;
+  border-radius: 8px;
   padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  box-sizing: border-box;
 }
 
 .arena-stage .sprite-box .character-img {
