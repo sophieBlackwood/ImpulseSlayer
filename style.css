@@ -168,31 +168,47 @@ body {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
 }
 
+/* Outer wrapper that holds the entire screen layout */
+#screen-battle {
+  background: var(--bg-deep) !important; /* Standard app background */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Pokémon-style contained battle arena frame */
 .battle-arena {
   width: 100%;
-  max-width: 600px;
-  height: 320px;
-  margin: 0 auto;
+  max-width: 400px;
+  height: 260px;
+  margin: 0 auto 16px auto;
   border-radius: 12px;
-  border: 4px solid var(--card-border);
+  border: 3px solid var(--card-border);
   position: relative;
   overflow: hidden;
-  /* Keeps the outer arena container using the default background */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   background-color: var(--card-surface);
 }
 
+/* The actual stage background (ONLY inside the arena frame) */
 .arena-stage {
-  flex: 1;
   width: 100%;
   height: 100%;
-  /* Contain the battle background strictly within the stage container */
   background: url('assets/background/battle-bg.png') center / cover no-repeat;
-  border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-sizing: border-box;
+}
+
+/* The console and attack buttons stay on standard background below */
+.console-box {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 0;
 }
 
 .arena-stage .sprite-box .character-img {
