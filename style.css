@@ -168,14 +168,6 @@ body {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
 }
 
-/* Outer wrapper that holds the entire screen layout */
-#screen-battle {
-  background: var(--bg-deep) !important; /* Standard app background */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
 /* Pokémon-style contained battle arena frame */
 .battle-arena {
   width: 100%;
@@ -202,14 +194,6 @@ body {
   box-sizing: border-box;
 }
 
-/* The console and attack buttons stay on standard background below */
-.console-box {
-  background: var(--card-surface);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  padding: 12px;
-  margin-top: 0;
-}
 
 .arena-stage .sprite-box .character-img {
   width: 96px;
