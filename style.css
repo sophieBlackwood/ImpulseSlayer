@@ -167,8 +167,6 @@ body {
 #screen-vault {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
 }
-
-/* Pokémon-style contained battle arena frame */
 .battle-arena {
   width: 100%;
   max-width: 400px;
@@ -180,6 +178,7 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   background-color: var(--card-surface);
+  box-sizing: border-box; /* Fix: Ensures border doesn't expand width/height */
 }
 
 /* The actual stage background (ONLY inside the arena frame) */
@@ -191,13 +190,15 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-sizing: border-box;
+  box-sizing: border-box; /* Correctly keeps padding inside 100% height */
 }
 
-
+/* Character sprite box and image sizing */
 .arena-stage .sprite-box .character-img {
   width: 96px;
   height: 96px;
+  object-fit: contain; /* Fix: Prevents pixel sprites from distorting */
+  image-rendering: pixelated; /* Fix: Keeps pixel art crisp if scaling */
 }
 
 /* CHARACTER AVATAR & COSTUME OVERLAYS */
