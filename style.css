@@ -167,21 +167,29 @@ body {
 #screen-vault {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
 }
+
+/* 1. SCREEN & CONTAINER BACKGROUND (SOLID BLACK) */
+#screen-battle,
+.battle-card {
+  background-color: #000000 !important;
+}
+
+/* 2. BATTLE ARENA FRAME */
 .battle-arena {
   width: 100%;
   max-width: 400px;
   height: 260px;
   margin: 0 auto 16px auto;
   border-radius: 12px;
-  border: 3px solid var(--card-border);
+  border: 3px solid #3b3b58;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  background-color: var(--card-surface);
-  box-sizing: border-box; /* Fix: Ensures border doesn't expand width/height */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  background-color: #000000;
+  box-sizing: border-box;
 }
 
-/* The actual stage background (ONLY inside the arena frame) */
+/* 3. UPLOADED BACKGROUND (ONLY INSIDE THE ARENA) */
 .arena-stage {
   width: 100%;
   height: 100%;
@@ -190,17 +198,26 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-sizing: border-box; /* Correctly keeps padding inside 100% height */
+  box-sizing: border-box;
 }
 
-/* Character sprite box and image sizing */
-.arena-stage .sprite-box .character-img {
+/* 4. SPRITE BOX & CHARACTER IMAGE SIZING */
+.arena-stage .sprite-box {
   width: 96px;
   height: 96px;
-  object-fit: contain; /* Fix: Prevents pixel sprites from distorting */
-  image-rendering: pixelated; /* Fix: Keeps pixel art crisp if scaling */
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
+.arena-stage .sprite-box img,
+.arena-stage .sprite-box canvas,
+.arena-stage .sprite-box .character-img {
+  width: 96px !important;
+  height: 96px !important;
+  object-fit: contain; /* Prevents pixel sprites from distorting */
+  image-rendering: pixelated; /* Keeps pixel art crisp */
+}
 /* CHARACTER AVATAR & COSTUME OVERLAYS */
 #enemy-sprite {
   width: 200px;
