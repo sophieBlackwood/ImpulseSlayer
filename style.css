@@ -174,7 +174,7 @@ body {
   background-color: #000000 !important;
 }
 
-/* 2. BATTLE ARENA FRAME */
+/* 2. BATTLE ARENA (CONTAINER & BACKGROUND) */
 .battle-arena {
   width: 100%;
   max-width: 400px;
@@ -185,15 +185,7 @@ body {
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  background-color: #000000;
-  box-sizing: border-box;
-}
-
-/* 3. UPLOADED BACKGROUND (ONLY INSIDE THE ARENA) */
-.arena-stage {
-  width: 100%;
-  height: 100%;
-  background: url('assets/background/battle-bg.png') center / cover no-repeat;
+  background: #000000 url('assets/background/battle-bg.png') center / cover no-repeat;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -201,8 +193,8 @@ body {
   box-sizing: border-box;
 }
 
-/* 4. SPRITE BOX & CHARACTER IMAGE SIZING */
-.arena-stage .sprite-box {
+/* 3. SPRITE BOX & CHARACTER IMAGE SIZING */
+.battle-arena .sprite-box {
   width: 96px;
   height: 96px;
   display: flex;
@@ -210,14 +202,15 @@ body {
   justify-content: center;
 }
 
-.arena-stage .sprite-box img,
-.arena-stage .sprite-box canvas,
-.arena-stage .sprite-box .character-img {
+.battle-arena .sprite-box img,
+.battle-arena .sprite-box canvas,
+.battle-arena .sprite-box .character-img {
   width: 96px !important;
   height: 96px !important;
-  object-fit: contain; /* Prevents pixel sprites from distorting */
-  image-rendering: pixelated; /* Keeps pixel art crisp */
+  object-fit: contain;
+  image-rendering: pixelated;
 }
+
 /* CHARACTER AVATAR & COSTUME OVERLAYS */
 #enemy-sprite {
   width: 200px;
