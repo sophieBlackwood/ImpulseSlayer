@@ -576,11 +576,11 @@ input:focus {
 }
 
 .console-box { 
-  margin-top: 12px; 
+  margin-top: 0; 
 }
 
 .terminal-text {
-  background: var(--bg-deep);
+  background: rgba(7, 12, 20, 0.9);
   border: 1px solid var(--card-border);
   border-radius: 10px;
   padding: 12px;
@@ -777,107 +777,80 @@ input:focus {
 }
 
 /* ============================================================
-   POKEMON CARD STYLE BATTLE ARENA (UPDATED)
+   ORIGINAL BATTLE SCREEN WITH ENLARGED CREATURES & ACTION PANEL
    ============================================================ */
 
-/* Outer Card Frame Container */
 #screen-battle {
-  width: 100%;
-  max-width: 420px;
-  margin: 0 auto;
-  padding: 16px;
-  background: linear-gradient(145deg, #1e293b, #0f172a) !important;
-  border: 8px solid #f59e0b !important; /* Gold card border */
-  border-radius: 24px !important;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.7),
-    inset 0 0 15px rgba(255, 255, 255, 0.1) !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  box-sizing: border-box !important;
+  background: url('assets/background/hub-bg.png') center/cover no-repeat;
+  display: none;
+  height: 100%;
+  padding: 20px;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-/* Card Artwork Window */
+#screen-battle.active {
+  display: flex;
+}
+
+/* Battle Viewport Arena */
 .battle-arena {
-  width: 100% !important;
-  height: 320px !important;
-  position: relative !important;
-  border-radius: 14px !important;
-  border: 4px solid #000000 !important;
-  outline: 2px solid #fbbf24 !important;
-  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.8) !important;
-  
-  background-color: #0f172a !important;
-  background-image: radial-gradient(circle at center, #1e293b 0%, #020617 100%) !important;
-  background-position: center !important;
-  background-size: cover !important;
-  background-repeat: no-repeat !important;
-  
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-evenly !important;
-  align-items: center !important;
-  overflow: hidden !important;
-  padding: 12px 0 !important;
+  width: 100%;
+  height: 340px;
+  border-radius: 16px;
+  border: 2px solid var(--card-border);
+  background: #000000 url('assets/background/battle-bg.png') center / cover no-repeat;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
-/* Battle Rows Alignment */
-.battle-row,
+/* Character Rows */
 .unit-row,
-.enemy-row,
-.player-row {
-  display: flex !important;
-  justify-content: space-around !important;
-  align-items: center !important;
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 16px !important;
-  box-sizing: border-box !important;
+.battle-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  width: 100%;
+  z-index: 2;
 }
 
-/* Force Larger Sprite Sizes */
+.enemy-row {
+  margin-bottom: 0;
+}
+
+.player-row {
+  margin-top: 0;
+}
+
+/* Enlarged Creature Sprites */
+#screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas,
-#screen-battle .battle-arena .sprite,
-#screen-battle .battle-arena .character-img,
-#screen-battle .battle-arena .sprite-box {
-  width: 130px !important;
-  height: 130px !important;
-  min-width: 130px !important;
-  min-height: 130px !important;
-  max-width: 130px !important;
-  max-height: 130px !important;
+#screen-battle .battle-arena .character-img {
+  width: 160px !important;
+  height: 160px !important;
+  min-width: 160px !important;
+  min-height: 160px !important;
+  max-width: 160px !important;
+  max-height: 160px !important;
   object-fit: contain !important;
   image-rendering: pixelated !important;
-  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.6)) !important;
-  transition: transform 0.2s ease !important;
+  filter: drop-shadow(0px 8px 12px rgba(0, 0, 0, 0.7)) !important;
 }
 
-/* Diagonal Pokemon Alignment Shift */
-.enemy-row {
-  transform: translateX(30px) translateY(5px);
-}
-
-.player-row {
-  transform: translateX(-30px) translateY(-5px);
-}
-
-.combatant-hud {
-  background: rgba(0, 0, 0, 0.85);
-  border: 2px solid #fff;
-  border-radius: 6px;
-  padding: 6px 8px;
-  width: 120px;
-  z-index: 3;
-}
-
+/* HUD Overlay Plates */
 .hud-plate {
-  background: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.9);
   border: 1px solid var(--card-border);
   border-radius: 10px;
   padding: 10px;
   width: 170px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
 .plate-top { 
@@ -914,6 +887,17 @@ input:focus {
 
 .hp-bar-fill.player-hp { 
   background: var(--hp-green); 
+}
+
+/* Black Background Border Panel around Console & Buttons */
+.battle-action-panel,
+.console-box {
+  background: #000000;
+  border: 2px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  margin-top: 12px;
 }
 
 /* ==========================================
