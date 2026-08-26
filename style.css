@@ -1013,3 +1013,14 @@ input:focus {
 .battle-arena .player-row {
   transform: translateY(-10px);
 }
+
+/* FORCE OVERRIDE ANY INLINE JS STYLES ON SPRITES */
+#screen-battle .battle-arena img,
+#screen-battle .battle-arena canvas,
+#screen-battle .battle-arena .sprite-box,
+#screen-battle .battle-arena .character-img {
+  width: 140px !important;
+  height: 140px !important;
+  max-width: 140px !important;
+  max-height: 140px !important;
+}
