@@ -221,89 +221,6 @@ body {
 }
 
 /* ==========================================
-   POKEMON CARD STYLE BATTLE ARENA (SCOPED HIGHER)
-   ========================================== */
-#screen-battle,
-.battle-card {
-  background-color: #121212 !important; /* Dark card frame color */
-  padding: 16px;
-  border-radius: 16px;
-  box-sizing: border-box;
-}
-
-/* BATTLE ARENA FRAME (The "Picture Window" on the Card) */
-.battle-arena {
-  width: 100%;
-  max-width: 380px;
-  height: 280px; /* Slightly taller to accommodate larger sprites */
-  margin: 0 auto 16px auto;
-  border-radius: 8px;
-  
-  /* Thick black inner/outer framing like a trading card illustration window */
-  border: 4px solid #000000;
-  outline: 2px solid #3b3b58; 
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.7);
-  
-  background: #000000 url('assets/background/battle-bg.png') center / cover no-repeat;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-  box-sizing: border-box;
-}
-
-/* ROW POSITIONING (Pushes sprites closer to the middle) */
-.battle-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  width: 100%;
-  position: relative;
-  z-index: 2;
-}
-
-.enemy-row {
-  margin-bottom: -15px; 
-}
-
-.player-row {
-  margin-top: -15px; 
-}
-
-/* LARGER BATTLE SPRITES (Scoped to override lower styles) */
-.battle-arena .sprite-box {
-  width: 130px !important;
-  height: 130px !important;
-  min-width: 130px !important;
-  min-height: 130px !important;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.battle-arena .sprite-box img,
-.battle-arena .sprite-box canvas,
-.battle-arena .sprite-box .character-img {
-  width: 130px !important;
-  height: 130px !important;
-  object-fit: contain !important;
-  image-rendering: pixelated !important;
-  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.5));
-}
-
-/* HUD ADJUSTMENTS FOR COMPACT FIT */
-.combatant-hud {
-  background: rgba(0, 0, 0, 0.85);
-  border: 2px solid #fff;
-  border-radius: 6px;
-  padding: 6px 8px;
-  width: 120px;
-  z-index: 3;
-}
-
-/* ==========================================
    UI UTILITIES & TEXT
    ========================================== */
 .logo-tag {
@@ -568,7 +485,7 @@ input:focus {
 }
 
 /* ==========================================
-   HUB & BATTLE COMPONENTS
+   HUB & GENERAL COMPONENTS
    ========================================== */
 .profile-header {
   display: flex;
@@ -656,56 +573,6 @@ input:focus {
 .screen-title { 
   font-size: 0.85rem; 
   color: var(--text-muted); 
-}
-
-.unit-row { 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-}
-
-.hud-plate {
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 10px;
-  width: 170px;
-}
-
-.plate-top { 
-  display: flex; 
-  justify-content: space-between; 
-  font-size: 0.75rem; 
-  font-weight: 600; 
-  margin-bottom: 6px; 
-}
-
-.unit-name { 
-  color: var(--text-primary); 
-}
-
-.unit-lvl { 
-  color: var(--poke-yellow); 
-}
-
-.hp-bar-bg {
-  width: 100%;
-  height: 10px;
-  background: var(--bg-deep);
-  border: 1px solid var(--card-border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.hp-bar-fill {
-  width: 100%;
-  height: 100%;
-  background: var(--hp-red);
-  transition: width 0.3s ease;
-}
-
-.hp-bar-fill.player-hp { 
-  background: var(--hp-green); 
 }
 
 .console-box { 
@@ -909,6 +776,146 @@ input:focus {
   color: var(--poke-yellow); 
 }
 
+/* ============================================================
+   POKEMON CARD STYLE BATTLE ARENA (UPDATED)
+   ============================================================ */
+
+/* Outer Card Frame Container */
+#screen-battle {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 16px;
+  background: linear-gradient(145deg, #1e293b, #0f172a) !important;
+  border: 8px solid #f59e0b !important; /* Gold card border */
+  border-radius: 24px !important;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.7),
+    inset 0 0 15px rgba(255, 255, 255, 0.1) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+}
+
+/* Card Artwork Window */
+.battle-arena {
+  width: 100% !important;
+  height: 320px !important;
+  position: relative !important;
+  border-radius: 14px !important;
+  border: 4px solid #000000 !important;
+  outline: 2px solid #fbbf24 !important;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.8) !important;
+  
+  background-color: #0f172a !important;
+  background-image: radial-gradient(circle at center, #1e293b 0%, #020617 100%) !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-evenly !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  padding: 12px 0 !important;
+}
+
+/* Battle Rows Alignment */
+.battle-row,
+.unit-row,
+.enemy-row,
+.player-row {
+  display: flex !important;
+  justify-content: space-around !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Force Larger Sprite Sizes */
+#screen-battle .battle-arena img,
+#screen-battle .battle-arena canvas,
+#screen-battle .battle-arena .sprite,
+#screen-battle .battle-arena .character-img,
+#screen-battle .battle-arena .sprite-box {
+  width: 130px !important;
+  height: 130px !important;
+  min-width: 130px !important;
+  min-height: 130px !important;
+  max-width: 130px !important;
+  max-height: 130px !important;
+  object-fit: contain !important;
+  image-rendering: pixelated !important;
+  filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.6)) !important;
+  transition: transform 0.2s ease !important;
+}
+
+/* Diagonal Pokemon Alignment Shift */
+.enemy-row {
+  transform: translateX(30px) translateY(5px);
+}
+
+.player-row {
+  transform: translateX(-30px) translateY(-5px);
+}
+
+.combatant-hud {
+  background: rgba(0, 0, 0, 0.85);
+  border: 2px solid #fff;
+  border-radius: 6px;
+  padding: 6px 8px;
+  width: 120px;
+  z-index: 3;
+}
+
+.hud-plate {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 10px;
+  width: 170px;
+}
+
+.plate-top { 
+  display: flex; 
+  justify-content: space-between; 
+  font-size: 0.75rem; 
+  font-weight: 600; 
+  margin-bottom: 6px; 
+}
+
+.unit-name { 
+  color: var(--text-primary); 
+}
+
+.unit-lvl { 
+  color: var(--poke-yellow); 
+}
+
+.hp-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-deep);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.hp-bar-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--hp-red);
+  transition: width 0.3s ease;
+}
+
+.hp-bar-fill.player-hp { 
+  background: var(--hp-green); 
+}
+
 /* ==========================================
    KEYFRAME ANIMATIONS
    ========================================== */
@@ -924,9 +931,9 @@ input:focus {
 }
 
 @keyframes playerAttack {
-  0%   { transform: scale(1.3) translate(0, 0); }
-  50%  { transform: scale(1.3) translate(40px, -30px); }
-  100% { transform: scale(1.3) translate(0, 0); }
+  0%   { transform: scale(1.1) translate(0, 0); }
+  50%  { transform: scale(1.1) translate(40px, -30px); }
+  100% { transform: scale(1.1) translate(0, 0); }
 }
 
 @keyframes monsterAttack {
