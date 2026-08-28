@@ -143,7 +143,7 @@ body {
   border-color: var(--poke-blue);
 }
 
-.screen {
+. {
   display: none;
   height: 100%;
   padding: 24px 20px;
@@ -158,6 +158,13 @@ body {
 
 .onboarding-screen {
   background: url('assets/background/login-bg.png') center/cover no-repeat;
+}
+
+#screen-signup {
+  display: none;
+}
+#screen-signup.active {
+  display: flex; /* or block */
 }
 
 #screen-hub,
@@ -796,33 +803,33 @@ input:focus {
 /* Staggered Pokémon-Style Battle Arena */
 .battle-arena {
   position: relative !important;
-  height: 480px !important; /* Expanded height for larger sprite movement */
+  height: 480px !important;
   width: 100% !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
 
-/* Enemy Section: Top-Right Alignment */
+/* Enemy Section: Pushed further inward from top-right */
 .enemy-row,
 .unit-row:first-child {
   position: absolute !important;
-  top: 20px !important;
-  right: 40px !important;
+  top: 30px !important;
+  right: 120px !important; /* Increased from 40px to pull closer to center */
   display: flex !important;
-  flex-direction: row-reverse !important; /* Keeps HUD to the side of enemy */
+  flex-direction: row-reverse !important;
   align-items: flex-end !important;
   gap: 16px !important;
   z-index: 2 !important;
 }
 
-/* Player Section: Bottom-Left Alignment (Right above action panel) */
+/* Player Section: Pushed further inward from bottom-left (Directly above buttons) */
 .player-row,
 .unit-row:last-child {
   position: absolute !important;
-  bottom: 10px !important;
-  left: 40px !important;
+  bottom: 0px !important; /* Resting right against the top of the action panel */
+  left: 120px !important; /* Increased from 40px to pull closer to center */
   display: flex !important;
-  flex-direction: row !important; /* Keeps HUD to the side of player */
+  flex-direction: row !important;
   align-items: flex-end !important;
   gap: 16px !important;
   margin-top: 0 !important;
@@ -835,7 +842,7 @@ input:focus {
   width: auto !important;
 }
 
-/* Force Larger Character Sizes (240px) */
+/* Larger Character Sizes (240px) */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas,
@@ -852,13 +859,13 @@ input:focus {
   transition: transform 0.2s ease-in-out !important;
 }
 
-/* Attack Animations - Controlled distance to hit center-stage */
+/* Adjusted Attack Distances (since they start closer together now) */
 .player-attack-anim {
-  transform: translate(160px, -90px) scale(1.1) !important;
+  transform: translate(100px, -70px) scale(1.1) !important;
 }
 
 .enemy-attack-anim {
-  transform: translate(-160px, 90px) scale(1.1) !important;
+  transform: translate(-100px, 70px) scale(1.1) !important;
 }
 
 /* HUD Overlay Plates */
