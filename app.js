@@ -1,6 +1,7 @@
 // ==========================================
-// LOCAL STORAGE AUTH & GAME STATE
+// 1. GLOBAL STATE & MANIFESTS
 // ==========================================
+
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
@@ -19,20 +20,20 @@ const battleState = {
   isProcessing: false
 };
 
-// Map of all shop items to their animated GIF paths and slot categories
+// Map of shop items to overlay assets and slots
 const ITEM_MANIFEST = {
-  'hat_crown': { path: 'assets/costumes/overlay-crown-idle.gif', slot: 'hat' },
-  'hat_wizard': { path: 'assets/costumes/overlay-wizard-hat-idle.gif', slot: 'hat' },
-  'hat_ninja': { path: 'assets/costumes/overlay-ninja-headband-idle.gif', slot: 'hat' },
-  'hat_party': { path: 'assets/costumes/overlay-party-hat-idle.gif', slot: 'hat' },
-  'hat_helmet': { path: 'assets/costumes/overlay-helmet-idle.gif', slot: 'hat' },
-  'face_sunglasses': { path: 'assets/costumes/overlay-sunglasses-idle.gif', slot: 'face' },
-  'face_eyepatch': { path: 'assets/costumes/overlay-eyepatch-idle.gif', slot: 'face' },
-  'face_visor': { path: 'assets/costumes/overlay-visor-idle.gif', slot: 'face' },
-  'item_sword': { path: 'assets/costumes/overlay-wooden-sword-idle.gif', slot: 'item' },
-  'item_staff': { path: 'assets/costumes/overlay-magic-staff-idle.gif', slot: 'item' },
-  'item_shield': { path: 'assets/costumes/overlay-shield-idle.gif', slot: 'item' },
-  'item_laser': { path: 'assets/costumes/overlay-laser-blaster-idle.gif', slot: 'item' }
+  'hat_crown': { path: 'assets/costumes/overlay-crown-idle.gif', slot: 'hat', price: 50 },
+  'hat_wizard': { path: 'assets/costumes/overlay-wizard-hat-idle.gif', slot: 'hat', price: 40 },
+  'hat_ninja': { path: 'assets/costumes/overlay-ninja-headband-idle.gif', slot: 'hat', price: 30 },
+  'hat_party': { path: 'assets/costumes/overlay-party-hat-idle.gif', slot: 'hat', price: 15 },
+  'hat_helmet': { path: 'assets/costumes/overlay-helmet-idle.gif', slot: 'hat', price: 35 },
+  'face_sunglasses': { path: 'assets/costumes/overlay-sunglasses-idle.gif', slot: 'face', price: 20 },
+  'face_eyepatch': { path: 'assets/costumes/overlay-eyepatch-idle.gif', slot: 'face', price: 25 },
+  'face_visor': { path: 'assets/costumes/overlay-visor-idle.gif', slot: 'face', price: 45 },
+  'item_sword': { path: 'assets/costumes/overlay-wooden-sword-idle.gif', slot: 'item', price: 60 },
+  'item_staff': { path: 'assets/costumes/overlay-magic-staff-idle.gif', slot: 'item', price: 75 },
+  'item_shield': { path: 'assets/costumes/overlay-shield-idle.gif', slot: 'item', price: 50 },
+  'item_laser': { path: 'assets/costumes/overlay-laser-blaster-idle.gif', slot: 'item', price: 100 }
 };
 
 // Pools of randomized reflection questions per attack type
@@ -81,19 +82,32 @@ const QUESTION_POOLS = {
   ]
 };
 
+const CATEGORY_BACKGROUNDS = {
+  tech: ["assets/background/bg-tech-1.png", "assets/background/bg-tech-2.png"],
+  fashion: ["assets/background/bg-fashion-1.png", "assets/background/bg-fashion-2.png"],
+  food: ["assets/background/bg-food-1.png", "assets/background/bg-food-2.png"],
+  sub: ["assets/background/bg-sub-1.png", "assets/background/bg-sub-2.png"],
+  general: [
+    "assets/background/bg-general-1.png",
+    "assets/background/bg-general-2.png",
+    "assets/background/bg-general-3.png",
+    "assets/background/bg-general-4.png"
+  ]
+};
+
 // ==========================================
-// INPUT SANITIZATION & MONEY LIMIT GUARD
+// 2. SYSTEM UTILITIES & NOTIFICATIONS
 // ==========================================
+
 function enforceMoneyLimit(inputElement) {
   if (!inputElement) return;
 
   let val = inputElement.value.replace(/[^0-9.]/g, '');
-
   const parts = val.split('.');
+  
   if (parts.length > 2) {
     val = parts[0] + '.' + parts.slice(1).join('');
   }
-
   if (parts[1] && parts[1].length > 2) {
     val = parts[0] + '.' + parts[1].slice(0, 2);
   }
@@ -107,20 +121,16 @@ function enforceMoneyLimit(inputElement) {
   inputElement.value = val;
 }
 
-// ==========================================
-// IN-APP NOTIFICATION SYSTEM
-// ==========================================
 function showNotification(message, type = 'info') {
   const container = document.getElementById('app-toast-container');
   if (!container) {
-    console.log(`[Notification]: ${message}`);
+    console.log(`[Notification - ${type}]: ${message}`);
     return;
   }
 
   const toast = document.createElement('div');
   toast.className = `toast-notification ${type}`;
   toast.innerHTML = `<span>${message}</span>`;
-
   container.appendChild(toast);
 
   setTimeout(() => {
@@ -131,7 +141,6 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
-// Override default browser alerts with in-app notifications
 window.alert = function(msg) {
   showNotification(msg, 'info');
 };
@@ -143,26 +152,21 @@ function saveUserData() {
 }
 
 // ==========================================
-// 1. UI NAVIGATION & SCREEN MANAGEMENT
+// 3. UI NAVIGATION & AVATAR RENDERING
 // ==========================================
 
 function showScreen(screenId) {
-  // Hide all screens first
   document.querySelectorAll('.screen').forEach(screen => {
     screen.style.display = 'none';
     screen.classList.remove('active');
   });
 
-  // Display only the requested screen
   const targetScreen = document.getElementById(screenId);
   if (targetScreen) {
     targetScreen.style.display = 'flex';
     targetScreen.classList.add('active');
   }
 }
-
-// Example call:
-showScreen('screen-battle');
 
 function switchAuthTab(tab) {
   const isLogin = tab === 'login';
@@ -179,25 +183,21 @@ function switchAuthTab(tab) {
   if (tabSignup) tabSignup.classList.toggle('active', !isLogin);
 }
 
-let syncAnimToken = Date.now();
-
 function renderCharacterAvatar(containerId, user) {
   const container = document.getElementById(containerId);
   if (!container || !user) return;
 
-  // 1. Resolve base sprite
   const baseSprite = user.base_sprite_idle || 'assets/characters/hero-male-idle.gif';
   const equippedList = user.equipped_items || [];
 
   let layersHTML = `<img src="${baseSprite}" alt="Base Hero Idle" class="character-img base-layer" />`;
 
-  // 2. Resolve costume overlay layers reliably
-  equippedList.forEach(itemEntry => {
-    if (!itemEntry || itemEntry === 'BASE') return;
+  equippedList.forEach(itemId => {
+    if (!itemId || itemId === 'hat_default') return;
 
-    let costumePath = itemEntry;
-    if (ITEM_MANIFEST[itemEntry]) {
-      costumePath = ITEM_MANIFEST[itemEntry].path;
+    let costumePath = itemId;
+    if (ITEM_MANIFEST[itemId]) {
+      costumePath = ITEM_MANIFEST[itemId].path;
     }
 
     if (costumePath) {
@@ -209,7 +209,6 @@ function renderCharacterAvatar(containerId, user) {
 }
 
 function syncAllAnimations() {
-  syncAnimToken = Date.now();
   if (currentUser) {
     renderCharacterAvatar('hub-avatar', currentUser);
     renderCharacterAvatar('player-sprite', currentUser);
@@ -218,20 +217,20 @@ function syncAllAnimations() {
 }
 
 // ==========================================
-// 2. AUTHENTICATION & PROFILE SETUP
+// 4. AUTHENTICATION & SESSION MANAGEMENT
 // ==========================================
 
 function handleLocalSignup(e) {
   e.preventDefault();
-  let name = document.getElementById('signup-name').value.trim().slice(0, 20);
+  const name = document.getElementById('signup-name').value.trim().slice(0, 20);
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
 
- //  const existingUser = localStorage.getItem(`user_${email}`);
- // if (existingUser) {
- //   showNotification("An account with this email already exists. Please log in.", "error");
- //   return;
- // }
+  const existingUser = localStorage.getItem(`user_${email}`);
+  if (existingUser) {
+    showNotification("An account with this email already exists.", "error");
+    return;
+  }
 
   const newUser = {
     email: email,
@@ -374,33 +373,21 @@ function checkBossAvailability() {
 }
 
 // ==========================================
-// 3. COMBAT, ANIMATION & COUNTER-ATTACK SYSTEM
+// 5. COMBAT ENGINE & MECHANICS
 // ==========================================
 
-const CATEGORY_BACKGROUNDS = {
-  tech: [
-    "assets/background/bg-tech-1.png",
-    "assets/background/bg-tech-2.png"
-  ],
-  fashion: [
-    "assets/background/bg-fashion-1.png",
-    "assets/background/bg-fashion-2.png"
-  ],
-  food: [
-    "assets/background/bg-food-1.png",
-    "assets/background/bg-food-2.png"
-  ],
-  sub: [
-    "assets/background/bg-sub-1.png",
-    "assets/background/bg-sub-2.png"
-  ],
-  general: [
-    "assets/background/bg-general-1.png",
-    "assets/background/bg-general-2.png",
-    "assets/background/bg-general-3.png",
-    "assets/background/bg-general-4.png"
-  ]
-};
+function getPlayerMaxHP() {
+  if (!currentUser) return 100;
+  return 100 + ((currentUser.lvl || 1) - 1) * 10;
+}
+
+function getEnemyMissChance() {
+  return 0.25;
+}
+
+function getCooldownMinutes() {
+  return 15;
+}
 
 function setBattleBackgroundByCategory(category) {
   const battleScreen = document.getElementById('screen-battle');
@@ -427,91 +414,34 @@ function getRandomMonsterAttack() {
   const hoursWorked = (price / wage).toFixed(1);
   const snacksEquivalent = Math.round(price / foodPrice);
   const eventsEquivalent = (price / eventPrice).toFixed(1);
-  const daysOfWage = (price / (wage * 8)).toFixed(1);
 
   const attacks = [
-    {
-      name: "Wage Dagger",
-      taunt: `"${itemName} isn't just $${price.toFixed(2)}—that costs you ${hoursWorked} hours of work!"`,
-      damage: 18
-    },
-    {
-      name: "Snack Blast",
-      taunt: `"Think fast! Buying ${itemName} equals giving up ${snacksEquivalent} favorite meals!"`,
-      damage: 15
-    },
-    {
-      name: "Event Slasher",
-      taunt: `"Is it worth trading ${eventsEquivalent} weekend outings just for ${itemName}?"`,
-      damage: 22
-    },
-    {
-      name: "Workday Drain",
-      taunt: `"That purchase takes away ${daysOfWage} full days of your hard-earned wages!"`,
-      damage: 20
-    },
-    {
-      name: "FOMO Flare",
-      taunt: `"Everyone else is buying ${itemName} right now—can you really afford to skip it?"`,
-      damage: 12
-    },
-    {
-      name: "Opportunity Cost Beam",
-      taunt: `"If you saved that $${price.toFixed(2)}, it could grow significantly in your vault!"`,
-      damage: 25
-    }
+    { name: "Wage Dagger", taunt: `"${itemName} costs you ${hoursWorked} hours of work!"`, damage: 18 },
+    { name: "Snack Blast", taunt: `"Buying ${itemName} equals giving up ${snacksEquivalent} meals!"`, damage: 15 },
+    { name: "Event Slasher", taunt: `"Is it worth trading ${eventsEquivalent} weekend outings?"`, damage: 22 },
+    { name: "FOMO Flare", taunt: `"Everyone else is buying ${itemName} right now!"`, damage: 12 },
+    { name: "Opportunity Cost Beam", taunt: `"If you saved $${price.toFixed(2)}, it could grow!"`, damage: 25 }
   ];
 
-  const randomIndex = Math.floor(Math.random() * attacks.length);
-  return attacks[randomIndex];
+  return attacks[Math.floor(Math.random() * attacks.length)];
 }
 
 function getMonsterData(itemName, price, category) {
   const lowerName = itemName.toLowerCase();
 
-  if (price >= 150) {
-    return { 
-      name: "Buyer's Remorse Titan", 
-      sprite: "assets/monsters/buyers-remorse-titan-idle.gif" 
-    };
-  }
+  if (price >= 150) return { name: "Buyer's Remorse Titan", sprite: "assets/monsters/buyers-remorse-titan-idle.gif" };
+  if (category === 'tech' || lowerName.includes('phone')) return { name: "Upgrade Overlord", sprite: "assets/monsters/upgrade-overlord-idle.gif" };
+  if (category === 'fashion' || lowerName.includes('shoes')) return { name: "Fast-Fashion Phantom", sprite: "assets/monsters/fast-fashion-phantom-idle.gif" };
+  if (category === 'food' || lowerName.includes('coffee')) return { name: "Snack-Attack Slime", sprite: "assets/monsters/sneak-attack-slime-idle.gif" };
+  if (category === 'sub' || lowerName.includes('subscription')) return { name: "Phantom Subscription Imp", sprite: "assets/monsters/phantom-subscription-imp-idle.gif" };
 
-  if (category === 'tech' || lowerName.includes('phone') || lowerName.includes('headphone')) {
-    return { 
-      name: "Upgrade Overlord", 
-      sprite: "assets/monsters/upgrade-overlord-idle.gif" 
-    };
-  } else if (category === 'fashion' || lowerName.includes('shoes') || lowerName.includes('clothes')) {
-    return { 
-      name: "Fast-Fashion Phantom", 
-      sprite: "assets/monsters/fast-fashion-phantom-idle.gif" 
-    };
-  } else if (category === 'food' || lowerName.includes('snack') || lowerName.includes('coffee')) {
-    return { 
-      name: "Snack-Attack Slime", 
-      sprite: "assets/monsters/sneak-attack-slime-idle.gif" 
-    };
-  } else if (category === 'sub' || lowerName.includes('subscription')) {
-    return { 
-      name: "Phantom Subscription Imp", 
-      sprite: "assets/monsters/phantom-subscription-imp-idle.gif" 
-    };
-  }
-
-  return price < 30 
-    ? { name: "Splurge Gremlin", sprite: "assets/monsters/splurge-gremlin-idle.gif" }
-    : { name: "FOMO Beast", sprite: "assets/monsters/fomo-beast-idle.gif" };
+  return price < 30 ? { name: "Splurge Gremlin", sprite: "assets/monsters/splurge-gremlin-idle.gif" } : { name: "FOMO Beast", sprite: "assets/monsters/fomo-beast-idle.gif" };
 }
 
 function calculateMonsterHP(price) {
-  if (price < 30) {
-    return 150;
-  } else if (price < 150) {
-    return 250;
-  } else {
-    const scaledHP = 300 + Math.floor((price - 150) * 0.25);
-    return Math.min(scaledHP, 1000);
-  }
+  if (price < 30) return 150;
+  if (price < 150) return 250;
+  return Math.min(300 + Math.floor((price - 150) * 0.25), 1000);
 }
 
 function startBattle() {
@@ -528,10 +458,6 @@ function startBattle() {
     return showNotification("Please enter a valid item name and price.", "error");
   }
 
-  if (price > 5000) {
-    return showNotification("Item price cannot exceed $5,000.00.", "error");
-  }
-
   const monsterHP = calculateMonsterHP(price);
 
   battleState.itemName = name;
@@ -540,7 +466,7 @@ function startBattle() {
   battleState.maxEnemyHP = monsterHP;
   battleState.enemyHP = monsterHP;
 
-  const maxHP = typeof getPlayerMaxHP === 'function' ? getPlayerMaxHP() : 100;
+  const maxHP = getPlayerMaxHP();
   battleState.maxPlayerHP = maxHP;
   battleState.playerHP = maxHP;
   battleState.isProcessing = false;
@@ -555,30 +481,11 @@ function startBattle() {
     enemyContainer.innerHTML = `<img src="${monster.sprite}?sync=${Date.now()}" alt="${monster.name}" class="character-img" />`;
   }
 
-  const playerNameEl = document.getElementById('player-battle-name');
-  const playerLvlEl = document.getElementById('player-battle-lvl');
-  if (playerNameEl) playerNameEl.textContent = currentUser ? currentUser.trainer_name : 'Hero';
-  if (playerLvlEl) playerLvlEl.textContent = `Lv ${currentUser ? currentUser.lvl : 1}`;
-
-  if (typeof renderCharacterAvatar === 'function') {
-    renderCharacterAvatar('player-sprite', currentUser);
-  }
-
-  const playerContainer = document.getElementById('player-sprite');
-
-  // Removed inline scale transform so CSS keyframes control animation sizes without shrinking
-  if (playerContainer) {
-    playerContainer.classList.remove('anim-player-attack', 'player-attack-anim');
-  }
-  if (enemyContainer) {
-    enemyContainer.classList.remove('anim-monster-attack', 'anim-enemy-attack', 'enemy-attack-anim', 'anim-monster-retreat');
-  }
-
+  renderCharacterAvatar('player-sprite', currentUser);
   setBattleBackgroundByCategory(category);
 
   updateHPUI();
   setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP!`);
-
   showAttackMenu();
   showScreen('screen-battle');
 }
@@ -629,10 +536,8 @@ function startQuestionFlow(attackType) {
   if (!container) return;
 
   const pool = QUESTION_POOLS[attackType];
-
   if (pool && pool.length > 0) {
-    const randomIndex = Math.floor(Math.random() * pool.length);
-    const selectedQuestion = pool[randomIndex];
+    const selectedQuestion = pool[Math.floor(Math.random() * pool.length)];
     setDialogue(`Reflection Question: ${selectedQuestion}`);
   }
 
@@ -661,12 +566,11 @@ function processPlayerAttack(attackType) {
   if (submitBtn) {
     submitBtn.disabled = true;
     submitBtn.style.opacity = '0.6';
-    submitBtn.textContent = 'Striking...';
   }
 
   const playerContainer = document.getElementById('player-sprite');
   if (playerContainer) {
-    playerContainer.classList.remove('anim-player-attack', 'player-attack-anim');
+    playerContainer.classList.remove('anim-player-attack');
     void playerContainer.offsetWidth;
     playerContainer.classList.add('anim-player-attack');
   }
@@ -691,40 +595,19 @@ function processPlayerAttack(attackType) {
     setDialogue(`You dealt ${damageDealt} DMG to ${battleState.monsterName}!${healMsg}`);
 
     setTimeout(() => {
-      const missChance = typeof getEnemyMissChance === 'function' ? getEnemyMissChance() : 0.25;
-      const isMiss = Math.random() < missChance;
-
-      if (isMiss) {
+      if (Math.random() < getEnemyMissChance()) {
         setDialogue(`${battleState.monsterName} attacked but MISSED! You took 0 damage.`);
         battleState.isProcessing = false;
         showAttackMenu();
       } else {
         const enemyContainer = document.getElementById('enemy-sprite');
         if (enemyContainer) {
-          enemyContainer.classList.remove('anim-monster-attack', 'enemy-attack-anim');
+          enemyContainer.classList.remove('anim-monster-attack');
           void enemyContainer.offsetWidth;
           enemyContainer.classList.add('anim-monster-attack');
         }
 
-        let chosenAttack = null;
-        try {
-          if (typeof getRandomMonsterAttack === 'function') {
-            chosenAttack = getRandomMonsterAttack();
-          }
-        } catch (err) {
-          console.error("Error retrieving monster attack:", err);
-        }
-
-        if (!chosenAttack || typeof chosenAttack.damage !== 'number') {
-          const wage = (currentUser && currentUser.wage > 0) ? currentUser.wage : 15.00;
-          const hoursWorked = (battleState.price / wage).toFixed(1);
-          chosenAttack = {
-            name: "Impulse Strike",
-            taunt: `"${battleState.itemName} costs you ${hoursWorked} hours of work!"`,
-            damage: 15
-          };
-        }
-
+        const chosenAttack = getRandomMonsterAttack();
         battleState.playerHP = Math.max(0, battleState.playerHP - chosenAttack.damage);
 
         setDialogue(`${battleState.monsterName} used ${chosenAttack.name}! ${chosenAttack.taunt} (-${chosenAttack.damage} HP)`);
@@ -740,14 +623,16 @@ function processPlayerAttack(attackType) {
           }
         }, 1500);
       }
-
-    }, 2000);
+    }, 1800);
   }
 }
 
+// ==========================================
+// 6. RESOLUTION, VAULT & COOLDOWN
+// ==========================================
+
 function victorySavedMoney() {
   const enemyContainer = document.getElementById('enemy-sprite');
-  
   if (enemyContainer) {
     enemyContainer.classList.remove('anim-monster-attack');
     void enemyContainer.offsetWidth;
@@ -755,10 +640,10 @@ function victorySavedMoney() {
   }
 
   if (typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
-  showNotification(`Victory! You defeated ${battleState.monsterName} and saved $${battleState.price.toFixed(2)}.`, "success");
+  showNotification(`Victory! Defeated ${battleState.monsterName} & saved $${battleState.price.toFixed(2)}.`, "success");
 
   if (currentUser) {
-    const cooldownMins = typeof getCooldownMinutes === 'function' ? getCooldownMinutes() : 15;
+    const cooldownMins = getCooldownMinutes();
     currentUser.vault_unlock_time = Date.now() + (cooldownMins * 60 * 1000);
   }
 
@@ -769,9 +654,7 @@ function victorySavedMoney() {
     date: new Date().toLocaleDateString()
   });
 
-  setTimeout(() => {
-    checkVaultDirect();
-  }, 500);
+  setTimeout(checkVaultDirect, 500);
 }
 
 function giveInAndSpend() {
@@ -787,82 +670,6 @@ function giveInAndSpend() {
   checkVaultDirect();
 }
 
-// ==========================================
-// 4. SETTINGS & ACCOUNT ACTIONS
-// ==========================================
-
-function updateTrainerName() {
-  const nameInput = document.getElementById('settings-name');
-  const newName = nameInput ? nameInput.value.trim().slice(0, 20) : '';
-
-  if (!newName) return showNotification("Please enter a valid name (1-20 characters).", "error");
-
-  if (currentUser) {
-    currentUser.trainer_name = newName;
-    saveUserData();
-    showNotification("Trainer name saved.", "success");
-    loadTrainerSession();
-  }
-}
-
-function updateMetricsSettings() {
-  const wage = parseFloat(document.getElementById('settings-wage').value);
-  const food = parseFloat(document.getElementById('settings-food').value);
-  const eventVal = parseFloat(document.getElementById('settings-event').value);
-
-  if (wage > 5000 || food > 5000 || eventVal > 5000) {
-    showNotification("Settings amounts cannot exceed $5,000.", "error");
-    return;
-  }
-
-  if (currentUser) {
-    currentUser.wage = wage || 15.00;
-    currentUser.food_price = food || 7.50;
-    currentUser.event_price = eventVal || 25.00;
-
-    saveUserData();
-    showNotification("Financial metrics saved.", "success");
-    loadTrainerSession();
-  }
-}
-
-function deleteAccount() {
-  const existingModal = document.getElementById('delete-modal');
-  if (existingModal) existingModal.remove();
-
-  const modal = document.createElement('div');
-  modal.id = 'delete-modal';
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <h3>Delete Account?</h3>
-      <p>Are you sure you want to delete your account? This action cannot be undone and all savings progress will be lost.</p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
-        <button class="btn btn-danger" onclick="confirmDeleteAccount()">Delete</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-}
-
-function closeDeleteModal() {
-  const modal = document.getElementById('delete-modal');
-  if (modal) modal.remove();
-}
-
-function confirmDeleteAccount() {
-  closeDeleteModal();
-  if (currentUser) {
-    localStorage.removeItem(`user_${currentUser.email}`);
-    localStorage.removeItem('session_user');
-    currentUser = null;
-    showNotification("Account successfully deleted.", "info");
-    showScreen('screen-login');
-  }
-}
-
 function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
   if (!currentUser) return;
 
@@ -876,7 +683,7 @@ function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
   if (newXp >= 100) {
     newLvl += 1;
     newXp -= 100;
-    showNotification(`Level Up! You reached Level ${newLvl}.`, "success");
+    showNotification(`Level Up! Reached Level ${newLvl}.`, "success");
   }
 
   currentUser.xp = newXp;
@@ -887,16 +694,6 @@ function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
   saveUserData();
   loadTrainerSession();
 }
-
-function logoutTrainer() {
-  localStorage.removeItem('session_user');
-  currentUser = null;
-  showScreen('screen-login');
-}
-
-// ==========================================
-// 5. VAULT & HISTORY LOGS
-// ==========================================
 
 function startVaultTimer(unlockTimestamp) {
   if (battleState.timerInterval) clearInterval(battleState.timerInterval);
@@ -977,7 +774,7 @@ function renderHistoryLogs(logs) {
 }
 
 // ==========================================
-// 6. SHOP & RELIABLE EQUIP/UNEQUIP SYSTEM
+// 7. WARDROBE & SHOP MANAGEMENT
 // ==========================================
 
 function openShop() {
@@ -987,7 +784,6 @@ function openShop() {
     document.getElementById('shop-gold-val').textContent = parseFloat(currentUser.saved_total || 0).toFixed(2);
   }
   renderCharacterAvatar('shop-preview-avatar', currentUser);
-
   updateShopButtons(currentUser);
   showScreen('screen-shop');
 }
@@ -1007,11 +803,8 @@ function updateShopButtons(user) {
       return;
     }
 
-    const itemData = ITEM_MANIFEST[itemId];
-    if (!itemData) return;
-
     const isOwned = inventory.includes(itemId);
-    const isEquipped = equipped.includes(itemData.path);
+    const isEquipped = equipped.includes(itemId);
 
     if (isEquipped) {
       btn.textContent = "Unequip";
@@ -1026,7 +819,7 @@ function updateShopButtons(user) {
   });
 }
 
-function buyOrEquip(itemId, price, spritePath) {
+function buyOrEquip(itemId, price) {
   if (!currentUser) return showScreen('screen-login');
 
   let equipped = currentUser.equipped_items || [];
@@ -1037,40 +830,30 @@ function buyOrEquip(itemId, price, spritePath) {
     equipped = [];
   } else {
     const itemData = ITEM_MANIFEST[itemId];
-    const canonicalPath = itemData ? itemData.path : spritePath;
-    const targetSlot = itemData ? itemData.slot : itemId.split('_')[0];
+    if (!itemData) return;
+
+    const targetSlot = itemData.slot;
     const isOwned = inventory.includes(itemId);
 
     if (isOwned) {
-      const index = equipped.indexOf(canonicalPath);
-      
+      const index = equipped.indexOf(itemId);
       if (index > -1) {
         equipped.splice(index, 1);
         showNotification("Item unequipped!", "info");
       } else {
-        equipped = equipped.filter(path => {
-          const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
-          return !(activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot);
-        });
-
-        equipped.push(canonicalPath);
+        equipped = equipped.filter(id => !(ITEM_MANIFEST[id] && ITEM_MANIFEST[id].slot === targetSlot));
+        equipped.push(itemId);
         showNotification("Item equipped!", "success");
       }
     } else {
       if (savedTotal < price) {
-        showNotification("You need more saved money to unlock this item!", "error");
+        showNotification("Insufficient savings to unlock this item!", "error");
         return;
       }
       savedTotal -= price;
       inventory.push(itemId);
-
-      // Auto-equip item upon unlock
-      equipped = equipped.filter(path => {
-        const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
-        return !(activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot);
-      });
-      equipped.push(canonicalPath);
-
+      equipped = equipped.filter(id => !(ITEM_MANIFEST[id] && ITEM_MANIFEST[id].slot === targetSlot));
+      equipped.push(itemId);
       showNotification("Item unlocked and equipped!", "success");
     }
   }
@@ -1085,28 +868,93 @@ function buyOrEquip(itemId, price, spritePath) {
 }
 
 // ==========================================
-// 7. GAME BALANCING & HELPER UTILITIES
+// 8. SETTINGS & ACCOUNT MANAGEMENT
 // ==========================================
 
-function getPlayerMaxHP() {
-  if (!currentUser) return 100;
-  return 100 + ((currentUser.lvl || 1) - 1) * 10;
+function updateTrainerName() {
+  const nameInput = document.getElementById('settings-name');
+  const newName = nameInput ? nameInput.value.trim().slice(0, 20) : '';
+
+  if (!newName) return showNotification("Please enter a valid name.", "error");
+
+  if (currentUser) {
+    currentUser.trainer_name = newName;
+    saveUserData();
+    showNotification("Trainer name saved.", "success");
+    loadTrainerSession();
+  }
 }
 
-function getEnemyMissChance() {
-  return 0.25;
+function updateMetricsSettings() {
+  const wage = parseFloat(document.getElementById('settings-wage').value);
+  const food = parseFloat(document.getElementById('settings-food').value);
+  const eventVal = parseFloat(document.getElementById('settings-event').value);
+
+  if (wage > 5000 || food > 5000 || eventVal > 5000) {
+    showNotification("Amounts cannot exceed $5,000.", "error");
+    return;
+  }
+
+  if (currentUser) {
+    currentUser.wage = wage || 15.00;
+    currentUser.food_price = food || 7.50;
+    currentUser.event_price = eventVal || 25.00;
+
+    saveUserData();
+    showNotification("Financial metrics saved.", "success");
+    loadTrainerSession();
+  }
 }
 
-function getCooldownMinutes() {
-  return 15;
+function deleteAccount() {
+  const existingModal = document.getElementById('delete-modal');
+  if (existingModal) existingModal.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'delete-modal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h3>Delete Account?</h3>
+      <p>Are you sure? All saved progress and inventory will be reset.</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmDeleteAccount()">Delete</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('delete-modal');
+  if (modal) modal.remove();
+}
+
+function confirmDeleteAccount() {
+  closeDeleteModal();
+  if (currentUser) {
+    localStorage.removeItem(`user_${currentUser.email}`);
+    localStorage.removeItem('session_user');
+    currentUser = null;
+    showNotification("Account permanently deleted.", "info");
+    showScreen('screen-login');
+  }
+}
+
+function logoutTrainer() {
+  localStorage.removeItem('session_user');
+  currentUser = null;
+  showNotification("Logged out.", "info");
+  showScreen('screen-login');
 }
 
 // ==========================================
-// 8. INITIALIZATION & EVENT BINDING
+// 9. EVENT BINDING & INITIALIZATION
 // ==========================================
+
 window.addEventListener('DOMContentLoaded', () => {
-  const currencyInputs = document.querySelectorAll('input[type="number"], .money-input');
-  currencyInputs.forEach(input => {
+  document.querySelectorAll('input[type="number"], .money-input').forEach(input => {
     input.addEventListener('input', (e) => enforceMoneyLimit(e.target));
   });
 
@@ -1116,9 +964,11 @@ window.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.getElementById('form-login');
   if (loginForm) loginForm.addEventListener('submit', handleLocalLogin);
 
+  const surveyForm = document.getElementById('form-survey');
+  if (surveyForm) surveyForm.addEventListener('submit', saveFinancialProfile);
+
   const tabLogin = document.getElementById('tab-login');
   const tabSignup = document.getElementById('tab-signup');
-
   if (tabLogin) tabLogin.addEventListener('click', () => switchAuthTab('login'));
   if (tabSignup) tabSignup.addEventListener('click', () => switchAuthTab('signup'));
 
