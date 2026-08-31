@@ -143,17 +143,22 @@ body {
   border-color: var(--poke-blue);
 }
 
+/* Base screen styles */
 .screen {
   display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   height: 100%;
-  padding: 24px 20px;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow-y: auto;
+  z-index: 1;
 }
 
-.screen.active { 
-  display: flex; 
+/* Active screen brought to the top */
+.screen.active,
+#screen-battle.active {
+  display: flex;
+  z-index: 10; /* Ensures it sits above hidden or background layers */
 }
 
 .onboarding-screen {
