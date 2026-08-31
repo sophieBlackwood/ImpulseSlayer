@@ -143,7 +143,7 @@ body {
   border-color: var(--poke-blue);
 }
 
-. {
+.screen {
   display: none;
   height: 100%;
   padding: 24px 20px;
@@ -809,30 +809,27 @@ input:focus {
   overflow: hidden !important;
 }
 
-/* Enemy Section: Pushed further inward from top-right */
 .enemy-row,
 .unit-row:first-child {
   position: absolute !important;
-  top: 30px !important;
-  right: 120px !important; /* Increased from 40px to pull closer to center */
+  top: 20px !important;
+  right: 10% !important;
   display: flex !important;
   flex-direction: row-reverse !important;
   align-items: flex-end !important;
-  gap: 16px !important;
+  gap: 12px !important;
   z-index: 2 !important;
 }
 
-/* Player Section: Pushed further inward from bottom-left (Directly above buttons) */
 .player-row,
 .unit-row:last-child {
   position: absolute !important;
-  bottom: 0px !important; /* Resting right against the top of the action panel */
-  left: 120px !important; /* Increased from 40px to pull closer to center */
+  bottom: 10px !important;
+  left: 10% !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: flex-end !important;
-  gap: 16px !important;
-  margin-top: 0 !important;
+  gap: 12px !important;
   z-index: 3 !important;
 }
 
@@ -842,17 +839,16 @@ input:focus {
   width: auto !important;
 }
 
-/* Larger Character Sizes (240px) */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas,
 #screen-battle .battle-arena .character-img {
-  width: 240px !important;
-  height: 240px !important;
-  min-width: 240px !important;
-  min-height: 240px !important;
-  max-width: 240px !important;
-  max-height: 240px !important;
+  width: 140px !important;
+  height: 140px !important;
+  min-width: 140px !important;
+  min-height: 140px !important;
+  max-width: 140px !important;
+  max-height: 140px !important;
   object-fit: contain !important;
   image-rendering: pixelated !important;
   filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75)) !important;
