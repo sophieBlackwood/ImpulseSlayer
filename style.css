@@ -226,24 +226,48 @@ body {
   object-fit: contain;
   image-rendering: pixelated;
 }
-
-/* 1. Remove the hover background on the characters */
-.character-img:hover,
-#player-sprite:hover,
+/* 1. Remove hover effect on monster/enemy sprite container */
 #enemy-sprite:hover,
-.sprite-option:hover {
+#enemy-sprite img:hover,
+.enemy-side .sprite-box:hover {
   background: transparent !important;
   background-color: transparent !important;
+  transform: none !important;
 }
 
-/* 2. Position the boss/enemy sprite on the right side of the arena */
+/* 2. Enemy/Boss Row: Positioned Top-Right (Health Bar Left, Boss Right) */
+.enemy-row,
+.unit-row:first-child {
+  position: absolute !important;
+  top: 15px !important;
+  right: 8% !important;
+  display: flex !important;
+  flex-direction: row-reverse !important;
+  align-items: center !important;
+  gap: 16px !important;
+  z-index: 2 !important;
+}
+
+/* 3. Player Row: Positioned Bottom-Left (Player Left, Health Bar Right) */
+.player-row,
+.unit-row:last-child {
+  position: absolute !important;
+  bottom: 15px !important;
+  left: 8% !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 16px !important;
+  z-index: 3 !important;
+}
+
+/* Position overrides for specific sprite elements */
 #enemy-sprite {
   position: absolute;
   right: 5%;
   left: auto;
 }
 
-/* 3. Shift the player sprite further to the left side */
 #player-sprite {
   position: absolute;
   left: 2%;
@@ -807,7 +831,7 @@ input:focus {
 }
 
 /* ============================================================
-   ORIGINAL BATTLE SCREEN WITH ENLARGED CREATURES & ACTION PANEL
+   BATTLE SCREEN WITH RESIZED CREATURES & REPOSITIONED HUD
    ============================================================ */
 
 #screen-battle {
@@ -832,49 +856,23 @@ input:focus {
   overflow: hidden !important;
 }
 
-/* Enemy/Boss Row: Positioned Top-Right (HUD Left, Boss Right) */
-.enemy-row,
-.unit-row:first-child {
-  position: absolute !important;
-  top: 20px !important;
-  right: 5% !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 16px !important;
-  z-index: 2 !important;
-}
-
-/* Player Row: Positioned Bottom-Left (Player Left, HUD Right) */
-.player-row,
-.unit-row:last-child {
-  position: absolute !important;
-  bottom: 20px !important;
-  left: 5% !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 16px !important;
-  z-index: 3 !important;
-}
-
 /* Base Unit Layout Override */
 .unit-row,
 .battle-row {
   width: auto !important;
 }
 
-/* Character Sprites Configuration & Hover Background Removal */
+/* Resized Sprites & Disabled Hover Scale */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas,
 #screen-battle .battle-arena .character-img {
-  width: 140px !important;
-  height: 140px !important;
-  min-width: 140px !important;
-  min-height: 140px !important;
-  max-width: 140px !important;
-  max-height: 140px !important;
+  width: 110px !important;
+  height: 110px !important;
+  min-width: 110px !important;
+  min-height: 110px !important;
+  max-width: 110px !important;
+  max-height: 110px !important;
   object-fit: contain !important;
   image-rendering: pixelated !important;
   filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75)) !important;
@@ -889,6 +887,7 @@ input:focus {
 #screen-battle .battle-arena .character-img:hover {
   background: transparent !important;
   background-color: transparent !important;
+  transform: none !important;
 }
 
 /* HUD Overlay Plates */
@@ -965,17 +964,17 @@ input:focus {
   }
 }
 
-/* Diagonal Player Attack (Up and to the Right towards Enemy) */
+/* Adjusted Diagonal Player Attack */
 @keyframes playerAttack {
   0%   { transform: translate(0, 0); }
-  50%  { transform: translate(100px, -60px); }
+  50%  { transform: translate(80px, -45px); }
   100% { transform: translate(0, 0); }
 }
 
-/* Diagonal Enemy Attack (Down and to the Left towards Player) */
+/* Adjusted Diagonal Enemy Attack */
 @keyframes monsterAttack {
   0%   { transform: translate(0, 0); }
-  50%  { transform: translate(-100px, 60px); }
+  50%  { transform: translate(-80px, 45px); }
   100% { transform: translate(0, 0); }
 }
 
