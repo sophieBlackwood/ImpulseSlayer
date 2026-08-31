@@ -554,20 +554,19 @@ function startBattle() {
 
   const playerContainer = document.getElementById('player-sprite');
 
+  // Removed inline scale transform so CSS keyframes control animation sizes without shrinking
   if (playerContainer) {
-    playerContainer.classList.remove('anim-player-attack');
-    playerContainer.style.transform = 'scale(1.3)';
-    playerContainer.style.transformOrigin = 'bottom center';
+    playerContainer.classList.remove('anim-player-attack', 'player-attack-anim');
   }
   if (enemyContainer) {
-    enemyContainer.classList.remove('anim-monster-attack', 'anim-monster-retreat');
+    enemyContainer.classList.remove('anim-monster-attack', 'anim-enemy-attack', 'enemy-attack-anim', 'anim-monster-retreat');
   }
 
   setBattleBackgroundByCategory(category);
 
   updateHPUI();
   setDialogue(`A powerful ${monster.name} appears with ${monsterHP} HP!`);
-  
+
   showAttackMenu();
   showScreen('screen-battle');
 }
@@ -575,7 +574,7 @@ function startBattle() {
 function updateHPUI() {
   const enemyPct = Math.max(0, (battleState.enemyHP / battleState.maxEnemyHP) * 100);
   const playerPct = Math.max(0, (battleState.playerHP / battleState.maxPlayerHP) * 100);
-  
+
   const enemyBar = document.getElementById('enemy-hp');
   const playerBar = document.getElementById('player-hp');
 
@@ -655,7 +654,7 @@ function processPlayerAttack(attackType) {
 
   const playerContainer = document.getElementById('player-sprite');
   if (playerContainer) {
-    playerContainer.classList.remove('anim-player-attack');
+    playerContainer.classList.remove('anim-player-attack', 'player-attack-anim');
     void playerContainer.offsetWidth;
     playerContainer.classList.add('anim-player-attack');
   }
@@ -690,7 +689,7 @@ function processPlayerAttack(attackType) {
       } else {
         const enemyContainer = document.getElementById('enemy-sprite');
         if (enemyContainer) {
-          enemyContainer.classList.remove('anim-monster-attack');
+          enemyContainer.classList.remove('anim-monster-attack', 'enemy-attack-anim');
           void enemyContainer.offsetWidth;
           enemyContainer.classList.add('anim-monster-attack');
         }
