@@ -836,26 +836,27 @@ input:focus {
 
 #screen-battle {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
-  display: none;
-  height: 100%;
-  padding: 20px;
+  display: flex;
   flex-direction: column;
-  justify-content: flex-end; /* Keeps action panel pinned to bottom */
+  justify-content: flex-end; /* Pins console box to bottom */
+  height: 100vh;
+  padding: 20px;
   position: relative !important;
   overflow: hidden !important;
+  box-sizing: border-box;
 }
 
 #screen-battle.active {
   display: flex;
 }
 
-/* Fixed Arena Height & Position (Prevents player sprite from moving when menu changes) */
+/* Fixed Arena Bounds (Decouples battle view from console expansion) */
 .battle-arena {
   position: absolute !important;
   top: 10px !important;
   left: 0 !important;
   right: 0 !important;
-  bottom: 230px !important; /* Fixed boundary above action panel */
+  bottom: 240px !important; /* Fixed gap matching console height */
   height: auto !important;
   width: 100% !important;
   padding: 0 !important;
@@ -866,31 +867,31 @@ input:focus {
    UNIT ROWS & HEALTH BAR POSITIONING
    ============================================================ */
 
-/* Top Row: Monster on Right, Health Bar on Left */
-.enemy-row,
-.unit-row:first-child {
+/* Enemy Side: Health Bar Left, Sprite Right */
+.unit-row.enemy-side,
+.enemy-row {
   position: absolute !important;
   top: 15px !important;
   left: 5% !important;
   right: 5% !important;
   width: 90% !important;
   display: flex !important;
-  flex-direction: row-reverse !important; /* Health Bar Left, Enemy Right */
+  flex-direction: row-reverse !important; /* Reverses HUD and Sprite order */
   justify-content: space-between !important;
   align-items: center !important;
   z-index: 2 !important;
 }
 
-/* Bottom Row: Player on Left, Health Bar on Right */
-.player-row,
-.unit-row:last-child {
+/* Player Side: Sprite Left, Health Bar Right */
+.unit-row.player-side,
+.player-row {
   position: absolute !important;
-  bottom: 25px !important; /* Lifted higher up in arena */
+  bottom: 20px !important; /* Elevated within arena bounds */
   left: 5% !important;
   right: 5% !important;
   width: 90% !important;
   display: flex !important;
-  flex-direction: row !important; /* Player Left, Health Bar Right */
+  flex-direction: row !important; /* Keeps Sprite Left, HUD Right */
   justify-content: space-between !important;
   align-items: center !important;
   z-index: 3 !important;
@@ -926,7 +927,7 @@ input:focus {
   object-fit: contain !important;
   image-rendering: pixelated !important;
   filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75)) !important;
-  transition: transform 0.2s ease-in-out !important;
+  transition: none !important;
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -950,20 +951,20 @@ input:focus {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-.plate-top { 
-  display: flex; 
-  justify-content: space-between; 
-  font-size: 0.75rem; 
-  font-weight: 600; 
-  margin-bottom: 6px; 
+.plate-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
-.unit-name { 
-  color: var(--text-primary); 
+.unit-name {
+  color: var(--text-primary);
 }
 
-.unit-lvl { 
-  color: var(--poke-yellow); 
+.unit-lvl {
+  color: var(--poke-yellow);
 }
 
 .hp-bar-bg {
@@ -982,11 +983,11 @@ input:focus {
   transition: width 0.3s ease;
 }
 
-.hp-bar-fill.player-hp { 
-  background: var(--hp-green); 
+.hp-bar-fill.player-hp {
+  background: var(--hp-green);
 }
 
-/* Fixed Action Panel at Bottom */
+/* Fixed Console/Action Panel at Bottom */
 .battle-action-panel,
 .console-box {
   background: #000000;
@@ -997,7 +998,8 @@ input:focus {
   margin-top: auto;
   position: relative;
   z-index: 10;
-  min-height: 200px;
+  height: 220px; /* Lock height so internal size shifts don't affect sprites */
+  box-sizing: border-box;
 }
 
 /* ==========================================
@@ -1015,14 +1017,12 @@ input:focus {
   }
 }
 
-/* Adjusted Diagonal Player Attack */
 @keyframes playerAttack {
   0%   { transform: translate(0, 0); }
   50%  { transform: translate(80px, -45px); }
   100% { transform: translate(0, 0); }
 }
 
-/* Adjusted Diagonal Enemy Attack */
 @keyframes monsterAttack {
   0%   { transform: translate(0, 0); }
   50%  { transform: translate(-80px, 45px); }
@@ -1040,7 +1040,6 @@ input:focus {
   }
 }
 
-/* Animation Trigger Classes */
 .anim-player-attack,
 .player-attack-anim {
   animation: playerAttack 0.35s ease-in-out !important;
