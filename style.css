@@ -831,7 +831,7 @@ input:focus {
 }
 
 /* ============================================================
-   BATTLE SCREEN WITH RESIZED CREATURES & REPOSITIONED HUD
+   BATTLE SCREEN CONTAINER & FIXED ARENA
    ============================================================ */
 
 #screen-battle {
@@ -840,20 +840,60 @@ input:focus {
   height: 100%;
   padding: 20px;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end; /* Keeps action panel pinned to bottom */
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 #screen-battle.active {
   display: flex;
 }
 
-/* Staggered Pokémon-Style Battle Arena */
+/* Fixed Arena Height & Position (Prevents player sprite from moving when menu changes) */
 .battle-arena {
-  position: relative !important;
-  height: 480px !important;
+  position: absolute !important;
+  top: 10px !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 230px !important; /* Fixed boundary above action panel */
+  height: auto !important;
   width: 100% !important;
   padding: 0 !important;
   overflow: hidden !important;
+}
+
+/* ============================================================
+   UNIT ROWS & HEALTH BAR POSITIONING
+   ============================================================ */
+
+/* Top Row: Monster on Right, Health Bar on Left */
+.enemy-row,
+.unit-row:first-child {
+  position: absolute !important;
+  top: 15px !important;
+  left: 5% !important;
+  right: 5% !important;
+  width: 90% !important;
+  display: flex !important;
+  flex-direction: row-reverse !important; /* Health Bar Left, Enemy Right */
+  justify-content: space-between !important;
+  align-items: center !important;
+  z-index: 2 !important;
+}
+
+/* Bottom Row: Player on Left, Health Bar on Right */
+.player-row,
+.unit-row:last-child {
+  position: absolute !important;
+  bottom: 25px !important; /* Lifted higher up in arena */
+  left: 5% !important;
+  right: 5% !important;
+  width: 90% !important;
+  display: flex !important;
+  flex-direction: row !important; /* Player Left, Health Bar Right */
+  justify-content: space-between !important;
+  align-items: center !important;
+  z-index: 3 !important;
 }
 
 /* Base Unit Layout Override */
@@ -862,17 +902,27 @@ input:focus {
   width: auto !important;
 }
 
+#enemy-sprite {
+  position: relative !important;
+  margin-left: auto !important;
+}
+
+#player-sprite {
+  position: relative !important;
+  margin-right: auto !important;
+}
+
 /* Resized Sprites & Disabled Hover Scale */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas,
 #screen-battle .battle-arena .character-img {
-  width: 110px !important;
-  height: 110px !important;
-  min-width: 110px !important;
-  min-height: 110px !important;
-  max-width: 110px !important;
-  max-height: 110px !important;
+  width: 100px !important;
+  height: 100px !important;
+  min-width: 100px !important;
+  min-height: 100px !important;
+  max-width: 100px !important;
+  max-height: 100px !important;
   object-fit: contain !important;
   image-rendering: pixelated !important;
   filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75)) !important;
@@ -936,7 +986,7 @@ input:focus {
   background: var(--hp-green); 
 }
 
-/* Black Background Border Panel around Console & Buttons */
+/* Fixed Action Panel at Bottom */
 .battle-action-panel,
 .console-box {
   background: #000000;
@@ -944,9 +994,10 @@ input:focus {
   border-radius: 14px;
   padding: 14px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
-  margin-top: 12px;
+  margin-top: auto;
   position: relative;
   z-index: 10;
+  min-height: 200px;
 }
 
 /* ==========================================
