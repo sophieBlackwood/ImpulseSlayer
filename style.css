@@ -158,7 +158,7 @@ body {
 .screen.active,
 #screen-battle.active {
   display: flex;
-  z-index: 10; /* Ensures it sits above hidden or background layers */
+  z-index: 10;
 }
 
 .onboarding-screen {
@@ -169,7 +169,7 @@ body {
   display: none;
 }
 #screen-signup.active {
-  display: flex; /* or block */
+  display: flex;
 }
 
 #screen-hub,
@@ -231,7 +231,8 @@ body {
   object-fit: contain;
   image-rendering: pixelated;
 }
-/* 1. Remove hover effect on monster/enemy sprite container */
+
+/* Disable hover effects on enemy sprites */
 #enemy-sprite:hover,
 #enemy-sprite img:hover,
 .enemy-side .sprite-box:hover {
@@ -240,43 +241,10 @@ body {
   transform: none !important;
 }
 
-/* 2. Enemy/Boss Row: Positioned Top-Right (Health Bar Left, Boss Right) */
-.enemy-row,
-.unit-row:first-child {
-  position: absolute !important;
-  top: 15px !important;
-  right: 8% !important;
-  display: flex !important;
-  flex-direction: row-reverse !important;
-  align-items: center !important;
-  gap: 16px !important;
-  z-index: 2 !important;
-}
-
-/* 3. Player Row: Positioned Bottom-Left (Player Left, Health Bar Right) */
-.player-row,
-.unit-row:last-child {
-  position: absolute !important;
-  bottom: 15px !important;
-  left: 8% !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 16px !important;
-  z-index: 3 !important;
-}
-
-/* Position overrides for specific sprite elements */
-#enemy-sprite {
-  position: absolute;
-  right: 5%;
-  left: auto;
-}
-
+/* Base Sprite Container Alignment inside Flexbox */
+#enemy-sprite,
 #player-sprite {
-  position: absolute;
-  left: 2%;
-  right: auto;
+  position: relative;
 }
 
 /* ==========================================
@@ -379,8 +347,8 @@ input {
   outline: none;
 }
 
-input:focus { 
-  border-color: var(--poke-yellow); 
+input:focus {
+  border-color: var(--poke-yellow);
 }
 
 .custom-select {
@@ -432,14 +400,14 @@ input:focus {
   background: rgba(56, 189, 248, 0.08);
 }
 
-.sprite-icon { 
-  margin-bottom: 8px; 
+.sprite-icon {
+  margin-bottom: 8px;
 }
 
-.sprite-label { 
-  font-size: 0.85rem; 
-  font-weight: 600; 
-  color: var(--text-primary); 
+.sprite-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 /* ==========================================
@@ -462,51 +430,51 @@ input:focus {
   outline: none;
 }
 
-.btn:active { 
-  transform: scale(0.98); 
+.btn:active {
+  transform: scale(0.98);
 }
 
-.btn-primary { 
-  background: var(--poke-yellow); 
-  color: var(--bg-deep); 
+.btn-primary {
+  background: var(--poke-yellow);
+  color: var(--bg-deep);
 }
 
-.btn-action-main { 
-  background: var(--hp-green); 
-  color: #ffffff; 
-  padding: 16px; 
-  font-size: 0.95rem; 
+.btn-action-main {
+  background: var(--hp-green);
+  color: #ffffff;
+  padding: 16px;
+  font-size: 0.95rem;
 }
 
-.btn-secondary { 
-  background: var(--color-umber); 
-  color: var(--text-primary); 
-  border: 1px solid var(--card-border); 
+.btn-secondary {
+  background: var(--color-umber);
+  color: var(--text-primary);
+  border: 1px solid var(--card-border);
 }
 
-.btn-equipped { 
-  background: var(--color-olive); 
-  color: var(--text-primary); 
-  font-weight: 700; 
+.btn-equipped {
+  background: var(--color-olive);
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
-.btn-danger { 
-  background: rgba(239, 68, 68, 0.15); 
-  color: var(--hp-red); 
-  border: 1px solid rgba(239, 68, 68, 0.4); 
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--hp-red);
+  border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
-.btn-ghost { 
-  background: transparent; 
-  color: var(--text-muted); 
-  font-size: 0.85rem; 
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
 
-.btn-sm { 
-  width: auto; 
-  padding: 8px 14px; 
-  font-size: 0.75rem; 
-  margin-top: 0; 
+.btn-sm {
+  width: auto;
+  padding: 8px 14px;
+  font-size: 0.75rem;
+  margin-top: 0;
 }
 
 /* ==========================================
@@ -553,21 +521,21 @@ input:focus {
   gap: 12px;
 }
 
-.user-meta { 
-  flex: 1; 
+.user-meta {
+  flex: 1;
 }
 
-.user-meta h2 { 
-  font-family: var(--font-heading); 
-  font-size: 1.1rem; 
-  color: var(--text-primary); 
-  margin-bottom: 2px; 
+.user-meta h2 {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 2px;
 }
 
-.lvl-tag { 
-  font-size: 0.8rem; 
-  color: var(--poke-yellow); 
-  font-weight: 600; 
+.lvl-tag {
+  font-size: 0.8rem;
+  color: var(--poke-yellow);
+  font-weight: 600;
 }
 
 .settings-btn {
@@ -577,10 +545,10 @@ input:focus {
   opacity: 0.8;
 }
 
-.stats-grid { 
-  display: flex; 
-  gap: 12px; 
-  margin: 16px 0; 
+.stats-grid {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
 }
 
 .stat-card {
@@ -594,48 +562,48 @@ input:focus {
   gap: 4px;
 }
 
-.stat-label { 
-  font-size: 0.75rem; 
-  color: var(--text-muted); 
+.stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
 }
 
-.stat-val { 
-  font-family: var(--font-heading); 
-  font-size: 1.1rem; 
-  color: var(--poke-yellow); 
-  font-weight: 700; 
+.stat-val {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  color: var(--poke-yellow);
+  font-weight: 700;
 }
 
-.hub-actions { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 4px; 
+.hub-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.top-bar { 
-  display: flex; 
-  align-items: center; 
-  gap: 16px; 
-  margin-bottom: 12px; 
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
-.back-btn { 
-  background: none; 
-  border: none; 
-  color: var(--poke-yellow); 
-  font-family: var(--font-heading); 
-  font-weight: 600; 
-  font-size: 0.85rem; 
-  cursor: pointer; 
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--poke-yellow);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
 }
 
-.screen-title { 
-  font-size: 0.85rem; 
-  color: var(--text-muted); 
+.screen-title {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
-.console-box { 
-  margin-top: 0; 
+.console-box {
+  margin-top: 0;
 }
 
 .terminal-text {
@@ -688,8 +656,8 @@ input:focus {
   margin-top: 4px;
 }
 
-.hidden { 
-  display: none !important; 
+.hidden {
+  display: none !important;
 }
 
 .timer-display {
@@ -741,31 +709,31 @@ input:focus {
   font-size: 0.8rem;
 }
 
-.log-item.saved { 
-  border-left: 3px solid var(--hp-green); 
+.log-item.saved {
+  border-left: 3px solid var(--hp-green);
 }
 
-.log-item.spent { 
-  border-left: 3px solid var(--hp-red); 
+.log-item.spent {
+  border-left: 3px solid var(--hp-red);
 }
 
-.log-name { 
-  font-weight: 600; 
-  color: var(--text-primary); 
+.log-name {
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.log-val.saved { 
-  color: var(--poke-blue); 
-  font-weight: 700; 
+.log-val.saved {
+  color: var(--poke-blue);
+  font-weight: 700;
 }
 
-.log-val.spent { 
-  color: var(--hp-red); 
-  font-weight: 700; 
+.log-val.spent {
+  color: var(--hp-red);
+  font-weight: 700;
 }
 
-.mb-12 { 
-  margin-bottom: 12px; 
+.mb-12 {
+  margin-bottom: 12px;
 }
 
 .gold-badge {
@@ -817,22 +785,22 @@ input:focus {
   object-fit: contain;
 }
 
-.item-info { 
-  flex: 1; 
-  margin-left: 12px; 
-  text-align: left; 
+.item-info {
+  flex: 1;
+  margin-left: 12px;
+  text-align: left;
 }
 
-.item-name { 
-  display: block; 
-  font-size: 0.85rem; 
-  font-weight: 600; 
-  color: var(--text-primary); 
+.item-name {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
-.item-cost { 
-  font-size: 0.75rem; 
-  color: var(--poke-yellow); 
+.item-cost {
+  font-size: 0.75rem;
+  color: var(--poke-yellow);
 }
 
 /* ============================================================
@@ -842,7 +810,7 @@ input:focus {
 #screen-battle {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
   display: none;
-  height: 100vh;
+  height: 100%;
   padding: 16px;
   box-sizing: border-box;
   flex-direction: column;
@@ -877,13 +845,21 @@ input:focus {
 }
 
 /* Top Row (Enemy): Reverses layout so HUD is on Left, Sprite is on Right */
-.unit-row.enemy-side {
+.unit-row.enemy-side,
+.enemy-row {
   flex-direction: row-reverse;
+  align-items: center;
+  gap: 16px;
+  z-index: 2;
 }
 
 /* Bottom Row (Player): Standard layout so Sprite is on Left, HUD is on Right */
-.unit-row.player-side {
+.unit-row.player-side,
+.player-row {
   flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  z-index: 3;
 }
 
 /* Sprite Container Sizing */
@@ -964,6 +940,17 @@ input:focus {
 /* ==========================================
    KEYFRAME ANIMATIONS
    ========================================== */
+
+@keyframes toastSlideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
 
 @keyframes playerAttack {
   0%   { transform: translate(0, 0); }
