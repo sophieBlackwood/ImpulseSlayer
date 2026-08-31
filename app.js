@@ -870,7 +870,7 @@ function updateTrainerStats(xpGained, goldSaved, logEntry = null) {
 
   currentUser.xp = newXp;
   currentUser.lvl = newLvl;
-  currentUser.saved_total = newSaved;
+  currentUser.saved_total = Math.max(0, Math.round(newSaved * 100) / 100);
   currentUser.logs = newLogs;
 
   saveUserData();
@@ -895,7 +895,9 @@ function startVaultTimer(unlockTimestamp) {
 
     if (remaining <= 0) {
       clearInterval(battleState.timerInterval);
-      document.getElementById('vault-timer').textContent = "Ready";
+      battleState.timerInterval = null;
+      const timerEl = document.getElementById('vault-timer');
+      if (timerEl) timerEl.textContent = "Ready";
 
       if (currentUser) {
         currentUser.vault_unlock_time = null;
@@ -908,8 +910,10 @@ function startVaultTimer(unlockTimestamp) {
     const mins = Math.floor(remaining / (1000 * 60));
     const secs = Math.floor((remaining % (1000 * 60)) / 1000);
 
-    document.getElementById('vault-timer').textContent = 
-      `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    const timerEl = document.getElementById('vault-timer');
+    if (timerEl) {
+      timerEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
   }
 
   updateDisplay();
@@ -922,7 +926,12 @@ function checkVaultDirect() {
   if (currentUser.vault_unlock_time && currentUser.vault_unlock_time > Date.now()) {
     startVaultTimer(currentUser.vault_unlock_time);
   } else {
-    document.getElementById('vault-timer').textContent = "Ready";
+    if (battleState.timerInterval) {
+      clearInterval(battleState.timerInterval);
+      battleState.timerInterval = null;
+    }
+    const timerEl = document.getElementById('vault-timer');
+    if (timerEl) timerEl.textContent = "Ready";
   }
 
   renderHistoryLogs(currentUser.logs || []);
@@ -1043,13 +1052,21 @@ function buyOrEquip(itemId, price, spritePath) {
       }
       savedTotal -= price;
       inventory.push(itemId);
-      showNotification("Item unlocked!", "success");
+
+      // Auto-equip item upon unlock
+      equipped = equipped.filter(path => {
+        const activeItemKey = Object.keys(ITEM_MANIFEST).find(key => ITEM_MANIFEST[key].path === path);
+        return !(activeItemKey && ITEM_MANIFEST[activeItemKey].slot === targetSlot);
+      });
+      equipped.push(canonicalPath);
+
+      showNotification("Item unlocked and equipped!", "success");
     }
   }
 
   currentUser.equipped_items = equipped;
   currentUser.inventory = inventory;
-  currentUser.saved_total = savedTotal;
+  currentUser.saved_total = Math.max(0, Math.round(savedTotal * 100) / 100);
 
   saveUserData();
   syncAllAnimations();
@@ -1057,7 +1074,24 @@ function buyOrEquip(itemId, price, spritePath) {
 }
 
 // ==========================================
-// 7. INITIALIZATION & EVENT BINDING
+// 7. GAME BALANCING & HELPER UTILITIES
+// ==========================================
+
+function getPlayerMaxHP() {
+  if (!currentUser) return 100;
+  return 100 + ((currentUser.lvl || 1) - 1) * 10;
+}
+
+function getEnemyMissChance() {
+  return 0.25;
+}
+
+function getCooldownMinutes() {
+  return 15;
+}
+
+// ==========================================
+// 8. INITIALIZATION & EVENT BINDING
 // ==========================================
 window.addEventListener('DOMContentLoaded', () => {
   const currencyInputs = document.querySelectorAll('input[type="number"], .money-input');
