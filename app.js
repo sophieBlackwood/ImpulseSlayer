@@ -215,11 +215,11 @@ function handleLocalSignup(e) {
   const email = document.getElementById('signup-email').value.trim().toLowerCase().slice(0, 50);
   const pass = document.getElementById('signup-pass').value.slice(0, 50);
 
-  const existingUser = localStorage.getItem(`user_${email}`);
-  if (existingUser) {
-    showNotification("An account with this email already exists. Please log in.", "error");
-    return;
-  }
+ //  const existingUser = localStorage.getItem(`user_${email}`);
+ // if (existingUser) {
+ //   showNotification("An account with this email already exists. Please log in.", "error");
+ //   return;
+ // }
 
   const newUser = {
     email: email,
