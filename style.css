@@ -866,13 +866,14 @@ input:focus,
   line-height: 1.4;
   color: var(--poke-yellow);
   min-height: 56px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .attack-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
 }
 
 .attack-btn {
@@ -882,19 +883,28 @@ input:focus,
   color: var(--text-primary);
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 0.8rem;
-  padding: 12px;
+  font-size: 0.85rem;
+  padding: 12px 14px;
   cursor: pointer;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.attack-btn:hover {
+  border-color: var(--poke-yellow);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .attack-btn small {
   display: block;
   font-family: var(--font-main);
   font-weight: 400;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .attack-btn.flee {
@@ -905,6 +915,10 @@ input:focus,
   border-color: rgba(239, 68, 68, 0.4);
   background: rgba(239, 68, 68, 0.08);
   margin-top: 4px;
+}
+
+.attack-btn.flee:hover {
+  background: rgba(239, 68, 68, 0.18);
 }
 
 /* ==========================================
@@ -923,13 +937,13 @@ input:focus,
 
 @keyframes playerAttack {
   0%   { transform: translate(0, 0); }
-  50%  { transform: translate(60px, -30px); }
+  50%  { transform: translate(50px, -20px); }
   100% { transform: translate(0, 0); }
 }
 
 @keyframes monsterAttack {
   0%   { transform: translate(0, 0); }
-  50%  { transform: translate(-60px, 30px); }
+  50%  { transform: translate(-50px, 20px); }
   100% { transform: translate(0, 0); }
 }
 
@@ -938,6 +952,7 @@ input:focus,
   animation: playerAttack 0.35s ease-in-out !important;
 }
 
+.anim-monster-attack,
 .anim-enemy-attack,
 .enemy-attack-anim {
   animation: monsterAttack 0.35s ease-in-out !important;
