@@ -39,6 +39,18 @@ body {
   padding: 12px;
 }
 
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--card-border);
+  border-radius: 4px;
+}
+
 /* ==========================================
    IN-APP CONFIRMATION MODAL OVERLAY
    ========================================== */
@@ -145,19 +157,20 @@ body {
 
 /* Base screen styles */
 .screen {
-  display: none;
+  display: none !important;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: 1;
+  box-sizing: border-box;
+  flex-direction: column;
 }
 
 /* Active screen brought to the top */
-.screen.active,
-#screen-battle.active {
-  display: flex;
+.screen.active {
+  display: flex !important;
   z-index: 10;
 }
 
@@ -165,19 +178,14 @@ body {
   background: url('assets/background/login-bg.png') center/cover no-repeat;
 }
 
-#screen-signup {
-  display: none;
-}
-#screen-signup.active {
-  display: flex;
-}
-
 #screen-hub,
 #screen-quest,
 #screen-settings,
 #screen-shop,
-#screen-vault {
+#screen-vault,
+#screen-battle {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
+  padding: 16px;
 }
 
 /* ==========================================
@@ -232,16 +240,15 @@ body {
   image-rendering: pixelated;
 }
 
-/* Disable hover effects on enemy sprites */
-#enemy-sprite:hover,
-#enemy-sprite img:hover,
-.enemy-side .sprite-box:hover {
+/* Disable hover background shift without freezing animations */
+#enemy-sprite:not(.anim-enemy-attack):hover,
+#enemy-sprite img:not(.anim-enemy-attack):hover,
+.enemy-side .sprite-box:not(.anim-enemy-attack):hover {
   background: transparent !important;
   background-color: transparent !important;
   transform: none !important;
 }
 
-/* Base Sprite Container Alignment inside Flexbox */
 #enemy-sprite,
 #player-sprite {
   position: relative;
@@ -335,7 +342,8 @@ body {
   margin-bottom: 6px;
 }
 
-input {
+input,
+.custom-select {
   width: 100%;
   padding: 12px;
   background: var(--bg-deep);
@@ -345,26 +353,16 @@ input {
   font-family: var(--font-main);
   font-size: 0.9rem;
   outline: none;
+  box-sizing: border-box;
 }
 
-input:focus {
+input:focus,
+.custom-select:focus {
   border-color: var(--poke-yellow);
 }
 
 .custom-select {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--bg-deep);
-  border: 1px solid var(--card-border);
-  color: var(--text-primary);
-  border-radius: 8px;
-  font-size: 0.9rem;
-  outline: none;
   cursor: pointer;
-}
-
-.custom-select:focus {
-  border-color: var(--poke-yellow);
 }
 
 .custom-select option {
@@ -428,6 +426,7 @@ input:focus {
   justify-content: center;
   transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
   outline: none;
+  box-sizing: border-box;
 }
 
 .btn:active {
@@ -602,64 +601,6 @@ input:focus {
   color: var(--text-muted);
 }
 
-.console-box {
-  margin-top: 0;
-}
-
-.terminal-text {
-  background: rgba(7, 12, 20, 0.9);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 0.85rem;
-  line-height: 1.4;
-  color: var(--poke-yellow);
-  min-height: 56px;
-  margin-bottom: 10px;
-}
-
-.attack-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.attack-btn {
-  background: var(--card-surface);
-  border: 1px solid var(--card-border);
-  border-radius: 10px;
-  color: var(--text-primary);
-  font-family: var(--font-heading);
-  font-weight: 600;
-  font-size: 0.8rem;
-  padding: 12px;
-  cursor: pointer;
-  text-align: left;
-}
-
-.attack-btn small {
-  display: block;
-  font-family: var(--font-main);
-  font-weight: 400;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-.attack-btn.flee {
-  grid-column: 1 / -1;
-  width: 100%;
-  text-align: center;
-  color: var(--hp-red);
-  border-color: rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.08);
-  margin-top: 4px;
-}
-
-.hidden {
-  display: none !important;
-}
-
 .timer-display {
   font-family: var(--font-heading);
   font-size: 2.2rem;
@@ -803,25 +744,17 @@ input:focus {
   color: var(--poke-yellow);
 }
 
-/* ============================================================
-   BATTLE SCREEN CONTAINER & FLEXIBLE ARENA
-   ============================================================ */
+.hidden {
+  display: none !important;
+}
 
+/* ============================================================
+   BATTLE SCREEN CONTAINER & ARENA (Scoped)
+   ============================================================ */
 #screen-battle {
-  background: url('assets/background/hub-bg.png') center/cover no-repeat;
-  display: none;
-  height: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-  flex-direction: column;
   justify-content: space-between;
 }
 
-#screen-battle.active {
-  display: flex;
-}
-
-/* Flexible Arena Container */
 .battle-arena {
   position: relative;
   flex: 1;
@@ -830,12 +763,7 @@ input:focus {
   flex-direction: column;
   justify-content: space-between;
   padding: 10px 0;
-  box-sizing: border-box;
 }
-
-/* ============================================================
-   UNIT ROWS & HEALTH BAR ALIGNMENT
-   ============================================================ */
 
 .unit-row {
   display: flex;
@@ -844,7 +772,6 @@ input:focus {
   width: 100%;
 }
 
-/* Top Row (Enemy): Reverses layout so HUD is on Left, Sprite is on Right */
 .unit-row.enemy-side,
 .enemy-row {
   flex-direction: row-reverse;
@@ -853,7 +780,6 @@ input:focus {
   z-index: 2;
 }
 
-/* Bottom Row (Player): Standard layout so Sprite is on Left, HUD is on Right */
 .unit-row.player-side,
 .player-row {
   flex-direction: row;
@@ -862,7 +788,6 @@ input:focus {
   z-index: 3;
 }
 
-/* Sprite Container Sizing */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas {
@@ -874,14 +799,11 @@ input:focus {
   image-rendering: pixelated;
   filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75));
   background: transparent !important;
-  transform: none !important;
-  transition: none;
 }
 
-/* HUD Overlay Plates */
 .hud-plate {
   background: rgba(15, 23, 42, 0.9);
-  border: 1px solid var(--card-border, #334155);
+  border: 1px solid var(--card-border);
   border-radius: 10px;
   padding: 10px;
   width: 170px;
@@ -897,18 +819,18 @@ input:focus {
 }
 
 .unit-name {
-  color: var(--text-primary, #ffffff);
+  color: var(--text-primary);
 }
 
 .unit-lvl {
-  color: var(--poke-yellow, #facc15);
+  color: var(--poke-yellow);
 }
 
 .hp-bar-bg {
   width: 100%;
   height: 10px;
-  background: var(--bg-deep, #0f172a);
-  border: 1px solid var(--card-border, #334155);
+  background: var(--bg-deep);
+  border: 1px solid var(--card-border);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -916,31 +838,78 @@ input:focus {
 .hp-bar-fill {
   width: 100%;
   height: 100%;
-  background: var(--hp-red, #ef4444);
+  background: var(--hp-red);
   transition: width 0.3s ease;
 }
 
 .hp-bar-fill.player-hp {
-  background: var(--hp-green, #22c55e);
+  background: var(--hp-green);
 }
 
-/* Console Box at Bottom */
 .console-box {
   background: #000000;
-  border: 2px solid var(--card-border, #334155);
+  border: 2px solid var(--card-border);
   border-radius: 14px;
   padding: 14px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
   margin-top: 12px;
   position: relative;
   z-index: 10;
-  box-sizing: border-box;
+}
+
+.terminal-text {
+  background: rgba(7, 12, 20, 0.9);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--poke-yellow);
+  min-height: 56px;
+  margin-bottom: 10px;
+}
+
+.attack-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.attack-btn {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.attack-btn small {
+  display: block;
+  font-family: var(--font-main);
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.attack-btn.flee {
+  grid-column: 1 / -1;
+  width: 100%;
+  text-align: center;
+  color: var(--hp-red);
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+  margin-top: 4px;
 }
 
 /* ==========================================
    KEYFRAME ANIMATIONS
    ========================================== */
-
 @keyframes toastSlideDown {
   from {
     opacity: 0;
