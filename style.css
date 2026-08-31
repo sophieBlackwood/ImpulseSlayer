@@ -227,6 +227,29 @@ body {
   image-rendering: pixelated;
 }
 
+/* 1. Remove the hover background on the characters */
+.character-img:hover,
+#player-sprite:hover,
+#enemy-sprite:hover,
+.sprite-option:hover {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* 2. Position the boss/enemy sprite on the right side of the arena */
+#enemy-sprite {
+  position: absolute;
+  right: 5%;
+  left: auto;
+}
+
+/* 3. Shift the player sprite further to the left side */
+#player-sprite {
+  position: absolute;
+  left: 2%;
+  right: auto;
+}
+
 /* ==========================================
    UI UTILITIES & TEXT
    ========================================== */
