@@ -146,11 +146,23 @@ function saveUserData() {
 // 1. UI NAVIGATION & SCREEN MANAGEMENT
 // ==========================================
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const target = document.getElementById(id);
-  if (target) target.classList.add('active');
+function showScreen(screenId) {
+  // Hide all screens first
+  document.querySelectorAll('.screen').forEach(screen => {
+    screen.style.display = 'none';
+    screen.classList.remove('active');
+  });
+
+  // Display only the requested screen
+  const targetScreen = document.getElementById(screenId);
+  if (targetScreen) {
+    targetScreen.style.display = 'flex';
+    targetScreen.classList.add('active');
+  }
 }
+
+// Example call:
+showScreen('screen-battle');
 
 function switchAuthTab(tab) {
   const isLogin = tab === 'login';
