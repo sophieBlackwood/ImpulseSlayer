@@ -831,120 +831,76 @@ input:focus {
 }
 
 /* ============================================================
-   BATTLE SCREEN CONTAINER & FIXED ARENA
+   BATTLE SCREEN CONTAINER & FLEXIBLE ARENA
    ============================================================ */
 
 #screen-battle {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end; /* Pins console box to bottom */
+  display: none;
   height: 100vh;
-  padding: 20px;
-  position: relative !important;
-  overflow: hidden !important;
+  padding: 16px;
   box-sizing: border-box;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 #screen-battle.active {
   display: flex;
 }
 
-/* Fixed Arena Bounds (Decouples battle view from console expansion) */
+/* Flexible Arena Container */
 .battle-arena {
-  position: absolute !important;
-  top: 10px !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 240px !important; /* Fixed gap matching console height */
-  height: auto !important;
-  width: 100% !important;
-  padding: 0 !important;
-  overflow: hidden !important;
+  position: relative;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 0;
+  box-sizing: border-box;
 }
 
 /* ============================================================
-   UNIT ROWS & HEALTH BAR POSITIONING
+   UNIT ROWS & HEALTH BAR ALIGNMENT
    ============================================================ */
 
-/* Enemy Side: Health Bar Left, Sprite Right */
-.unit-row.enemy-side,
-.enemy-row {
-  position: absolute !important;
-  top: 15px !important;
-  left: 5% !important;
-  right: 5% !important;
-  width: 90% !important;
-  display: flex !important;
-  flex-direction: row-reverse !important; /* Reverses HUD and Sprite order */
-  justify-content: space-between !important;
-  align-items: center !important;
-  z-index: 2 !important;
+.unit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
-/* Player Side: Sprite Left, Health Bar Right */
-.unit-row.player-side,
-.player-row {
-  position: absolute !important;
-  bottom: 20px !important; /* Elevated within arena bounds */
-  left: 5% !important;
-  right: 5% !important;
-  width: 90% !important;
-  display: flex !important;
-  flex-direction: row !important; /* Keeps Sprite Left, HUD Right */
-  justify-content: space-between !important;
-  align-items: center !important;
-  z-index: 3 !important;
+/* Top Row (Enemy): Reverses layout so HUD is on Left, Sprite is on Right */
+.unit-row.enemy-side {
+  flex-direction: row-reverse;
 }
 
-/* Base Unit Layout Override */
-.unit-row,
-.battle-row {
-  width: auto !important;
+/* Bottom Row (Player): Standard layout so Sprite is on Left, HUD is on Right */
+.unit-row.player-side {
+  flex-direction: row;
 }
 
-#enemy-sprite {
-  position: relative !important;
-  margin-left: auto !important;
-}
-
-#player-sprite {
-  position: relative !important;
-  margin-right: auto !important;
-}
-
-/* Resized Sprites & Disabled Hover Scale */
+/* Sprite Container Sizing */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
-#screen-battle .battle-arena canvas,
-#screen-battle .battle-arena .character-img {
-  width: 100px !important;
-  height: 100px !important;
-  min-width: 100px !important;
-  min-height: 100px !important;
-  max-width: 100px !important;
-  max-height: 100px !important;
-  object-fit: contain !important;
-  image-rendering: pixelated !important;
-  filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75)) !important;
-  transition: none !important;
+#screen-battle .battle-arena canvas {
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
+  min-height: 100px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75));
   background: transparent !important;
-  background-color: transparent !important;
-}
-
-#screen-battle .battle-arena .sprite-box:hover,
-#screen-battle .battle-arena img:hover,
-#screen-battle .battle-arena canvas:hover,
-#screen-battle .battle-arena .character-img:hover {
-  background: transparent !important;
-  background-color: transparent !important;
   transform: none !important;
+  transition: none;
 }
 
 /* HUD Overlay Plates */
 .hud-plate {
   background: rgba(15, 23, 42, 0.9);
-  border: 1px solid var(--card-border);
+  border: 1px solid var(--card-border, #334155);
   border-radius: 10px;
   padding: 10px;
   width: 170px;
@@ -960,18 +916,18 @@ input:focus {
 }
 
 .unit-name {
-  color: var(--text-primary);
+  color: var(--text-primary, #ffffff);
 }
 
 .unit-lvl {
-  color: var(--poke-yellow);
+  color: var(--poke-yellow, #facc15);
 }
 
 .hp-bar-bg {
   width: 100%;
   height: 10px;
-  background: var(--bg-deep);
-  border: 1px solid var(--card-border);
+  background: var(--bg-deep, #0f172a);
+  border: 1px solid var(--card-border, #334155);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -979,26 +935,24 @@ input:focus {
 .hp-bar-fill {
   width: 100%;
   height: 100%;
-  background: var(--hp-red);
+  background: var(--hp-red, #ef4444);
   transition: width 0.3s ease;
 }
 
 .hp-bar-fill.player-hp {
-  background: var(--hp-green);
+  background: var(--hp-green, #22c55e);
 }
 
-/* Fixed Console/Action Panel at Bottom */
-.battle-action-panel,
+/* Console Box at Bottom */
 .console-box {
   background: #000000;
-  border: 2px solid var(--card-border);
+  border: 2px solid var(--card-border, #334155);
   border-radius: 14px;
   padding: 14px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
-  margin-top: auto;
+  margin-top: 12px;
   position: relative;
   z-index: 10;
-  height: 220px; /* Lock height so internal size shifts don't affect sprites */
   box-sizing: border-box;
 }
 
@@ -1006,38 +960,16 @@ input:focus {
    KEYFRAME ANIMATIONS
    ========================================== */
 
-@keyframes toastSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 @keyframes playerAttack {
   0%   { transform: translate(0, 0); }
-  50%  { transform: translate(80px, -45px); }
+  50%  { transform: translate(60px, -30px); }
   100% { transform: translate(0, 0); }
 }
 
 @keyframes monsterAttack {
   0%   { transform: translate(0, 0); }
-  50%  { transform: translate(-80px, 45px); }
+  50%  { transform: translate(-60px, 30px); }
   100% { transform: translate(0, 0); }
-}
-
-@keyframes monsterRetreat {
-  0% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(400px);
-    opacity: 0;
-  }
 }
 
 .anim-player-attack,
