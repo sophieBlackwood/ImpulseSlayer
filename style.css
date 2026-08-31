@@ -166,7 +166,6 @@ body {
   z-index: 1;
   box-sizing: border-box;
   flex-direction: column;
-  justify-content: flex-end; /* Restores bottom-focused placement for UI controls */
 }
 
 /* Active screen brought to the top */
@@ -177,23 +176,16 @@ body {
 
 .onboarding-screen {
   background: url('assets/background/login-bg.png') center/cover no-repeat;
-  justify-content: flex-end;
 }
 
 #screen-hub,
 #screen-quest,
 #screen-settings,
 #screen-shop,
-#screen-vault {
-  background: url('assets/background/hub-bg.png') center/cover no-repeat;
-  padding: 16px;
-  justify-content: space-between;
-}
-
+#screen-vault,
 #screen-battle {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
   padding: 16px;
-  justify-content: space-between;
 }
 
 /* ==========================================
@@ -304,7 +296,6 @@ body {
   border-radius: 14px;
   padding: 18px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  margin-top: auto; /* Pushes onboarding cards down if space is available */
 }
 
 .scrollable-card {
@@ -760,6 +751,10 @@ input:focus,
 /* ============================================================
    BATTLE SCREEN CONTAINER & ARENA (Scoped)
    ============================================================ */
+#screen-battle {
+  justify-content: space-between;
+}
+
 .battle-arena {
   position: relative;
   flex: 1;
@@ -842,7 +837,7 @@ input:focus,
 
 .hp-bar-fill {
   width: 100%;
-  height: 10px;
+  height: 100%;
   background: var(--hp-red);
   transition: width 0.3s ease;
 }
@@ -871,14 +866,13 @@ input:focus,
   line-height: 1.4;
   color: var(--poke-yellow);
   min-height: 56px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .attack-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .attack-btn {
@@ -888,28 +882,19 @@ input:focus,
   color: var(--text-primary);
   font-family: var(--font-heading);
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 12px 14px;
+  font-size: 0.8rem;
+  padding: 12px;
   cursor: pointer;
   text-align: left;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-
-.attack-btn:hover {
-  border-color: var(--poke-yellow);
-  background: rgba(255, 255, 255, 0.05);
 }
 
 .attack-btn small {
   display: block;
   font-family: var(--font-main);
   font-weight: 400;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .attack-btn.flee {
@@ -920,10 +905,6 @@ input:focus,
   border-color: rgba(239, 68, 68, 0.4);
   background: rgba(239, 68, 68, 0.08);
   margin-top: 4px;
-}
-
-.attack-btn.flee:hover {
-  background: rgba(239, 68, 68, 0.18);
 }
 
 /* ==========================================
@@ -942,13 +923,13 @@ input:focus,
 
 @keyframes playerAttack {
   0%   { transform: translate(0, 0); }
-  50%  { transform: translate(50px, -20px); }
+  50%  { transform: translate(60px, -30px); }
   100% { transform: translate(0, 0); }
 }
 
 @keyframes monsterAttack {
   0%   { transform: translate(0, 0); }
-  50%  { transform: translate(-50px, 20px); }
+  50%  { transform: translate(-60px, 30px); }
   100% { transform: translate(0, 0); }
 }
 
@@ -957,7 +938,6 @@ input:focus,
   animation: playerAttack 0.35s ease-in-out !important;
 }
 
-.anim-monster-attack,
 .anim-enemy-attack,
 .enemy-attack-anim {
   animation: monsterAttack 0.35s ease-in-out !important;
