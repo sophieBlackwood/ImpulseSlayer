@@ -241,19 +241,7 @@
 
 <section id="screen-battle" class="screen">
   <div class="battle-arena">
-    <!-- Player Unit Row -->
-    <div class="unit-row player-side">
-      <div id="player-sprite" class="sprite-box"></div>
-      <div class="hud-plate">
-        <div class="plate-top">
-          <span id="player-battle-name" class="unit-name">Hero</span>
-          <span id="player-battle-lvl" class="unit-lvl">Lv 1</span>
-        </div>
-        <div class="hp-bar-bg"><div id="player-hp" class="hp-bar-fill player-hp"></div></div>
-      </div>
-    </div>
-
-    <!-- Enemy Unit Row -->
+    <!-- Top Row: Enemy Health Bar on left, Monster Sprite on right -->
     <div class="unit-row enemy-side">
       <div class="hud-plate">
         <div class="plate-top">
@@ -264,6 +252,18 @@
       </div>
       <div id="enemy-sprite" class="sprite-box"></div>
     </div>
+
+    <!-- Bottom Row: Hero Sprite on left, Player Health Bar on right -->
+    <div class="unit-row player-side">
+      <div id="player-sprite" class="sprite-box"></div>
+      <div class="hud-plate">
+        <div class="plate-top">
+          <span id="player-battle-name" class="unit-name">Hero</span>
+          <span id="player-battle-lvl" class="unit-lvl">Lv 1</span>
+        </div>
+        <div class="hp-bar-bg"><div id="player-hp" class="hp-bar-fill player-hp"></div></div>
+      </div>
+    </div>
   </div>
 
   <div class="console-box">
@@ -273,7 +273,7 @@
     </div>
   </div>
 </section>
-
+    
     <section id="screen-vault" class="screen">
       <div class="top-bar">
         <button type="button" class="back-btn" onclick="showScreen('screen-hub')">&larr; Back</button>
