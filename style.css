@@ -766,44 +766,59 @@ input:focus,
   width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
   padding: 10px 0;
 }
 
 .unit-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
+  max-width: 420px;
+  gap: 20px;
 }
 
+/* Enemy unit row: Moved to the left, HP plate on the left, Sprite on the right */
 .unit-row.enemy-side,
 .enemy-row {
-  flex-direction: row-reverse;
+  flex-direction: row;
   align-items: center;
-  gap: 16px;
   z-index: 2;
 }
 
+/* Player unit row: Moved to the right, Sprite on the left, HP plate on the right */
 .unit-row.player-side,
 .player-row {
-  flex-direction: row;
+  flex-direction: row-reverse;
   align-items: center;
-  gap: 16px;
   z-index: 3;
 }
 
+/* Scaled up sprites and brought closer to center */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas {
-  width: 100px;
-  height: 100px;
-  min-width: 100px;
-  min-height: 100px;
+  width: 125px;
+  height: 125px;
+  min-width: 125px;
+  min-height: 125px;
   object-fit: contain;
   image-rendering: pixelated;
   filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75));
   background: transparent !important;
+  transform: scale(1.15);
+  transition: transform 0.2s ease;
+}
+
+/* Hover effects removed from all sprites */
+#screen-battle .battle-arena .sprite-box:hover,
+#screen-battle .battle-arena img:hover,
+#screen-battle .battle-arena canvas:hover {
+  transform: scale(1.15);
+  cursor: default;
 }
 
 .hud-plate {
@@ -940,16 +955,17 @@ input:focus,
   }
 }
 
+/* Updated attack animation trajectories for swapped positions */
 @keyframes playerAttack {
-  0%   { transform: translate(0, 0); }
-  50%  { transform: translate(50px, -20px); }
-  100% { transform: translate(0, 0); }
+  0%   { transform: scale(1.15) translate(0, 0); }
+  50%  { transform: scale(1.15) translate(-40px, -20px); }
+  100% { transform: scale(1.15) translate(0, 0); }
 }
 
 @keyframes monsterAttack {
-  0%   { transform: translate(0, 0); }
-  50%  { transform: translate(-50px, 20px); }
-  100% { transform: translate(0, 0); }
+  0%   { transform: scale(1.15) translate(0, 0); }
+  50%  { transform: scale(1.15) translate(40px, 20px); }
+  100% { transform: scale(1.15) translate(0, 0); }
 }
 
 .anim-player-attack,
