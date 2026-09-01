@@ -768,20 +768,19 @@ input:focus,
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
   padding: 10px 0;
 }
 
 .unit-row {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   width: 100%;
-  max-width: 420px;
-  gap: 20px;
+  max-width: 360px; /* Brings sprites and health bars closer to center */
 }
 
-/* Enemy unit row: Moved to the left, HP plate on the left, Sprite on the right */
+/* TOP ROW: Monster health bar on left, Monster sprite on right */
 .unit-row.enemy-side,
 .enemy-row {
   flex-direction: row;
@@ -789,35 +788,36 @@ input:focus,
   z-index: 2;
 }
 
-/* Player unit row: Moved to the right, Sprite on the left, HP plate on the right */
+/* BOTTOM ROW: Hero sprite on left, Hero health bar on right */
 .unit-row.player-side,
 .player-row {
-  flex-direction: row-reverse;
+  flex-direction: row;
   align-items: center;
   z-index: 3;
 }
 
-/* Scaled up sprites and brought closer to center */
+/* Sprite styling: Enlarged, no box-shadow, no filter drop-shadow */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas {
-  width: 125px;
-  height: 125px;
-  min-width: 125px;
-  min-height: 125px;
+  width: 130px;
+  height: 130px;
+  min-width: 130px;
+  min-height: 130px;
   object-fit: contain;
   image-rendering: pixelated;
-  filter: drop-shadow(0px 10px 14px rgba(0, 0, 0, 0.75));
+  filter: none !important; /* Dropshadow completely removed */
+  box-shadow: none !important; /* Box shadow completely removed */
   background: transparent !important;
-  transform: scale(1.15);
+  transform: scale(1.2);
   transition: transform 0.2s ease;
 }
 
-/* Hover effects removed from all sprites */
+/* Removed hover scaling / animation on hover */
 #screen-battle .battle-arena .sprite-box:hover,
 #screen-battle .battle-arena img:hover,
 #screen-battle .battle-arena canvas:hover {
-  transform: scale(1.15);
+  transform: scale(1.2);
   cursor: default;
 }
 
@@ -955,17 +955,16 @@ input:focus,
   }
 }
 
-/* Updated attack animation trajectories for swapped positions */
 @keyframes playerAttack {
-  0%   { transform: scale(1.15) translate(0, 0); }
-  50%  { transform: scale(1.15) translate(-40px, -20px); }
-  100% { transform: scale(1.15) translate(0, 0); }
+  0%   { transform: scale(1.2) translate(0, 0); }
+  50%  { transform: scale(1.2) translate(30px, -20px); }
+  100% { transform: scale(1.2) translate(0, 0); }
 }
 
 @keyframes monsterAttack {
-  0%   { transform: scale(1.15) translate(0, 0); }
-  50%  { transform: scale(1.15) translate(40px, 20px); }
-  100% { transform: scale(1.15) translate(0, 0); }
+  0%   { transform: scale(1.2) translate(0, 0); }
+  50%  { transform: scale(1.2) translate(-30px, 20px); }
+  100% { transform: scale(1.2) translate(0, 0); }
 }
 
 .anim-player-attack,
