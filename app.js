@@ -366,7 +366,7 @@ function checkBossAvailability() {
 
   if (currentUser.vault_unlock_time && currentUser.vault_unlock_time > Date.now()) {
     showNotification("Battles are temporarily paused during your cooling period.", "error");
-    checkVaultDirect();
+    checkVaultDirect(); // Redirects to vault to view timer
   } else {
     showScreen('screen-quest');
   }
@@ -594,39 +594,38 @@ function processPlayerAttack(attackType) {
   } else {
     setDialogue(`You dealt ${damageDealt} DMG to ${battleState.monsterName}!${healMsg}`);
 
-   // Replace or verify the enemy attack block inside processPlayerAttack():
-
-setTimeout(() => {
-  if (Math.random() < getEnemyMissChance()) {
-    setDialogue(`${battleState.monsterName} attacked but MISSED! You took 0 damage.`);
-    battleState.isProcessing = false;
-    showAttackMenu();
-  } else {
-    // Trigger enemy move animation
-    const enemyContainer = document.getElementById('enemy-sprite');
-    if (enemyContainer) {
-      enemyContainer.classList.remove('anim-monster-attack');
-      void enemyContainer.offsetWidth; // Reflow trigger
-      enemyContainer.classList.add('anim-monster-attack');
-    }
-
-    const chosenAttack = getRandomMonsterAttack();
-    battleState.playerHP = Math.max(0, battleState.playerHP - chosenAttack.damage);
-
-    setDialogue(`${battleState.monsterName} used ${chosenAttack.name}! ${chosenAttack.taunt} (-${chosenAttack.damage} HP)`);
-    updateHPUI();
-
     setTimeout(() => {
-      if (battleState.playerHP <= 0) {
-        setDialogue(`${battleState.monsterName} overwhelmed your resolve! You gave in to the impulse.`);
-        setTimeout(giveInAndSpend, 1500);
-      } else {
+      if (Math.random() < getEnemyMissChance()) {
+        setDialogue(`${battleState.monsterName} attacked but MISSED! You took 0 damage.`);
         battleState.isProcessing = false;
         showAttackMenu();
+      } else {
+        const enemyContainer = document.getElementById('enemy-sprite');
+        if (enemyContainer) {
+          enemyContainer.classList.remove('anim-monster-attack');
+          void enemyContainer.offsetWidth;
+          enemyContainer.classList.add('anim-monster-attack');
+        }
+
+        const chosenAttack = getRandomMonsterAttack();
+        battleState.playerHP = Math.max(0, battleState.playerHP - chosenAttack.damage);
+
+        setDialogue(`${battleState.monsterName} used ${chosenAttack.name}! ${chosenAttack.taunt} (-${chosenAttack.damage} HP)`);
+        updateHPUI();
+
+        setTimeout(() => {
+          if (battleState.playerHP <= 0) {
+            setDialogue(`${battleState.monsterName} overwhelmed your resolve! You gave in to the impulse.`);
+            setTimeout(giveInAndSpend, 1500);
+          } else {
+            battleState.isProcessing = false;
+            showAttackMenu();
+          }
+        }, 1500);
       }
-    }, 1500);
+    }, 1800);
   }
-}, 1800);
+}
 
 // ==========================================
 // 6. RESOLUTION, VAULT & COOLDOWN
@@ -657,6 +656,7 @@ function victorySavedMoney() {
 
   setTimeout(checkVaultDirect, 500);
 }
+    
 
 function giveInAndSpend() {
   showNotification(`You purchased ${battleState.itemName} for $${battleState.price.toFixed(2)}.`, "info");
