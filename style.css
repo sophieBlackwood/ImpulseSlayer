@@ -165,7 +165,6 @@ body {
   height: 100%;
   z-index: 1;
   box-sizing: border-box;
-  flex-direction: column;
 }
 
 /* Active screen brought to the top with layout controls */
@@ -245,13 +244,12 @@ body {
   image-rendering: pixelated;
 }
 
-/* Disable hover background shift without freezing animations */
-#enemy-sprite:not(.anim-enemy-attack):hover,
-#enemy-sprite img:not(.anim-enemy-attack):hover,
-.enemy-side .sprite-box:not(.anim-enemy-attack):hover {
+/* Clear hover background shift without interfering with animations */
+#enemy-sprite:hover,
+#enemy-sprite img:hover,
+.enemy-side .sprite-box:hover {
   background: transparent !important;
   background-color: transparent !important;
-  transform: none !important;
 }
 
 #enemy-sprite,
