@@ -51,9 +51,6 @@ body {
   border-radius: 4px;
 }
 
-/* ==========================================
-   IN-APP CONFIRMATION MODAL OVERLAY
-   ========================================== */
 .modal-overlay {
   position: fixed;
   top: 0;
