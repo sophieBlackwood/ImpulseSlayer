@@ -172,21 +172,30 @@ body {
   z-index: 10;
 }
 
-/* Onboarding screen top-aligned content */
+/* Onboarding screen content locked to bottom */
 .onboarding-screen,
 #screen-auth,
 #screen-onboarding {
   background: url('assets/background/login-bg.png') center/cover no-repeat;
-  justify-content: flex-start;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
-  padding: 1.5rem 16px 16px 16px;
+  padding: 16px;
+  height: 100%;
 }
 
 .brand-header {
-  margin-top: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: auto;
   text-align: center;
   width: 100%;
+  padding-top: 12px;
+}
+
+.auth-container, 
+.onboarding-screen .glass-card {
+  width: 100%;
+  margin-top: auto;
 }
 
 #screen-hub,
