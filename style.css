@@ -1,3 +1,4 @@
+/* base styles */
 :root {
   --bg-deep: #070c14;
   --card-surface: #0f172a;
@@ -39,7 +40,6 @@ body {
   padding: 12px;
 }
 
-/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -93,9 +93,7 @@ body {
   justify-content: center;
 }
 
-/* ==========================================
-   MAIN APP VIEWPORT & CONTAINERS
-   ========================================== */
+/* main app styling */
 .app-viewport {
   width: 100vw;
   max-width: 420px;
@@ -152,7 +150,6 @@ body {
   border-color: var(--poke-blue);
 }
 
-/* Base screen styles */
 .screen {
   display: none !important;
   position: absolute;
@@ -164,7 +161,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Active screen brought to the top with layout controls */
 .screen.active {
   display: flex !important;
   flex-direction: column;
@@ -172,7 +168,6 @@ body {
   z-index: 10;
 }
 
-/* Onboarding screen content locked to bottom */
 .onboarding-screen,
 #screen-auth,
 #screen-onboarding {
@@ -208,9 +203,7 @@ body {
   justify-content: space-between;
 }
 
-/* ==========================================
-   GENERAL AVATARS & SPRITE BASE STYLES
-   ========================================== */
+/* character styles */
 .avatar-box,
 .sprite-box,
 #shop-preview-avatar {
@@ -260,7 +253,6 @@ body {
   image-rendering: pixelated;
 }
 
-/* Clear hover background shift without interfering with animations */
 #enemy-sprite:hover,
 #enemy-sprite img:hover,
 .enemy-side .sprite-box:hover {
@@ -273,9 +265,7 @@ body {
   position: relative;
 }
 
-/* ==========================================
-   UI UTILITIES & TEXT
-   ========================================== */
+/* ui stuff */
 .logo-tag {
   font-size: 0.75rem;
   font-family: var(--font-heading);
@@ -427,9 +417,7 @@ input:focus,
   color: var(--text-primary);
 }
 
-/* ==========================================
-   GLOBAL BUTTON STYLES
-   ========================================== */
+/* buttons */
 .btn {
   width: 100%;
   padding: 14px;
@@ -495,9 +483,7 @@ input:focus,
   margin-top: 0;
 }
 
-/* ==========================================
-   MODAL ACTIONS SCOPED OVERRIDES
-   ========================================== */
+/* modal actions */
 .modal-actions .btn {
   width: auto;
   margin-top: 0;
@@ -529,9 +515,7 @@ input:focus,
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
 }
 
-/* ==========================================
-   HUB & GENERAL COMPONENTS
-   ========================================== */
+/* hub styling */
 .profile-header {
   display: flex;
   align-items: center;
@@ -767,9 +751,7 @@ input:focus,
   display: none !important;
 }
 
-/* ============================================================
-   BATTLE SCREEN CONTAINER & ARENA (Scoped)
-   ============================================================ */
+/* battle */
 #screen-battle {
   background: url('assets/background/hub-bg.png') center/cover no-repeat;
   padding: 16px;
@@ -796,7 +778,6 @@ input:focus,
   max-width: 360px;
 }
 
-/* TOP ROW: Monster health bar on left, Monster sprite on right */
 .unit-row.enemy-side,
 .enemy-row {
   flex-direction: row;
@@ -804,7 +785,6 @@ input:focus,
   z-index: 2;
 }
 
-/* BOTTOM ROW: Hero sprite on left, Hero health bar on right */
 .unit-row.player-side,
 .player-row {
   flex-direction: row;
@@ -812,7 +792,6 @@ input:focus,
   z-index: 3;
 }
 
-/* Sprite styling: Enlarged, no box-shadow, no filter drop-shadow */
 #screen-battle .battle-arena .sprite-box,
 #screen-battle .battle-arena img,
 #screen-battle .battle-arena canvas {
@@ -829,7 +808,6 @@ input:focus,
   transition: transform 0.2s ease;
 }
 
-/* Removed hover scaling / animation on hover */
 #screen-battle .battle-arena .sprite-box:hover,
 #screen-battle .battle-arena img:hover,
 #screen-battle .battle-arena canvas:hover {
@@ -957,9 +935,7 @@ input:focus,
   background: rgba(239, 68, 68, 0.18);
 }
 
-/* ==========================================
-   KEYFRAME ANIMATIONS
-   ========================================== */
+/* keyframe animations */
 @keyframes toastSlideDown {
   from {
     opacity: 0;
