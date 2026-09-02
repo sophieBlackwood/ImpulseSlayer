@@ -172,11 +172,20 @@ body {
   z-index: 10;
 }
 
-/* Onboarding screen locks content towards the bottom */
-.onboarding-screen {
+/* Onboarding / Login screen alignment fix: Start content from top */
+.onboarding-screen,
+#screen-auth,
+#screen-onboarding {
   background: url('assets/background/login-bg.png') center/cover no-repeat;
-  justify-content: flex-end;
-  padding: 16px;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 2rem 16px 16px 16px;
+}
+
+.brand-header {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 #screen-hub,
