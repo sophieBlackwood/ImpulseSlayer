@@ -1,7 +1,3 @@
-// ==========================================
-// 1. GLOBAL STATE & MANIFESTS
-// ==========================================
-
 let selectedSpriteStaticTemp = 'assets/characters/hero-male.png';
 let selectedSpriteIdleTemp = 'assets/characters/hero-male-idle.gif';
 
@@ -20,7 +16,7 @@ const battleState = {
   isProcessing: false
 };
 
-// Map of shop items to overlay assets and slots
+// shop items
 const ITEM_MANIFEST = {
   'hat_crown': { path: 'assets/costumes/overlay-crown-idle.gif', slot: 'hat', price: 50 },
   'hat_wizard': { path: 'assets/costumes/overlay-wizard-hat-idle.gif', slot: 'hat', price: 40 },
@@ -36,7 +32,7 @@ const ITEM_MANIFEST = {
   'item_laser': { path: 'assets/costumes/overlay-laser-blaster-idle.gif', slot: 'item', price: 100 }
 };
 
-// Pools of randomized reflection questions per attack type
+// questions
 const QUESTION_POOLS = {
   necessity: [
     "Why do you want this item right now, and will it matter in 30 days?",
@@ -95,9 +91,7 @@ const CATEGORY_BACKGROUNDS = {
   ]
 };
 
-// ==========================================
-// 2. SYSTEM UTILITIES & NOTIFICATIONS
-// ==========================================
+// notifications
 
 function enforceMoneyLimit(inputElement) {
   if (!inputElement) return;
@@ -150,10 +144,6 @@ function saveUserData() {
     localStorage.setItem(`user_${currentUser.email}`, JSON.stringify(currentUser));
   }
 }
-
-// ==========================================
-// 3. UI NAVIGATION & AVATAR RENDERING
-// ==========================================
 
 function showScreen(screenId) {
   document.querySelectorAll('.screen').forEach(screen => {
@@ -216,9 +206,7 @@ function syncAllAnimations() {
   }
 }
 
-// ==========================================
-// 4. AUTHENTICATION & SESSION MANAGEMENT
-// ==========================================
+// new user stuffs
 
 function handleLocalSignup(e) {
   e.preventDefault();
@@ -372,9 +360,7 @@ function checkBossAvailability() {
   }
 }
 
-// ==========================================
-// 5. COMBAT ENGINE & MECHANICS
-// ==========================================
+// fighting
 
 function getPlayerMaxHP() {
   if (!currentUser) return 100;
@@ -627,10 +613,7 @@ function processPlayerAttack(attackType) {
   }
 }
 
-// ==========================================
-// 6. RESOLUTION, VAULT & COOLDOWN
-// ==========================================
-
+// victory results
 function victorySavedMoney() {
   const enemyContainer = document.getElementById('enemy-sprite');
   if (enemyContainer) {
@@ -774,9 +757,7 @@ function renderHistoryLogs(logs) {
   });
 }
 
-// ==========================================
-// 7. WARDROBE & SHOP MANAGEMENT
-// ==========================================
+// shop (I'd love to expand this later)
 
 function openShop() {
   if (!currentUser) return showScreen('screen-login');
@@ -868,10 +849,7 @@ function buyOrEquip(itemId, price) {
   openShop();
 }
 
-// ==========================================
-// 8. SETTINGS & ACCOUNT MANAGEMENT
-// ==========================================
-
+// settings
 function updateTrainerName() {
   const nameInput = document.getElementById('settings-name');
   const newName = nameInput ? nameInput.value.trim().slice(0, 20) : '';
@@ -950,9 +928,7 @@ function logoutTrainer() {
   showScreen('screen-login');
 }
 
-// ==========================================
-// 9. EVENT BINDING & INITIALIZATION
-// ==========================================
+// logic events
 
 window.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('input[type="number"], .money-input').forEach(input => {
